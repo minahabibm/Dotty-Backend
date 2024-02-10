@@ -1,0 +1,39 @@
+#Connection url for connection in the DatabaseView:
+#  jdbc:mysql://0.0.0.0:13306/DOCKERDB, login=root, password=root
+#App is available at: http://localhost:<local-port>/entitybus/post
+version: "3.8"
+networks:
+  test:
+
+services:
+  java:
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - test
+
+  db:
+    platform: linux/x86_64
+    image: mysql:5.7.37
+    container_name: db
+    ports:
+      - "13306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: DOCKERDB
+    command: [
+      '--default-authentication-plugin=mysql_native_password',
+      '--lower-case-table-names=1'
+    ]
+    volumes:
+      - ./db-init-scripts:/docker-entrypoint-initdb.d
+    restart: always
+    healthcheck:
+      test: [ "CMD", "mysql", "-h", "localhost", "-P", "3306", "-u", "root", "--password=root", "-e", "select 1", "DOCKERDB" ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    networks:
+      - test
