@@ -4,7 +4,10 @@ import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import com.tradingbot.dotty.service.ScreenedTickersService;
+import com.tradingbot.dotty.serviceImpls.TickerUpdatesWebSocket;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,13 +15,19 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
+
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 
 // TODO Handle Exceptions
-@Slf4j
+@Slf4j(topic = "Dotty_Ticker_Screener")
 @Service
 public class ScheduledTasks {
 
@@ -41,14 +50,17 @@ public class ScheduledTasks {
     private ScreenedTickersService screenedTickersService;
 
     @Autowired
+    private TickerUpdatesWebSocket tickerUpdatesWebSocket;
+
+    @Autowired
     private ModelMapper modelMapper;
 
-//    @Scheduled(fixedRate = 1000)
-    @Scheduled(cron = "0 0 8 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+
+    @Scheduled(cron = "0 35 1 * * MON,TUE,WED,THU,FRI,SAT,SUN")
     public void StockScreener() {
-        log.info("Scheduled Stock Screening with Criteria country {}, market cap more than {}, exchange {}," +
+        log.info("Scheduled Stock Screening at {} with Criteria country {}, market cap more than {}, exchange {}," +
                         " beta more than {}, and is actively trading."
-                ,country, marketCapMoreThan, exchange, betaMoreThan);
+                , LocalDateTime.now(), country, marketCapMoreThan, exchange, betaMoreThan);
 
         WebClient webClient = WebClient.builder().baseUrl(baseUrlStockScreenerAPI)
                 .exchangeStrategies(ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(500 * 1024)).build())
@@ -72,8 +84,11 @@ public class ScheduledTasks {
 //                .subscribe();
 
         if (ScreenedTickers != null) {
+
             screenedTickersService.insertScreenedTickers(Arrays.stream(ScreenedTickers).map(x -> modelMapper.map(x, ScreenedTicker.class)).collect(Collectors.toList()));
             log.info(sortScreenedTickers().toString());
+
+            subscribeToTickersTradesUpdate();
         }
 
     }
@@ -93,6 +108,18 @@ public class ScheduledTasks {
                 .sorted(Map.Entry.<String, ScreenedTickerDTO>comparingByValue(byExchangeAndBeta))
                 .map(x -> x.getKey()+ " - " + x.getValue().getName() + " [" + x.getValue().getExchangeShortName() + "] (" + x.getValue().getBeta() +")")
                 .collect(Collectors.toList());
+    }
+
+//    @Scheduled(fixedRate = 10000)
+    public void subscribeToTickersTradesUpdate() {
+        try {
+            WebSocketSession  tickerUpdatesWSSession = tickerUpdatesWebSocket.getTickerUpdatesWebSocket();
+//            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"subscribe\",\"symbol\":\"IWM\"}"));
+            tickerUpdatesWSSession.close();
+            System.out.println(tickerUpdatesWSSession.isOpen());
+        } catch (ExecutionException | InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

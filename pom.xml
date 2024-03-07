@@ -41,6 +41,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-websocket -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-websocket</artifactId>
+			<version>6.1.4</version>
+		</dependency>
 <!--		<dependency>-->
 <!--			<groupId>com.okta.spring</groupId>-->
 <!--			<artifactId>okta-spring-boot-starter</artifactId>-->
