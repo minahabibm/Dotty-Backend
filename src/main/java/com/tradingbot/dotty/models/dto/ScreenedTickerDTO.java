@@ -16,5 +16,4 @@ public class ScreenedTickerDTO {
     private String sector;
     private String exchangeShortName;
     private Float beta;
-
 }

@@ -1,7 +1,11 @@
 package com.tradingbot.dotty.serviceImpls;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tradingbot.dotty.models.dto.TickersUpdateWSDTO;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
@@ -12,6 +16,8 @@ import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import java.net.URI;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j(topic = "Dotty_Ticker_Trades_WebSockets")
@@ -28,6 +34,9 @@ public class TickerUpdatesWebSocket {
     private  WebSocketHandler handler;
     private WebSocketSession session;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     public WebSocketSession getTickerUpdatesWebSocket() throws ExecutionException, InterruptedException {
         if(session == null) {
             log.info("WebSocket Session initialization");
@@ -41,7 +50,12 @@ public class TickerUpdatesWebSocket {
 
                 @Override
                 public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-                    log.info(message.getPayload().toString());
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    TickersUpdateWSDTO messageContent = objectMapper.readValue(message.getPayload().toString(), TickersUpdateWSDTO.class);
+
+                    log.info("type: {}", messageContent.getType());
+                    if(messageContent.getData() != null)
+                        messageContent.getData().stream().forEach(x -> log.info("{} {} {} {}", x.getS(), x.getP(), x.getV(), Instant.ofEpochMilli(x.getT()).atZone(ZoneId.systemDefault()).toLocalDateTime())); // ZoneId.of("America/New_York")
                 }
 
                 @Override

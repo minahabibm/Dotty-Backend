@@ -5,9 +5,7 @@ import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.serviceImpls.TickerUpdatesWebSocket;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Session;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,7 +54,7 @@ public class ScheduledTasks {
     private ModelMapper modelMapper;
 
 
-    @Scheduled(cron = "0 35 1 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    @Scheduled(cron = "0 04 18 * * MON,TUE,WED,THU,FRI,SAT,SUN")
     public void StockScreener() {
         log.info("Scheduled Stock Screening at {} with Criteria country {}, market cap more than {}, exchange {}," +
                         " beta more than {}, and is actively trading."
@@ -84,7 +82,6 @@ public class ScheduledTasks {
 //                .subscribe();
 
         if (ScreenedTickers != null) {
-
             screenedTickersService.insertScreenedTickers(Arrays.stream(ScreenedTickers).map(x -> modelMapper.map(x, ScreenedTicker.class)).collect(Collectors.toList()));
             log.info(sortScreenedTickers().toString());
 
@@ -110,13 +107,13 @@ public class ScheduledTasks {
                 .collect(Collectors.toList());
     }
 
-//    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 1000000)
     public void subscribeToTickersTradesUpdate() {
         try {
             WebSocketSession  tickerUpdatesWSSession = tickerUpdatesWebSocket.getTickerUpdatesWebSocket();
-//            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"subscribe\",\"symbol\":\"IWM\"}"));
-            tickerUpdatesWSSession.close();
-            System.out.println(tickerUpdatesWSSession.isOpen());
+            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"subscribe\",\"symbol\":\"IWM\"}"));
+//            tickerUpdatesWSSession.close();
+//            System.out.println(tickerUpdatesWSSession.isOpen());
         } catch (ExecutionException | InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }
