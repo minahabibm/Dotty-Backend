@@ -1,5 +1,6 @@
 package com.tradingbot.dotty.models.dto;
 
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,11 +10,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScreenedTickerDTO {
-    private long screenedTickerId;
+public class TickersTradeUpdatesDTO {
+    private long tickerTradesId;
     private String name;
     private String symbol;
-    private String sector;
-    private String exchangeShortName;
-    private Float beta;
+    private Boolean isActive;
 }

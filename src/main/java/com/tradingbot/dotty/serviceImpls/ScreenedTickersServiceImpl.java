@@ -32,7 +32,7 @@ public class ScreenedTickersServiceImpl implements ScreenedTickersService {
 
     @Override
     public String insertScreenedTickers(List<ScreenedTicker> screenedTickers) {
-        log.info("Inserting Screened Tickers ");
+        log.info("Inserting Screened Tickers");
         List<ScreenedTicker> screenedTickersList = screenedTickersRepository.saveAll(screenedTickers);
         return String.valueOf(screenedTickersList.size());
     }

@@ -1,122 +1,57 @@
 package com.tradingbot.dotty.utils;
 
 import com.tradingbot.dotty.models.ScreenedTicker;
-import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import com.tradingbot.dotty.service.ScreenedTickersService;
-import com.tradingbot.dotty.serviceImpls.TickerUpdatesWebSocket;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
-
-import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 
-// TODO Handle Exceptions
-@Slf4j(topic = "Dotty_Ticker_Screener")
+// TODO Exceptions
+// TODO Application restart
+@Slf4j(topic = "Dotty_Scheduler")
 @Service
 public class ScheduledTasks {
 
-    @Value("${stock-screener-api.base-url}")
-    private String baseUrlStockScreenerAPI;
-    @Value("${stock-screener-api.APIkey}")
-    private String APIkeyStockScreenerAPI;
-    @Value("${stock-screener-api.query-params.country}")
-    private String country;
-    @Value("${stock-screener-api.query-params.market-cap-more-than}")
-    private Long marketCapMoreThan;
-    @Value("${stock-screener-api.query-params.exchange}")
-    private String[] exchange;
-    @Value("${stock-screener-api.query-params.beta-more-than}")
-    private float betaMoreThan;
-    @Value("${stock-screener-api.query-params.is-actively-trading}")
-    private boolean isActivelyTrading;
-
     @Autowired
-    private ScreenedTickersService screenedTickersService;
+    private Utils utils;
 
-    @Autowired
-    private TickerUpdatesWebSocket tickerUpdatesWebSocket;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
-
-    @Scheduled(cron = "0 04 18 * * MON,TUE,WED,THU,FRI,SAT,SUN")
-    public void StockScreener() {
-        log.info("Scheduled Stock Screening at {} with Criteria country {}, market cap more than {}, exchange {}," +
-                        " beta more than {}, and is actively trading."
-                , LocalDateTime.now(), country, marketCapMoreThan, exchange, betaMoreThan);
-
-        WebClient webClient = WebClient.builder().baseUrl(baseUrlStockScreenerAPI)
-                .exchangeStrategies(ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(500 * 1024)).build())
-                .build();
-
-        ScreenedTickersResponse[] ScreenedTickers = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .queryParam("country", country)
-                        .queryParam("marketCapMoreThan", marketCapMoreThan)
-                        .queryParam("exchange", exchange[0])
-                        .queryParam("exchange", exchange[1])
-                        .queryParam("exchange", exchange[2])
-                        .queryParam("betaMoreThan", betaMoreThan)
-                        .queryParam("isActivelyTrading", isActivelyTrading)
-                        .queryParam("apikey", APIkeyStockScreenerAPI)
-                        .build())
-                .retrieve()
-                .bodyToMono(ScreenedTickersResponse[].class)
-                .block();
-//                .doOnNext(x -> System.out.println(x[0]))
-//                .subscribe();
-
-        if (ScreenedTickers != null) {
-            screenedTickersService.insertScreenedTickers(Arrays.stream(ScreenedTickers).map(x -> modelMapper.map(x, ScreenedTicker.class)).collect(Collectors.toList()));
-            log.info(sortScreenedTickers().toString());
-
-            subscribeToTickersTradesUpdate();
-        }
-
+    @Scheduled(cron = "0 58 19 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    public void stockScreener() {
+        log.info("Scheduled Stock Screening at {}", LocalDateTime.now());
+        ScreenedTickersResponse[] ScreenedTickers = utils.stockScreenerUpdateRequest();
+        if (ScreenedTickers != null)
+            utils.selectAndSaveScreenedTickers();
     }
 
-    public List<String> sortScreenedTickers(){
-        List<ScreenedTickerDTO> screenedTickerDTOS = screenedTickersService.getScreenedTickers();
-        Map<String, ScreenedTickerDTO> screenedTickerDTOSMap = screenedTickerDTOS.stream().collect(Collectors.toMap(ScreenedTickerDTO::getSymbol, ScreenedTickerDTO->ScreenedTickerDTO));
-
-        Comparator<ScreenedTickerDTO> byExchangeAndBeta = (ScreenedTickerDTO tkr1, ScreenedTickerDTO tkr2) -> {
-            if(tkr1.getBeta().equals(tkr2.getBeta())) {
-                return tkr1.getExchangeShortName().compareTo(tkr2.getExchangeShortName());
-            } else
-                return tkr2.getBeta().compareTo(tkr1.getBeta());
+    @Scheduled(cron = "0 16 1 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    public void tickerTechnicalAnalysis() {
+        log.info("Scheduled ticker Technical Analysis polling start at {}", LocalDateTime.now());
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        Runnable task = () -> utils.tickersTechnicalAnalysis();
+        ScheduledFuture<?> schedulerHandle = executor.scheduleAtFixedRate(task, 0, 1, TimeUnit.SECONDS);
+        Runnable canceller = () -> {
+            log.info("Halt executing " + LocalDateTime.now());
+            schedulerHandle.cancel(false);
+            executor.shutdown(); // <---- Now the call is within the `canceller` Runnable.
         };
-
-        return screenedTickerDTOSMap.entrySet().stream()
-                .sorted(Map.Entry.<String, ScreenedTickerDTO>comparingByValue(byExchangeAndBeta))
-                .map(x -> x.getKey()+ " - " + x.getValue().getName() + " [" + x.getValue().getExchangeShortName() + "] (" + x.getValue().getBeta() +")")
-                .collect(Collectors.toList());
+//        long seconds = ChronoUnit.SECONDS.between(LocalTime.now(),LocalTime.of(2,0));
+        executor.schedule(canceller, 10, TimeUnit.SECONDS);
     }
 
-    @Scheduled(fixedRate = 1000000)
-    public void subscribeToTickersTradesUpdate() {
-        try {
-            WebSocketSession  tickerUpdatesWSSession = tickerUpdatesWebSocket.getTickerUpdatesWebSocket();
-            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"subscribe\",\"symbol\":\"IWM\"}"));
-//            tickerUpdatesWSSession.close();
-//            System.out.println(tickerUpdatesWSSession.isOpen());
-        } catch (ExecutionException | InterruptedException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    @Scheduled(fixedRate = 1000000)
+//    public void scheduledTasks() {
+//        utils.subscribeToTickersTradesUpdate();
+//    }
 
 }

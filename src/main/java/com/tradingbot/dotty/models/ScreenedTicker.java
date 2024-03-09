@@ -12,15 +12,20 @@ import lombok.NoArgsConstructor;
 public class ScreenedTicker {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private long screenedTickerId;
+
     @Column(name="name")
     private String name;
+
     @Column(name="symbol")
     private String symbol;
+
     @Column(name="sector")
     private String sector;
+
     @Column(name="exchangeShortName")
     private String exchangeShortName;
+
     @Column(name="beta")
     private float beta;
 
