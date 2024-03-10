@@ -4,17 +4,13 @@ import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.TickersTradeUpdates;
 import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
-import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
+import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
-import com.tradingbot.dotty.serviceImpls.TickerUpdatesWebSocket;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -25,24 +21,15 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-@Slf4j(topic = "Dotty_Ticker_Utils")
+@Slf4j(topic = "Dotty_Utils")
 @Service
 public class Utils {
 
-    @Value("${stock-screener-api.base-url}")
-    private String baseUrlStockScreenerAPI;
-    @Value("${stock-screener-api.APIkey}")
-    private String APIkeyStockScreenerAPI;
-    @Value("${stock-screener-api.query-params.country}")
-    private String country;
-    @Value("${stock-screener-api.query-params.market-cap-more-than}")
-    private Long marketCapMoreThan;
-    @Value("${stock-screener-api.query-params.exchange}")
-    private String[] exchange;
-    @Value("${stock-screener-api.query-params.beta-more-than}")
-    private float betaMoreThan;
-    @Value("${stock-screener-api.query-params.is-actively-trading}")
-    private boolean isActivelyTrading;
+    @Autowired
+    private ExternalApiRequests apiRequests;
+
+    @Autowired
+    private TickerUpdatesWebSocket tickerUpdatesWebSocket;
 
     @Autowired
     private ScreenedTickersService screenedTickersService;
@@ -51,61 +38,16 @@ public class Utils {
     private TickersTradeUpdatesService tickersTradeUpdatesService;
 
     @Autowired
-    private TickerUpdatesWebSocket tickerUpdatesWebSocket;
-
-    @Autowired
     private ModelMapper modelMapper;
 
+    public void stockScreenerUpdate() {
+        log.info("Getting Screened Tickers.");
+        ScreenedTickersResponse[] screenedTickersResponse = apiRequests.stockScreenerUpdateRetrieve();
+        if (screenedTickersResponse != null) {
+            log.info("Saving Tickers to Screened Tickers.");
+            screenedTickersService.insertScreenedTickers(Arrays.stream(screenedTickersResponse).map(screenedTickers -> modelMapper.map(screenedTickers, ScreenedTicker.class)).collect(Collectors.toList()));
 
-    public ScreenedTickersResponse[] stockScreenerUpdateRequest() {
-        log.info("Stock Screening GET Request, with Criteria country {}, market cap more than {}, exchange {}," +
-                        " beta more than {}, and is actively trading."
-                , country, marketCapMoreThan, exchange, betaMoreThan);
-
-        WebClient webClient = WebClient.builder().baseUrl(baseUrlStockScreenerAPI)
-                .exchangeStrategies(ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(500 * 1024)).build())
-                .build();
-
-        ScreenedTickersResponse[] screenedTickersResponse = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .queryParam("country", country)
-                        .queryParam("marketCapMoreThan", marketCapMoreThan)
-                        .queryParam("exchange", exchange[0])
-                        .queryParam("exchange", exchange[1])
-                        .queryParam("exchange", exchange[2])
-                        .queryParam("betaMoreThan", betaMoreThan)
-                        .queryParam("isActivelyTrading", isActivelyTrading)
-                        .queryParam("apikey", APIkeyStockScreenerAPI)
-                        .build())
-                .retrieve()
-                .bodyToMono(ScreenedTickersResponse[].class)
-                .block();
-//                .doOnNext(x -> System.out.println(x[0]))
-//                .subscribe();
-
-        log.info("Saving Tickers to Screened Tickers.");
-        screenedTickersService.insertScreenedTickers(Arrays.stream(screenedTickersResponse).map(screenedTickers -> modelMapper.map(screenedTickers, ScreenedTicker.class)).collect(Collectors.toList()));
-
-
-        return screenedTickersResponse;
-    }
-
-    public void tickersTechnicalAnalysis() {
-        log.info("Task executed " + LocalDateTime.now());
-        // Get Ticker Trades Updates
-
-        // concurrent distribution for each ticker with a seprate process
-        // each process will determine position entry\exit -> quote&trade and price updates sub/unsub once in trade.
-    }
-
-    public void subscribeToTickersTradesUpdate() {
-        try {
-            WebSocketSession tickerUpdatesWSSession = tickerUpdatesWebSocket.getTickerUpdatesWebSocket();
-            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"subscribe\",\"symbol\":\"IWM\"}"));
-//            tickerUpdatesWSSession.close();
-//            System.out.println(tickerUpdatesWSSession.isOpen());
-        } catch (ExecutionException | InterruptedException | IOException e) {
-            throw new RuntimeException(e);
+            selectAndSaveScreenedTickers();
         }
     }
 
@@ -127,6 +69,41 @@ public class Utils {
         log.info("Getting Sorted Tickers for Trade Updates");
         tickersTradeUpdatesService.getSortedTickersTradeUpdates(10);
     }
+
+    public void tickersTechnicalAnalysis() {
+        log.info("Getting Technical Analysis at " + LocalDateTime.now());
+        // Get Ticker Trades Updates
+        LocalDateTime localDateTime = LocalDateTime.of(2024,03,8, 15,50,00);
+        TechnicalIndicatorResponse technicalIndicatorResponse = apiRequests.technicalIndicatorRetrieve("AAPL", localDateTime);
+        System.out.println(technicalIndicatorResponse);
+
+        // concurrent distribution for each ticker with a seprate process
+
+        // each process will determine position entry\exit -> quote&trade and price updates sub/unsub once in trade.
+    }
+
+    public void subscribeToTickersTradesUpdate(String ticker) {
+        try {
+            log.info("Trades Update ::Subscribe Ticker:: {}");
+            WebSocketSession tickerUpdatesWSSession = tickerUpdatesWebSocket.getTickerUpdatesWebSocket();
+            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"subscribe\",\"symbol\":\"" + ticker + "\"}"));
+        } catch (ExecutionException | InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void unsubscribeToTickersTradesUpdate(String ticker) {
+        try {
+            log.info("Trades Update ::Unsubscribe Ticker:: {}");
+            WebSocketSession tickerUpdatesWSSession = tickerUpdatesWebSocket.getTickerUpdatesWebSocket();
+            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"unsubscribe\",\"symbol\":\"" + ticker + "\"}"));
+//            tickerUpdatesWSSession.close();
+//            System.out.println(tickerUpdatesWSSession.isOpen());
+        } catch (ExecutionException | InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 //    public void sortScreenedTickers(){
 //        List<ScreenedTickerDTO> screenedTickerDTOS = screenedTickersService.getScreenedTickers();

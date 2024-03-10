@@ -1,8 +1,7 @@
-package com.tradingbot.dotty.serviceImpls;
+package com.tradingbot.dotty.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tradingbot.dotty.models.dto.TickersUpdateWSDTO;
-import lombok.Getter;
+import com.tradingbot.dotty.models.dto.TickersUpdateWSMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,18 +23,15 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class TickerUpdatesWebSocket {
 
-    @Value("${tickers-trades-websocket.base-url}")
+    @Value("${tickers-trades-api.websocket-base-url}")
     private String baseUrlTickerTradesWS;
-    @Value("${tickers-trades-websocket.APIkey}")
+    @Value("${tickers-trades-api.APIkey}")
     private String APIkeyTickerTradesWS;
 
     private URI TickerTradesURI;
     private  WebSocketClient client;
     private  WebSocketHandler handler;
     private WebSocketSession session;
-
-    @Autowired
-    private ModelMapper modelMapper;
 
     public WebSocketSession getTickerUpdatesWebSocket() throws ExecutionException, InterruptedException {
         if(session == null) {
@@ -51,7 +47,7 @@ public class TickerUpdatesWebSocket {
                 @Override
                 public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
                     ObjectMapper objectMapper = new ObjectMapper();
-                    TickersUpdateWSDTO messageContent = objectMapper.readValue(message.getPayload().toString(), TickersUpdateWSDTO.class);
+                    TickersUpdateWSMessage messageContent = objectMapper.readValue(message.getPayload().toString(), TickersUpdateWSMessage.class);
 
                     log.info("type: {}", messageContent.getType());
                     if(messageContent.getData() != null)
