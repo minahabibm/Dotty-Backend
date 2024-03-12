@@ -77,9 +77,9 @@ public class Utils {
         TechnicalIndicatorResponse technicalIndicatorResponse = apiRequests.technicalIndicatorRetrieve("AAPL", localDateTime);
         System.out.println(technicalIndicatorResponse);
 
-        // concurrent distribution for each ticker with a seprate process
+        // concurrent distribution for each ticker with a separate Thread
 
-        // each process will determine position entry\exit -> quote&trade and price updates sub/unsub once in trade.
+        // Thread process will determine position entry\exit -> quote&trade and price updates sub/unsub once in trade.
     }
 
     public void subscribeToTickersTradesUpdate(String ticker) {
@@ -103,6 +103,7 @@ public class Utils {
             throw new RuntimeException(e);
         }
     }
+
 
 
 //    public void sortScreenedTickers(){
