@@ -1,6 +1,5 @@
 package com.tradingbot.dotty.utils;
 
-import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,13 +20,13 @@ public class ScheduledTasks {
     @Autowired
     private Utils utils;
 
-    @Scheduled(cron = "0 10 1 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    @Scheduled(cron = "0 24 23 * * MON,TUE,WED,THU,FRI,SAT,SUN")
     public void stockScreener() {
         log.info("Scheduled Stock Screening at {}", LocalDateTime.now());
         utils.stockScreenerUpdate();
     }
 
-    @Scheduled(cron = "0 10 1 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    @Scheduled(cron = "0 25 23 * * MON,TUE,WED,THU,FRI,SAT,SUN")
     public void tickerTechnicalAnalysis() {
         log.info("Scheduled ticker Technical Analysis polling start at {}", LocalDateTime.now());
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);

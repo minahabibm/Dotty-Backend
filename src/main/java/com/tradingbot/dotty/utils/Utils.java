@@ -5,6 +5,7 @@ import com.tradingbot.dotty.models.TickersTradeUpdates;
 import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
+import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,9 @@ public class Utils {
     private TickersTradeUpdatesService tickersTradeUpdatesService;
 
     @Autowired
+    private ConcurrentMarketDataFunnel marketDataFunnel;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     public void stockScreenerUpdate() {
@@ -65,21 +69,32 @@ public class Utils {
         List<TickersTradeUpdates> tickersTradeUpdates = screenedTickers.stream().map(x -> modelMapper.map(x,TickersTradeUpdates.class)).collect(Collectors.toList());
         tickersTradeUpdatesService.insertTickersTradeUpdates(tickersTradeUpdates);
         log.info("{}", tickersTradeUpdatesService.getTickersTradeUpdates().size());
-
-        log.info("Getting Sorted Tickers for Trade Updates");
-        tickersTradeUpdatesService.getSortedTickersTradeUpdates(10);
     }
 
     public void tickersTechnicalAnalysis() {
         log.info("Getting Technical Analysis at " + LocalDateTime.now());
+
         // Get Ticker Trades Updates
-        LocalDateTime localDateTime = LocalDateTime.of(2024,03,8, 15,50,00);
-        TechnicalIndicatorResponse technicalIndicatorResponse = apiRequests.technicalIndicatorRetrieve("AAPL", localDateTime);
-        System.out.println(technicalIndicatorResponse);
+        log.info("Getting Sorted Tickers for Trade Updates");
+        List<TickersTradeUpdatesDTO> tickersTradeUpdates = tickersTradeUpdatesService.getSortedTickersTradeUpdates(10);
 
         // concurrent distribution for each ticker with a separate Thread
+        LocalDateTime currDateTime = LocalDateTime.now();
+        LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), currDateTime.getMinute(),00);
 
-        // Thread process will determine position entry\exit -> quote&trade and price updates sub/unsub once in trade.
+        LocalDateTime dateTime = LocalDateTime.of(2024,03,8, 15,50,10);
+        System.out.println(dateTime + " " + localDateTime + " " + currDateTime);
+
+        for(int i=0; i<tickersTradeUpdates.size(); i++){
+            marketDataFunnel.processTickerTechnicalAnalysisUpdates(apiRequests.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), localDateTime));
+            if(i==7)
+                try {
+                    Thread.sleep(60000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+        }
+
     }
 
     public void subscribeToTickersTradesUpdate(String ticker) {
