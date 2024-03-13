@@ -9,7 +9,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
@@ -31,8 +35,17 @@ public class ScreenedTickersServiceImpl implements ScreenedTickersService {
     }
 
     @Override
+    public List<ScreenedTickerDTO> getTodayScreenedTickers() {
+        Predicate<ScreenedTicker> localDateTimePredicate = (localDateTime) -> (localDateTime.getCreatedAt().isAfter(LocalDateTime.of(LocalDate.now(), LocalTime.ofSecondOfDay(0)))) || (localDateTime.getUpdatedAt().isAfter(LocalDateTime.of(LocalDate.now(), LocalTime.ofSecondOfDay(0))));
+        return screenedTickersRepository.findAll().stream()
+                .filter(localDateTimePredicate)
+                .map(screenedTicker -> modelMapper.map(screenedTicker, ScreenedTickerDTO.class)).collect(Collectors.toList());
+    }
+
+    @Override
     public String insertScreenedTickers(List<ScreenedTicker> screenedTickers) {
         log.info("Inserting Screened Tickers");
+//        screenedTickers.forEach(x -> x.setCreatedOn(LocalDateTime.now()));
         List<ScreenedTicker> screenedTickersList = screenedTickersRepository.saveAll(screenedTickers);
         return String.valueOf(screenedTickersList.size());
     }

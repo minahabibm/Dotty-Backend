@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -20,13 +21,13 @@ public class ScheduledTasks {
     @Autowired
     private Utils utils;
 
-    @Scheduled(cron = "0 24 23 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    @Scheduled(cron = "0 42 00 * * MON,TUE,WED,THU,FRI,SAT,SUN")
     public void stockScreener() {
         log.info("Scheduled Stock Screening at {}", LocalDateTime.now());
         utils.stockScreenerUpdate();
     }
 
-    @Scheduled(cron = "0 25 23 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    @Scheduled(cron = "0 43 00 * * MON,TUE,WED,THU,FRI,SAT,SUN")
     public void tickerTechnicalAnalysis() {
         log.info("Scheduled ticker Technical Analysis polling start at {}", LocalDateTime.now());
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
@@ -41,10 +42,9 @@ public class ScheduledTasks {
         executor.schedule(canceller, seconds, TimeUnit.SECONDS);
     }
 
-//    @Scheduled(fixedRate = 1000000)
-//    public void scheduledTasks() {
-//
-////        utils.subscribeToTickersTradesUpdate("IWM");
-//    }
+    @Scheduled(fixedRate = 1000000)
+    public void scheduledTasks() {
+//        utils.subscribeToTickersTradesUpdate("IWM");
+    }
 
 }

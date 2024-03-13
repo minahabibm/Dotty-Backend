@@ -57,7 +57,7 @@ public class Utils {
 
     public void selectAndSaveScreenedTickers(){
         log.info("Getting Screened Tickers to market trades stream.");
-        List<ScreenedTickerDTO> screenedTickerDTOS = screenedTickersService.getScreenedTickers();
+        List<ScreenedTickerDTO> screenedTickerDTOS = screenedTickersService.getTodayScreenedTickers();
 
         log.info("Filter Screened Tickers for Sectors");
         List<ScreenedTicker> screenedTickers = screenedTickerDTOS.stream()
@@ -83,10 +83,9 @@ public class Utils {
         LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), currDateTime.getMinute(),00);
 
         LocalDateTime dateTime = LocalDateTime.of(2024,03,8, 15,50,10);
-        System.out.println(dateTime + " " + localDateTime + " " + currDateTime);
 
         for(int i=0; i<tickersTradeUpdates.size(); i++){
-            marketDataFunnel.processTickerTechnicalAnalysisUpdates(apiRequests.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), localDateTime));
+            marketDataFunnel.processTickerTechnicalAnalysisUpdates(apiRequests.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), dateTime));
             if(i==7)
                 try {
                     Thread.sleep(60000);
