@@ -8,8 +8,9 @@ import java.util.List;
 public interface ScreenedTickersService {
     List<ScreenedTickerDTO> getScreenedTickers();
     List<ScreenedTickerDTO> getTodayScreenedTickers();
-    String insertScreenedTickers(List<ScreenedTicker> screenedTicker);
+    String insertScreenedTickers(List<ScreenedTickerDTO> ScreenedTickersDTOList);
     String insertScreenedTicker(ScreenedTickerDTO screenedTickerDTO);
-    String updateScreenedTicker(ScreenedTicker screenedTickers);
+    String updateScreenedTicker(ScreenedTickerDTO screenedTickerDTO);
     String deleteScreenedTickers();
+
 }

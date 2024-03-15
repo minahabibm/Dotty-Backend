@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-//@Table(name = "ScreenedTickers")
 public class ScreenedTicker {
 
     @Id

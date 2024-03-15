@@ -1,7 +1,9 @@
 package com.tradingbot.dotty.utils;
 
 import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
+import com.tradingbot.dotty.service.TickerMarketDataService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -9,18 +11,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConcurrentMarketDataFunnel {
 
+    @Autowired
+    TickerMarketDataService tickerMarketDataService;
+
     @Async
     void processTickerTechnicalAnalysisUpdates(TechnicalIndicatorResponse technicalIndicatorResponse){
         if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && technicalIndicatorResponse.getValues().size() >= 1) {
-            log.info("symbol: {}, RSI: {}, Time: {}, Candle Stick: open: {}, close: {}, high: {}, low: {}",
-                    technicalIndicatorResponse.getMeta().getSymbol(),
-                    technicalIndicatorResponse.getValues().get(0).getRsi(),
-                    technicalIndicatorResponse.getValues().get(0).getDatetime(),
-                    technicalIndicatorResponse.getValues().get(0).getOpen(),
-                    technicalIndicatorResponse.getValues().get(0).getClose(),
-                    technicalIndicatorResponse.getValues().get(0).getHigh(),
-                    technicalIndicatorResponse.getValues().get(0).getLow()
+            technicalIndicatorResponse.getValues().stream().forEach( tIRespVals ->
+                    {
+                        log.info("symbol: {}, RSI: {}, Time: {}, Candle Stick: open: {}, close: {}, high: {}, low: {}",
+                                technicalIndicatorResponse.getMeta().getSymbol(), tIRespVals.getRsi(), tIRespVals.getDatetime(), tIRespVals.getOpen(), tIRespVals.getClose(), tIRespVals.getHigh(), tIRespVals.getLow());
+
+//                        tickerMarketDataService.startTrackingForTrade(technicalIndicatorResponse.getMeta(), technicalIndicatorResponse.getMeta().getIndicator(), tIRespVals);
+                    }
             );
+
+
+
         } else{
                 System.out.println(technicalIndicatorResponse);
         }

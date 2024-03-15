@@ -53,8 +53,8 @@ public class ExternalApiRequests {
                         " beta more than {}, and is actively trading."
                 , country, marketCapMoreThan, exchange, betaMoreThan);
 
-        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(500 * 1024)).build();
-        WebClient webClient = WebClient.builder().baseUrl(baseUrlStockScreenerAPI).exchangeStrategies(exchangeStrategies).build();
+//        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(500 * 1024)).build();
+        WebClient webClient = WebClient.builder().baseUrl(baseUrlStockScreenerAPI).build();               //.exchangeStrategies(exchangeStrategies).build();
         ScreenedTickersResponse[] screenedTickersResponse = webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .queryParam("country", country)

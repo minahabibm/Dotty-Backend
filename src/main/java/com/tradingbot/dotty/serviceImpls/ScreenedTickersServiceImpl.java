@@ -1,5 +1,6 @@
 package com.tradingbot.dotty.serviceImpls;
 
+import com.tradingbot.dotty.models.Position;
 import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.repositories.ScreenedTickersRepository;
@@ -43,10 +44,11 @@ public class ScreenedTickersServiceImpl implements ScreenedTickersService {
     }
 
     @Override
-    public String insertScreenedTickers(List<ScreenedTicker> screenedTickers) {
+    public String insertScreenedTickers(List<ScreenedTickerDTO> ScreenedTickersDTOList) {
         log.info("Inserting Screened Tickers");
 //        screenedTickers.forEach(x -> x.setCreatedOn(LocalDateTime.now()));
-        List<ScreenedTicker> screenedTickersList = screenedTickersRepository.saveAll(screenedTickers);
+        List<ScreenedTicker> screenedTickerList = ScreenedTickersDTOList.stream().map(screenedTickerDTO -> modelMapper.map(screenedTickerDTO, ScreenedTicker.class)).collect(Collectors.toList());
+        List<ScreenedTicker> screenedTickersList = screenedTickersRepository.saveAll(screenedTickerList);
         return String.valueOf(screenedTickersList.size());
     }
 
@@ -58,9 +60,9 @@ public class ScreenedTickersServiceImpl implements ScreenedTickersService {
     }
 
     @Override
-    public String updateScreenedTicker(ScreenedTicker screenedTicker) {
+    public String updateScreenedTicker(ScreenedTickerDTO screenedTickerDTO) {
         log.info("Updating Screened Ticker ");
-        ScreenedTicker screenedTickerUpdated = screenedTickersRepository.save(screenedTicker);
+        ScreenedTicker screenedTickerUpdated = screenedTickersRepository.save(modelMapper.map(screenedTickerDTO, ScreenedTicker.class));
         return String.valueOf(screenedTickerUpdated);
     }
 
