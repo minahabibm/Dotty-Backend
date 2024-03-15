@@ -40,6 +40,16 @@ public class PositionTrackerServiceImpl implements PositionTrackerService {
     }
 
     @Override
+    public PositionTrackerDTO getTickerActivePositionTracker(String symbol) {
+        log.info("Getting Tickers Tracker Positions");
+        PositionTracker positionTracker = positionTrackerRepository.findBySymbolAndActiveTrue(symbol);
+        PositionTrackerDTO positionTrackerDTO = null;
+        if(positionTracker != null)
+            positionTrackerDTO = modelMapper.map(positionTracker, PositionTrackerDTO.class);
+        return positionTrackerDTO;
+    }
+
+    @Override
     public Long insertPositionTracker(PositionTrackerDTO positionTrackerDTO) {
         log.info("Inserting Ticker Tracker position");
         PositionTracker positionTracker = positionTrackerRepository.save(modelMapper.map(positionTrackerDTO, PositionTracker.class));

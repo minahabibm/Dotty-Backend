@@ -16,13 +16,14 @@ public class ConcurrentMarketDataFunnel {
 
     @Async
     void processTickerTechnicalAnalysisUpdates(TechnicalIndicatorResponse technicalIndicatorResponse){
-        if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && technicalIndicatorResponse.getValues().size() >= 1) {
+        if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty()) {
             technicalIndicatorResponse.getValues().stream().forEach( tIRespVals ->
                     {
                         log.info("symbol: {}, RSI: {}, Time: {}, Candle Stick: open: {}, close: {}, high: {}, low: {}",
                                 technicalIndicatorResponse.getMeta().getSymbol(), tIRespVals.getRsi(), tIRespVals.getDatetime(), tIRespVals.getOpen(), tIRespVals.getClose(), tIRespVals.getHigh(), tIRespVals.getLow());
 
-//                        tickerMarketDataService.startTrackingForTrade(technicalIndicatorResponse.getMeta(), technicalIndicatorResponse.getMeta().getIndicator(), tIRespVals);
+                        tickerMarketDataService.startOrUpdateTrackingForTrade(technicalIndicatorResponse.getMeta(), technicalIndicatorResponse.getMeta().getIndicator(), tIRespVals);
+//                        tickerMarketDataService.stopTrackingForTrade(technicalIndicatorResponse.getMeta().getSymbol());
                     }
             );
 

@@ -8,6 +8,7 @@ public interface PositionTrackerService {
 
     List<PositionTrackerDTO> getPositionTrackers();
     PositionTrackerDTO getPositionTracker(Long Id);
+    PositionTrackerDTO getTickerActivePositionTracker(String symbol);
     Long insertPositionTracker(PositionTrackerDTO positionTrackerDTO);
     Long updatePositionTracker(PositionTrackerDTO positionTrackerDTO);
     String deletePositionTracker();

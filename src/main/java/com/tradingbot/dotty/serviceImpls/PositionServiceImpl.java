@@ -23,15 +23,15 @@ public class PositionServiceImpl implements PositionService {
     private ModelMapper modelMapper;
 
     @Override
-    public List<PositionDTO> getPosition() {
+    public List<PositionDTO> getPositions() {
         log.info("Getting Tickers Position");
         return positionRepository.findAll().stream().map(position -> modelMapper.map(position, PositionDTO.class)).collect(Collectors.toList());
     }
 
     @Override
-    public List<PositionDTO> getActivePositions(String symbol) {
+    public List<PositionDTO> getSortedActiveTickerPositions(String symbol, Long positionTrackerID) {
         log.info("Getting Active Ticker {} Positions", symbol);
-        return positionRepository.findAllBySymbolAndPositionTracker_ActiveTrue(symbol).stream().map(position -> modelMapper.map(position, PositionDTO.class)).collect(Collectors.toList());
+        return positionRepository.findBySymbolAndPositionTracker_PositionTrackerIdOrderByIntervalsDesc(symbol, positionTrackerID).stream().map(position -> modelMapper.map(position, PositionDTO.class)).collect(Collectors.toList());
     }
 
     @Override
@@ -39,7 +39,7 @@ public class PositionServiceImpl implements PositionService {
         log.info("Inserting tickers position");
         List<Position> tickersPositionList = positions.stream().map(positionDTO -> modelMapper.map(positionDTO, Position.class)).collect(Collectors.toList());
         List<Position> tickersPositionsList = positionRepository.saveAll(tickersPositionList);
-        return tickersPositionsList.stream().map(tickersPosition -> tickersPosition.getPositionId()).collect(Collectors.toList());
+        return tickersPositionsList.stream().map(Position::getPositionId).collect(Collectors.toList());
     }
 
     @Override

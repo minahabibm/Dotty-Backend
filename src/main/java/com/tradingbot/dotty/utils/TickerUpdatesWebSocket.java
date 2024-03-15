@@ -3,8 +3,6 @@ package com.tradingbot.dotty.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tradingbot.dotty.models.dto.TickersUpdateWSMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
@@ -69,10 +67,10 @@ public class TickerUpdatesWebSocket {
                     return false;
                 }
             };
-            session = client.doHandshake(handler, TickerTradesURI.toString()).get();
+            session = client.execute(handler, TickerTradesURI.toString()).get();
         } else if(!session.isOpen()) {
             log.info("WebSocket Session Re-initialization");
-            session = client.doHandshake(handler, TickerTradesURI.toString()).get();
+            session = client.execute(handler, TickerTradesURI.toString()).get();
         }
         return session;
     }

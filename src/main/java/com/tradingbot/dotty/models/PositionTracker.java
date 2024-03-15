@@ -14,6 +14,9 @@ public class PositionTracker {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long positionTrackerId;
 
+    @Column(name="symbol")
+    private String symbol;
+
     @Column(name="active")
     private Boolean active;
 

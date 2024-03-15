@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class PositionTrackerDTO {
 
     private Long positionTrackerID;
+    private String symbol;
     private Boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

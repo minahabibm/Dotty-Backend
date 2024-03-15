@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -44,8 +43,8 @@ public class ScheduledTasks {
 
     @Scheduled(fixedRate = 1000000)
     public void scheduledTasks() {
-        utils.stockScreenerUpdate();
-        utils.tickersTechnicalAnalysis();
+//        utils.stockScreenerUpdate();
+//        utils.tickersTechnicalAnalysis();
 //        utils.subscribeToTickersTradesUpdate("IWM");
     }
 

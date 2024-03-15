@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface PositionService {
 
-    List<PositionDTO> getPosition();
-    List<PositionDTO> getActivePositions(String symbol);
+    List<PositionDTO> getPositions();
+    List<PositionDTO> getSortedActiveTickerPositions(String symbol, Long positionTrackerID);
     List<Long> insertPositions(List<PositionDTO> positionDTOList);
     Long insertPosition(PositionDTO positionDTO);
     Long updatePosition(PositionDTO positionDTO);
