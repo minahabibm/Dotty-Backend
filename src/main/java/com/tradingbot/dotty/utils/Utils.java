@@ -81,7 +81,7 @@ public class Utils {
         LocalDateTime currDateTime = LocalDateTime.now();
         LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), currDateTime.getMinute(),00);
 
-        LocalDateTime dateTime = LocalDateTime.of(2024,03,14, 15,45,10);
+        LocalDateTime dateTime = LocalDateTime.of(2024,03,15, 9,30,00);
 
         for(int i=0; i<tickersTradeUpdates.size(); i++){
             marketDataFunnel.processTickerTechnicalAnalysisUpdates(apiRequests.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), dateTime));

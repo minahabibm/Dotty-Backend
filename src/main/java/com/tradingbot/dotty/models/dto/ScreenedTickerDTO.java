@@ -20,5 +20,6 @@ public class ScreenedTickerDTO {
     private String exchangeShortName;
     private Float beta;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
 }

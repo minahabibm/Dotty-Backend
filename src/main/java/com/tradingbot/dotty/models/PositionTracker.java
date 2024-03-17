@@ -17,6 +17,9 @@ public class PositionTracker {
     @Column(name="symbol")
     private String symbol;
 
+    @Column(name="typeOfTrade")
+    private String typeOfTrade;
+
     @Column(name="active")
     private Boolean active;
 

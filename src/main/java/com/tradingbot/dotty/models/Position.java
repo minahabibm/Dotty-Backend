@@ -1,12 +1,8 @@
 package com.tradingbot.dotty.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import java.time.LocalDateTime;
 
@@ -45,11 +41,8 @@ public class Position {
     @Column(name="volume")
     private Long volume;
 
-    @Column(name="typeOfTrade")
-    private String typeOfTrade;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "positionTrackerID")
+    @JoinColumn(name = "positionTrackerId")
     private PositionTracker positionTracker;
 
     @CreationTimestamp

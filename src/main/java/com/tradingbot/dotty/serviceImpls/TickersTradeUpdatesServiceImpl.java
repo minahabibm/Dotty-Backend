@@ -6,11 +6,13 @@ import com.tradingbot.dotty.repositories.TickersTradeUpdatesRepository;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -55,7 +57,17 @@ public class TickersTradeUpdatesServiceImpl implements TickersTradeUpdatesServic
     @Override
     public String insertTickersTradeUpdates(List<TickersTradeUpdates> tickersTradeUpdates) {
         log.info("Inserting Tickers Trades Updates");
-        List<TickersTradeUpdates> screenedTickersList = tickersTradeUpdatesRepository.saveAll(tickersTradeUpdates);
+        List<TickersTradeUpdates> tickersTradeUpdatesList = tickersTradeUpdates.stream()
+                .map(tickersTradeUpdate -> {
+                    Optional<TickersTradeUpdates> ticker = tickersTradeUpdatesRepository.findBySymbol(tickersTradeUpdate.getSymbol());
+                    if(ticker.isPresent()) {
+                        log.info("Updating existing Tickers Trades Update");
+                        BeanUtils.copyProperties(ticker.get(), tickersTradeUpdate,"updatedAt");
+                    }
+                    return tickersTradeUpdate;
+                })
+                .collect(Collectors.toList());
+        List<TickersTradeUpdates> screenedTickersList = tickersTradeUpdatesRepository.saveAll(tickersTradeUpdatesList);
         return String.valueOf(screenedTickersList.size());
     }
 

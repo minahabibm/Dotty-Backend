@@ -11,8 +11,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.concurrent.*;
 
 
-// TODO Exceptions
-// TODO Application restart
 @Slf4j(topic = "Dotty_Scheduler")
 @Service
 public class ScheduledTasks {
@@ -20,13 +18,13 @@ public class ScheduledTasks {
     @Autowired
     private Utils utils;
 
-    @Scheduled(cron = "0 42 00 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    @Scheduled(cron = "0 56 20 * * MON,TUE,WED,THU,FRI,SAT,SUN")
     public void stockScreener() {
         log.info("Scheduled Stock Screening at {}", LocalDateTime.now());
         utils.stockScreenerUpdate();
     }
 
-    @Scheduled(cron = "0 43 00 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    @Scheduled(cron = "0 57 20 * * MON,TUE,WED,THU,FRI,SAT,SUN")
     public void tickerTechnicalAnalysis() {
         log.info("Scheduled ticker Technical Analysis polling start at {}", LocalDateTime.now());
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);

@@ -1,12 +1,9 @@
 package com.tradingbot.dotty.models.dto;
 
-import com.tradingbot.dotty.models.PositionTracker;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -26,7 +23,6 @@ public class PositionDTO {
     private String low;
     private String close;
     private Long volume;
-    private String typeOfTrade;
     private PositionTrackerDTO positionTrackerDTO;
     private LocalDateTime createdOn;
 

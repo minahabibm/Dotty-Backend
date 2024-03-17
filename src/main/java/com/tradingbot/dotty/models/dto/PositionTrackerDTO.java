@@ -13,8 +13,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PositionTrackerDTO {
 
-    private Long positionTrackerID;
+    private Long positionTrackerId;
     private String symbol;
+    private String typeOfTrade;
     private Boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
