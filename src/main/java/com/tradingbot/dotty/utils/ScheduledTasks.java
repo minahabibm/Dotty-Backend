@@ -11,7 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.concurrent.*;
 
 
-@Slf4j(topic = "Dotty_Scheduler")
+@Slf4j
 @Service
 public class ScheduledTasks {
 
