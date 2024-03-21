@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PositionDTO {
 
-    private long positionId;
+    private Long positionId;
     private String symbol;
     private String tai;
     private String taiValue;

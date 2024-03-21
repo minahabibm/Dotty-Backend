@@ -1,5 +1,6 @@
 package com.tradingbot.dotty.models.dto;
 
+import com.tradingbot.dotty.models.PositionTracker;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,14 +12,15 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScreenedTickerDTO {
+public class OrdersDTO {
 
-    private Long screenedTickerId;
-    private String name;
+    private Long orderTickerId;
     private String symbol;
-    private String sector;
-    private String exchangeShortName;
-    private Float beta;
+    private String tradeType;
+    private Long quantity;
+    private Float entryPrice;
+    private Boolean active;
+    private PositionTracker positionTracker;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

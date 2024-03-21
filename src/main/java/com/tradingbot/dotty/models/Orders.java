@@ -13,26 +13,30 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScreenedTicker {
+public class Orders {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long screenedTickerId;
-
-    @Column(name="name")
-    private String name;
+    private Long orderTickerId;
 
     @Column(name="symbol")
     private String symbol;
 
-    @Column(name="sector")
-    private String sector;
+    @Column(name="tradeType")
+    private String tradeType;
 
-    @Column(name="exchangeShortName")
-    private String exchangeShortName;
+    @Column(name="quantity")
+    private Long quantity;
 
-    @Column(name="beta")
-    private float beta;
+    @Column(name="entryPrice")
+    private Float entryPrice;
+
+    @Column(name="active")
+    private Boolean active;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "positionTrackerId")
+    private PositionTracker positionTracker;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

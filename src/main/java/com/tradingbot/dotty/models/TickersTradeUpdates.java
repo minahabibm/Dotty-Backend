@@ -20,7 +20,7 @@ public class TickersTradeUpdates {
     @Id
     @GeneratedValue(generator = "tickersTradeUpdatesSeq")
     @SequenceGenerator(name = "tickersTradeUpdates", sequenceName = "tickersTradeUpdatesSeq")
-    private long tickerTradesId;
+    private Long tickerTradesId;
 
     @Column(name="name")
     private String name;

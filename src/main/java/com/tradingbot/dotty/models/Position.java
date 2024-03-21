@@ -12,7 +12,7 @@ public class Position {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long positionId;
+    private Long positionId;
 
     @Column(name="symbol")
     private String symbol;
