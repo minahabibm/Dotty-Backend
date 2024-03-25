@@ -73,8 +73,8 @@ public class ScreenedTickersServiceImpl implements ScreenedTickersService {
     public String updateScreenedTicker(ScreenedTickerDTO screenedTickerDTO) {
         log.info("Updating Screened Ticker ");
         Optional<ScreenedTicker> ticker = screenedTickersRepository.findBySymbol(screenedTickerDTO.getSymbol());
-        ticker.ifPresent(screenedTicker -> BeanUtils.copyProperties(screenedTicker, screenedTickerDTO, "updatedAt"));
-        ScreenedTicker screenedTickerUpdated = screenedTickersRepository.save(modelMapper.map(screenedTickerDTO, ScreenedTicker.class));
+        ticker.ifPresent(screenedTicker -> BeanUtils.copyProperties(screenedTickerDTO, screenedTicker, "updatedAt"));
+        ScreenedTicker screenedTickerUpdated = screenedTickersRepository.save(ticker.get());
         return String.valueOf(screenedTickerUpdated);
     }
 
