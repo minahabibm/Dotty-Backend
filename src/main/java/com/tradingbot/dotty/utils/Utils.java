@@ -11,14 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,9 +23,6 @@ public class Utils {
 
     @Autowired
     private ExternalApiRequests apiRequests;
-
-    @Autowired
-    private TickerUpdatesWebSocket tickerUpdatesWebSocket;
 
     @Autowired
     private ScreenedTickersService screenedTickersService;
@@ -75,48 +68,24 @@ public class Utils {
 
         // Get Ticker Trades Updates
         log.info("Getting Sorted Tickers for Trade Updates");
-        List<TickersTradeUpdatesDTO> tickersTradeUpdates = tickersTradeUpdatesService.getSortedTickersTradeUpdates(10);
+        List<TickersTradeUpdatesDTO> tickersTradeUpdates = tickersTradeUpdatesService.getSortedTickersTradeUpdates(Constants.SCREENED_TICKERS_NUMBER_OF_SYMBOLS);
 
         // concurrent distribution for each ticker with a separate Thread
         LocalDateTime currDateTime = LocalDateTime.now();
-        LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), currDateTime.getMinute(),00);
+        LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), currDateTime.getMinute(),0);
 
-        LocalDateTime dateTime = LocalDateTime.of(2024,03,15, 9,30,00);
+        LocalDateTime dateTime = LocalDateTime.of(2024,3,15, 9,30,0);
 
         for(int i=0; i<tickersTradeUpdates.size(); i++){
             marketDataFunnel.processTickerTechnicalAnalysisUpdates(apiRequests.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), dateTime));
-            if(i==Constants.MAX_TA_API_REQUESTS)
+            if(i==Constants.TA_API_MAX_REQUESTS_PER_MIN)
                 try {
-                    Thread.sleep(60000);
+                    Thread.sleep(Constants.TA_API_MAX_REQUESTS_REACHED_WAIT_TIME);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
         }
-
     }
-
-    public void subscribeToTickersTradesUpdate(String ticker) {
-        try {
-            log.info("Trades Update ::Subscribe Ticker:: {}", ticker);
-            WebSocketSession tickerUpdatesWSSession = tickerUpdatesWebSocket.getTickerUpdatesWebSocket();
-            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"subscribe\",\"symbol\":\"" + ticker + "\"}"));
-        } catch (ExecutionException | InterruptedException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void unsubscribeToTickersTradesUpdate(String ticker) {
-        try {
-            log.info("Trades Update ::Unsubscribe Ticker:: {}", ticker);
-            WebSocketSession tickerUpdatesWSSession = tickerUpdatesWebSocket.getTickerUpdatesWebSocket();
-            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"unsubscribe\",\"symbol\":\"" + ticker + "\"}"));
-//            tickerUpdatesWSSession.close();
-//            System.out.println(tickerUpdatesWSSession.isOpen());
-        } catch (ExecutionException | InterruptedException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
 
 //    public void sortScreenedTickers(){

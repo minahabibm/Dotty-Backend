@@ -34,10 +34,10 @@ public class OrdersServiceImpl implements OrdersService {
     public OrdersDTO getActiveTickerOrder(String symbol) {
         log.info("Getting Active Ticker {} Order", symbol);
         Optional<Orders> order = ordersRepository.findBySymbolAndActiveTrue(symbol);
+        OrdersDTO ordersDTO = null;
         if(order.isPresent())
-            return modelMapper.map(order.get(), OrdersDTO.class);
-        else
-            throw new RuntimeException();
+            ordersDTO = modelMapper.map(order.get(), OrdersDTO.class);
+        return ordersDTO;
     }
 
     @Override

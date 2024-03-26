@@ -1,28 +1,13 @@
 package com.tradingbot.dotty.utils;
 
-import com.tradingbot.dotty.models.ScreenedTicker;
-import com.tradingbot.dotty.models.TickersTradeUpdates;
-import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
-import com.tradingbot.dotty.service.ScreenedTickersService;
-import com.tradingbot.dotty.service.TickersTradeUpdatesService;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Slf4j(topic = "Dotty_Ticker_External_API_Requests")
 @Service
@@ -55,7 +40,7 @@ public class ExternalApiRequests {
 
 //        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(500 * 1024)).build();
         WebClient webClient = WebClient.builder().baseUrl(baseUrlStockScreenerAPI).build();               //.exchangeStrategies(exchangeStrategies).build();
-        ScreenedTickersResponse[] screenedTickersResponse = webClient.get()
+        return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .queryParam("country", country)
                         .queryParam("marketCapMoreThan", marketCapMoreThan)
@@ -69,34 +54,31 @@ public class ExternalApiRequests {
                 .retrieve()
                 .bodyToMono(ScreenedTickersResponse[].class)
                 .block();
-//                .onStatus()
-//                .doOnError();
-//                .doOnNext(x -> System.out.println(x[0]))
-//                .subscribe();
-
-        return screenedTickersResponse;
     }
 
     public TechnicalIndicatorResponse technicalIndicatorRetrieve(String symbol, LocalDateTime localDateTime) {
         log.info("Technical Indicator ::GET Request:: for ticker {}, start time {}", symbol, localDateTime);
 
         WebClient webClient = WebClient.builder().baseUrl(baseUrlTechnicalIndicatorAPI+"rsi").build();
-        TechnicalIndicatorResponse technicalIndicatorResponse = webClient.get()
+        return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .queryParam("symbol", symbol)
-                        .queryParam("interval", "5min")
-                        .queryParam("include_ohlc", "true")
+                        .queryParam("interval", Constants.TA_API_PARAMS_INTERVAL)
+                        .queryParam("include_ohlc", Constants.TA_API_PARAMS_INCLUDE_OHLC)
                         .queryParam("start_date", localDateTime)
                         .queryParam("apikey", APIkeyTechnicalIndicatorAPI)
                         .build())
                 .retrieve()
                 .bodyToMono(TechnicalIndicatorResponse.class)
                 .block();
+    }
+//                .onStatus()
+//                .doOnError();
+//                .doOnNext(x -> System.out.println(x[0]))
+//                .subscribe();
+
 //                .bodyToMono(String.class)
 //                .doOnNext(x -> System.out.println(x))
 //                .subscribe();
-
-        return technicalIndicatorResponse;
-    }
 
 }

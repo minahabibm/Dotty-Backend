@@ -27,15 +27,15 @@ public class ScheduledTasks {
     @Scheduled(cron = Constants.TECHNICAL_ANALYSIS_SCHEDULE)
     public void tickerTechnicalAnalysis() {
         log.info("Scheduled ticker Technical Analysis polling start at {}", LocalDateTime.now());
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         Runnable task = () -> utils.tickersTechnicalAnalysis();
-        ScheduledFuture<?> schedulerHandle = executor.scheduleAtFixedRate(task, 0, 10000000, TimeUnit.SECONDS);
+        ScheduledFuture<?> schedulerHandle = executor.scheduleAtFixedRate(task, 0, Constants.TA_API_POLLING_RATE, TimeUnit.SECONDS);
         Runnable canceller = () -> {
-            log.info("Halt executing " + LocalDateTime.now());
+            log.info("Halt executing at" + LocalDateTime.now());
             schedulerHandle.cancel(false);
             executor.shutdown(); // <---- Now the call is within the `canceller` Runnable.
         };
-        long seconds = ChronoUnit.SECONDS.between(LocalTime.now(),LocalTime.of(23,36));
+        long seconds = ChronoUnit.SECONDS.between(LocalTime.now(), LocalTime.of(Constants.TA_API_STOP_POLLING_HOUR, Constants.TA_API_STOP_POLLING_MINUTE));
         executor.schedule(canceller, seconds, TimeUnit.SECONDS);
     }
 
