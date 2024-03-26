@@ -85,7 +85,7 @@ public class Utils {
 
         for(int i=0; i<tickersTradeUpdates.size(); i++){
             marketDataFunnel.processTickerTechnicalAnalysisUpdates(apiRequests.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), dateTime));
-            if(i==7)
+            if(i==Constants.MAX_TA_API_REQUESTS)
                 try {
                     Thread.sleep(60000);
                 } catch (InterruptedException e) {

@@ -2,7 +2,9 @@ package com.tradingbot.dotty.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tradingbot.dotty.models.dto.TickersUpdateWSMessage;
+import com.tradingbot.dotty.service.TickerMarketDataService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
@@ -20,6 +22,9 @@ import java.util.concurrent.ExecutionException;
 @Slf4j(topic = "Dotty_Ticker_Trades_WebSockets")
 @Service
 public class TickerUpdatesWebSocket {
+
+    @Autowired
+    TickerMarketDataService  tickerMarketDataService;
 
     @Value("${tickers-trades-api.websocket-base-url}")
     private String baseUrlTickerTradesWS;
@@ -48,8 +53,10 @@ public class TickerUpdatesWebSocket {
                     TickersUpdateWSMessage messageContent = objectMapper.readValue(message.getPayload().toString(), TickersUpdateWSMessage.class);
 
                     log.info("type: {}", messageContent.getType());
-                    if(messageContent.getData() != null)
+                    if(messageContent.getData() != null) {
+                        tickerMarketDataService.monitorTickerTradesUpdates();
                         messageContent.getData().stream().forEach(x -> log.info("{} {} {} {}", x.getS(), x.getP(), x.getV(), Instant.ofEpochMilli(x.getT()).atZone(ZoneId.systemDefault()).toLocalDateTime())); // ZoneId.of("America/New_York")
+                    }
                 }
 
                 @Override

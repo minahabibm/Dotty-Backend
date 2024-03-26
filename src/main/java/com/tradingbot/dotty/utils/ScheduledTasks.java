@@ -18,13 +18,13 @@ public class ScheduledTasks {
     @Autowired
     private Utils utils;
 
-    @Scheduled(cron = "0 56 20 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    @Scheduled(cron = Constants.STOCK_SCREENER_SCHEDULE)
     public void stockScreener() {
         log.info("Scheduled Stock Screening at {}", LocalDateTime.now());
         utils.stockScreenerUpdate();
     }
 
-    @Scheduled(cron = "0 57 20 * * MON,TUE,WED,THU,FRI,SAT,SUN")
+    @Scheduled(cron = Constants.TECHNICAL_ANALYSIS_SCHEDULE)
     public void tickerTechnicalAnalysis() {
         log.info("Scheduled ticker Technical Analysis polling start at {}", LocalDateTime.now());
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
