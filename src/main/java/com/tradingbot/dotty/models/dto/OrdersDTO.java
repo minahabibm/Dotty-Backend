@@ -1,6 +1,5 @@
 package com.tradingbot.dotty.models.dto;
 
-import com.tradingbot.dotty.models.PositionTracker;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +19,7 @@ public class OrdersDTO {
     private Long quantity;
     private Float entryPrice;
     private Boolean active;
-    private PositionTracker positionTracker;
+    private PositionTrackerDTO positionTrackerDTO;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

@@ -1,4 +1,4 @@
-package com.TradingBot.Dotty;
+package com.tradingbot.dotty;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

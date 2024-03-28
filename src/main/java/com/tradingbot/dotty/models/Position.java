@@ -21,22 +21,22 @@ public class Position {
     private String tai;
 
     @Column(name="taiValue")
-    private String taiValue;
+    private Integer taiValue;
 
     @Column(name="intervals")
     private LocalDateTime intervals;
 
     @Column(name="open")
-    private String open;
+    private Float open;
 
     @Column(name="high")
-    private String high;
+    private Float high;
 
     @Column(name="low")
-    private String low;
+    private Float low;
 
     @Column(name="close")
-    private String close;
+    private Float close;
 
     @Column(name="volume")
     private Long volume;

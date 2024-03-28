@@ -16,12 +16,12 @@ public class PositionDTO {
     private Long positionId;
     private String symbol;
     private String tai;
-    private String taiValue;
+    private Integer taiValue;
     private LocalDateTime intervals;
-    private String open;
-    private String high;
-    private String low;
-    private String close;
+    private Float open;
+    private Float high;
+    private Float low;
+    private Float close;
     private Long volume;
     private PositionTrackerDTO positionTrackerDTO;
     private LocalDateTime createdOn;
