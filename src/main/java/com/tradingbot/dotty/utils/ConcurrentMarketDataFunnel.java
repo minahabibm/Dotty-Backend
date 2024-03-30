@@ -44,7 +44,7 @@ public class ConcurrentMarketDataFunnel {
     @Async("taskExecutorForHeavyTasks")
     void processTickerMarketTradeUpdates(List<TickersUpdateWSMessage.TradeDetails> data) throws InterruptedException {
         log.info("Market Trades Update.");
-        tickerMarketTradeService.monitorTickerTradesUpdates();
+        tickerMarketTradeService.monitorTickerTradesUpdates(data);
         data.forEach(x -> log.info("{} {} {} {}", x.getS(), x.getP(), x.getV(), Instant.ofEpochMilli(x.getT()).atZone(ZoneId.systemDefault()).toLocalDateTime())); // ZoneId.of("America/New_York")
 
         //catch (InterruptedException e)
