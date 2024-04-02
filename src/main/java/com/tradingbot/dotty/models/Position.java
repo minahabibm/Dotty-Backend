@@ -21,7 +21,7 @@ public class Position {
     private String tai;
 
     @Column(name="taiValue")
-    private Integer taiValue;
+    private Float taiValue;
 
     @Column(name="intervals")
     private LocalDateTime intervals;
@@ -42,7 +42,7 @@ public class Position {
     private Long volume;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "positionTrackerId")
+    @JoinColumn(name = "positionTracker")
     private PositionTracker positionTracker;
 
     @CreationTimestamp

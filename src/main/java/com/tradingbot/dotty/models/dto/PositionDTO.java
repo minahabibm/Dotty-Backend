@@ -16,7 +16,7 @@ public class PositionDTO {
     private Long positionId;
     private String symbol;
     private String tai;
-    private Integer taiValue;
+    private Float taiValue;
     private LocalDateTime intervals;
     private Float open;
     private Float high;
