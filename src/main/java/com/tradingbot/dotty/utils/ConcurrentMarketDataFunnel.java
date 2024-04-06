@@ -24,7 +24,7 @@ public class ConcurrentMarketDataFunnel {
     @Autowired
     private TickerMarketTradeService tickerMarketTradeService;
 
-    @Async
+//    @Async
     void processTickerTechnicalAnalysisUpdates(TechnicalIndicatorResponse technicalIndicatorResponse){
         log.info("Technical Analysis Polling.");
         if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty()) {

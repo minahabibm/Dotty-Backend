@@ -18,6 +18,7 @@ public class OrdersDTO {
     private String tradeType;
     private Long quantity;
     private Float entryPrice;
+    private LocalDateTime entryTime;
     private Boolean active;
     private PositionTrackerDTO positionTrackerDTO;
     private LocalDateTime createdAt;

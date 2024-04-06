@@ -74,7 +74,7 @@ public class Utils {
         LocalDateTime currDateTime = LocalDateTime.now();
         LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), currDateTime.getMinute(),0);
 
-        LocalDateTime dateTime = LocalDateTime.of(2024,3,15, 9,30,0);
+        LocalDateTime dateTime = LocalDateTime.of(2024,1,1, 9,30,0);
 
         for(int i=0; i<tickersTradeUpdates.size(); i++){
             marketDataFunnel.processTickerTechnicalAnalysisUpdates(apiRequests.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), dateTime));
@@ -87,6 +87,13 @@ public class Utils {
         }
     }
 
+    public static double calculatePercentToDecimal(double percentRate) {
+        return percentRate / 100;
+    }
+
+    public static double getMaximumPriceAction(Float price) {
+        return price * calculatePercentToDecimal(Constants.MAXIMUM_PRICE_ACTION_EXIT);
+    }
 
 //    public void sortScreenedTickers(){
 //        List<ScreenedTickerDTO> screenedTickerDTOS = screenedTickersService.getScreenedTickers();

@@ -31,6 +31,9 @@ public class Orders {
     @Column(name="entryPrice")
     private Float entryPrice;
 
+    @Column(name="entryTime")
+    private LocalDateTime entryTime;
+
     @Column(name="active")
     private Boolean active;
 

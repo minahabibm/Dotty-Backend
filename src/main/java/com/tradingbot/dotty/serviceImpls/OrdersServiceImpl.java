@@ -31,6 +31,14 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    public List<OrdersDTO> getActiveTickerOrders() {
+        log.info("Getting Active Tickers Orders.");
+        List<OrdersDTO> ordersDTOList = ordersRepository.findAllByActiveTrue().stream().map(order -> modelMapper.map(order, OrdersDTO.class)).collect(Collectors.toList());
+        log.info("Number of Ticker with Active Orders, {}.", ordersDTOList.size());
+        return ordersDTOList;
+    }
+
+    @Override
     public List<OrdersDTO> getOrdersByPositionTracker(Long positionTrackerId) {
         log.info("Getting Tickers Orders By Position Tracker Id {}", positionTrackerId);
         return ordersRepository.findByPositionTracker_PositionTrackerIdOrderByCreatedAtAsc(positionTrackerId).stream().map(order -> modelMapper.map(order, OrdersDTO.class)).collect(Collectors.toList());

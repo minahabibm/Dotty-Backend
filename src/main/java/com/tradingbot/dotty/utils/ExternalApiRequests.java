@@ -5,6 +5,7 @@ import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
@@ -59,7 +60,9 @@ public class ExternalApiRequests {
     public TechnicalIndicatorResponse technicalIndicatorRetrieve(String symbol, LocalDateTime localDateTime) {
         log.info("Technical Indicator ::GET Request:: for ticker {}, start time {}", symbol, localDateTime);
 
-        WebClient webClient = WebClient.builder().baseUrl(baseUrlTechnicalIndicatorAPI+"rsi").build();
+        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(1000 * 1024)).build();
+
+        WebClient webClient = WebClient.builder().baseUrl(baseUrlTechnicalIndicatorAPI+"rsi").exchangeStrategies(exchangeStrategies).build();// .build();
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .queryParam("symbol", symbol)

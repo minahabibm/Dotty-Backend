@@ -1,5 +1,8 @@
 package com.tradingbot.dotty.utils;
 
+import com.tradingbot.dotty.service.ScreenedTickersService;
+import com.tradingbot.dotty.service.TickerMarketTradeService;
+import com.tradingbot.dotty.service.TickersTradeUpdatesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,6 +20,14 @@ public class ScheduledTasks {
 
     @Autowired
     private Utils utils;
+
+    @Autowired
+    private ExternalApiRequests apiRequests;
+
+    @Autowired
+    private ConcurrentMarketDataFunnel marketDataFunnel;
+
+
 
     @Scheduled(cron = Constants.STOCK_SCREENER_SCHEDULE)
     public void stockScreener() {
@@ -41,9 +52,9 @@ public class ScheduledTasks {
 
     @Scheduled(fixedRate = 1000000)
     public void scheduledTasks() {
-//        utils.stockScreenerUpdate();
-//        utils.tickersTechnicalAnalysis();
-//        utils.subscribeToTickersTradesUpdate("IWM");
+        utils.stockScreenerUpdate();
+        utils.tickersTechnicalAnalysis();
+
     }
 
 }

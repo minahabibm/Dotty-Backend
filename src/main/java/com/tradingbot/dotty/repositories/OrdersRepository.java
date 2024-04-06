@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface OrdersRepository extends JpaRepository<Orders, Long> {
 
     List<Orders> findByPositionTracker_PositionTrackerIdOrderByCreatedAtAsc(Long positionTrackerId);
+    List<Orders> findAllByActiveTrue();
     Optional<Orders> findBySymbolAndActiveTrue(String symbol);
 
 }
