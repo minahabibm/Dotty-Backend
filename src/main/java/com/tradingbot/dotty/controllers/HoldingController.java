@@ -1,7 +1,6 @@
 package com.tradingbot.dotty.controllers;
 
 import com.tradingbot.dotty.service.HoldingService;
-import com.tradingbot.dotty.service.TickerMarketTradeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -2,7 +2,6 @@ package com.tradingbot.dotty.serviceImpls;
 
 import com.tradingbot.dotty.models.Holding;
 import com.tradingbot.dotty.models.dto.HoldingDTO;
-import com.tradingbot.dotty.models.dto.OrdersDTO;
 import com.tradingbot.dotty.repositories.HoldingRepository;
 import com.tradingbot.dotty.service.HoldingService;
 import com.tradingbot.dotty.utils.TradeDetails;
@@ -35,7 +34,7 @@ public class HoldingServiceImpl implements HoldingService {
     @Override
     public List<HoldingDTO> compareHoldings() {
         log.info("Comparing Holdings.");
-        Integer correct=0, other=0, incorrect=0;
+        int correct=0, other=0, incorrect=0;
         List<HoldingDTO> holdingsDTO = getHoldings();
         for(HoldingDTO holdingDTO : holdingsDTO) {
             if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERSOLD.orderType))
@@ -46,7 +45,7 @@ public class HoldingServiceImpl implements HoldingService {
                 if (holdingDTO.getEntryPrice() - holdingDTO.getExitPrice() > 0) correct += 1;
                 else if (holdingDTO.getEntryPrice() - holdingDTO.getExitPrice() == 0) other += 1;
                 else incorrect +=1;
-        };
+        }
         log.info("Correct {} , Incorrect {}, Other {}", correct, incorrect, other);
 //        List<OrdersDTO> activeOrdersDTO = ordersService.getOrders().stream().filter(ordersDTO -> ordersDTO.getActive()).collect(Collectors.toList());
 //        activeOrdersDTO.stream().forEach(System.out::println);
