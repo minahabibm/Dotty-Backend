@@ -34,7 +34,7 @@ public class ConcurrentMarketDataFunnel {
             Collections.reverse(technicalIndicatorResponseVal);  // TODO For stored Intervals Only
             technicalIndicatorResponseVal.forEach(
                     tIRespVals -> {
-                        log.info("symbol: {}, RSI: {}, Time: {}, Candle Stick: open: {}, close: {}, high: {}, low: {}", technicalIndicatorResponse.getMeta().getSymbol(), tIRespVals.getRsi(), tIRespVals.getDatetime(), tIRespVals.getOpen(), tIRespVals.getClose(), tIRespVals.getHigh(), tIRespVals.getLow());
+                        log.debug("symbol: {}, RSI: {}, Time: {}, Candle Stick: open: {}, close: {}, high: {}, low: {}", technicalIndicatorResponse.getMeta().getSymbol(), tIRespVals.getRsi(), tIRespVals.getDatetime(), tIRespVals.getOpen(), tIRespVals.getClose(), tIRespVals.getHigh(), tIRespVals.getLow());
                         // Thread process will determine position entry\exit -> quote&trade and price updates sub/unsub once in trade.
                         tickerMarketDataService.positionTracker(technicalIndicatorResponse.getMeta().getSymbol(), technicalIndicatorResponse.getMeta().getIndicator(), tIRespVals);
             });
@@ -47,7 +47,7 @@ public class ConcurrentMarketDataFunnel {
     void processTickerMarketTradeUpdates(List<TickersUpdateWSMessage.TradeDetails> data) throws InterruptedException {
         log.info(MARKET_DATA_FUNNEL,"Market Trades Update");
         tickerMarketTradeService.monitorTickerTradesUpdates(data);
-        data.forEach(x -> log.info("{} {} {} {}", x.getS(), x.getP(), x.getV(), Instant.ofEpochMilli(x.getT()).atZone(ZoneId.systemDefault()).toLocalDateTime())); // ZoneId.of("America/New_York")
+        data.forEach(x -> log.debug("{} {} {} {}", x.getS(), x.getP(), x.getV(), Instant.ofEpochMilli(x.getT()).atZone(ZoneId.systemDefault()).toLocalDateTime())); // ZoneId.of("America/New_York")
 
         //catch (InterruptedException e)
         //catch (RejectedExecutionException e)

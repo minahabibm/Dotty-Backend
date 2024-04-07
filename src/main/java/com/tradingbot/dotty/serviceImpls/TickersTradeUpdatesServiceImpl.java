@@ -28,13 +28,13 @@ public class TickersTradeUpdatesServiceImpl implements TickersTradeUpdatesServic
 
     @Override
     public List<TickersTradeUpdatesDTO> getTickersTradeUpdates() {
-        log.info(ENTITIES_READ_OPERATION, "TickersTradeUpdates");
+        log.trace(ENTITIES_READ_OPERATION, "TickersTradeUpdates");
         return tickersTradeUpdatesRepository.findAll().stream().map(tickersTradeUpdates -> modelMapper.map(tickersTradeUpdates, TickersTradeUpdatesDTO.class)).collect(Collectors.toList());
     }
 
     @Override
     public List<TickersTradeUpdatesDTO> getSortedTickersTradeUpdates(int numberOfTickers) {
-        log.info(ENTITIES_READ_OPERATION, "TickersTradeUpdates");
+        log.trace(ENTITIES_READ_OPERATION, "TickersTradeUpdates");
         List<TickersTradeUpdates> tickersTradeUpdates = tickersTradeUpdatesRepository.findAll();
 
         log.info("Sorting Screened Tickers for Sectors and getting the first {}.", numberOfTickers);
@@ -57,7 +57,7 @@ public class TickersTradeUpdatesServiceImpl implements TickersTradeUpdatesServic
 
     @Override
     public String insertTickersTradeUpdates(List<TickersTradeUpdates> tickersTradeUpdates) {
-        log.info(ENTITIES_CREATE_OPERATION, "TickersTradeUpdates");
+        log.trace(ENTITIES_CREATE_OPERATION, "TickersTradeUpdates");
         List<TickersTradeUpdates> tickersTradeUpdatesList = tickersTradeUpdates.stream()
                 .map(tickersTradeUpdate -> {
                     Optional<TickersTradeUpdates> ticker = tickersTradeUpdatesRepository.findBySymbol(tickersTradeUpdate.getSymbol());

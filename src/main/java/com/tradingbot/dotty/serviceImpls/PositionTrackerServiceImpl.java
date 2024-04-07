@@ -26,13 +26,13 @@ public class PositionTrackerServiceImpl implements PositionTrackerService {
 
     @Override
     public List<PositionTrackerDTO> getPositionTrackers() {
-        log.info(ENTITIES_READ_OPERATION, "PositionTracker");
+        log.trace(ENTITIES_READ_OPERATION, "PositionTracker");
         return positionTrackerRepository.findAll().stream().map(positionTracker -> modelMapper.map(positionTracker, PositionTrackerDTO.class)).collect(Collectors.toList());
     }
 
     @Override
     public PositionTrackerDTO getPositionTracker(Long id) {
-        log.info(ENTITY_READ_OPERATION, id, "PositionTracker");
+        log.trace(ENTITY_READ_OPERATION, id, "PositionTracker");
         Optional<PositionTracker> positionTracker = positionTrackerRepository.findById(id);
         if(positionTracker.isPresent())
             return modelMapper.map(positionTracker.get(), PositionTrackerDTO.class);
@@ -42,9 +42,9 @@ public class PositionTrackerServiceImpl implements PositionTrackerService {
 
     @Override
     public PositionTrackerDTO getTickerActivePositionTracker(String symbol) {
-        log.info(ENTITIES_READ_WITH_FILERS_OPERATION, "PositionTracker", "Symbol: "+ symbol+" and Active");
+        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "PositionTracker", "Symbol: "+ symbol+" and Active");
         PositionTracker positionTracker = positionTrackerRepository.findBySymbolAndActiveTrue(symbol);
-        log.info("position tracker {}", positionTracker);
+        log.debug("position tracker {}", positionTracker);
         PositionTrackerDTO positionTrackerDTO = null;
         if(positionTracker != null)
             positionTrackerDTO = modelMapper.map(positionTracker, PositionTrackerDTO.class);
@@ -53,14 +53,14 @@ public class PositionTrackerServiceImpl implements PositionTrackerService {
 
     @Override
     public Long insertPositionTracker(PositionTrackerDTO positionTrackerDTO) {
-        log.info(ENTITY_CREATE_OPERATION, positionTrackerDTO, "PositionTracker");
+        log.trace(ENTITY_CREATE_OPERATION, positionTrackerDTO, "PositionTracker");
         PositionTracker positionTracker = positionTrackerRepository.save(modelMapper.map(positionTrackerDTO, PositionTracker.class));
         return positionTracker.getPositionTrackerId();
     }
 
     @Override
     public Long updatePositionTracker(PositionTrackerDTO positionTrackerDTO) {
-        log.info(ENTITY_UPDATE_OPERATION, positionTrackerDTO.getSymbol(), "PositionTracker");
+        log.trace(ENTITY_UPDATE_OPERATION, positionTrackerDTO.getSymbol(), "PositionTracker");
         PositionTracker positionTracker = positionTrackerRepository.save(modelMapper.map(positionTrackerDTO, PositionTracker.class));
         return positionTracker.getPositionTrackerId();
     }

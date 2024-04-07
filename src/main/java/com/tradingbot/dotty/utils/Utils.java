@@ -39,10 +39,10 @@ public class Utils {
     private ModelMapper modelMapper;
 
     public void stockScreenerUpdate() {
-        log.info(SCREENING_TICKERS);
+        log.debug(SCREENING_TICKERS);
         ScreenedTickersResponse[] screenedTickersResponse = apiRequests.stockScreenerUpdateRetrieve();
         if (screenedTickersResponse != null) {
-            log.info(SCREENED_TICKERS_SAVING, screenedTickersResponse);
+            log.debug(SCREENED_TICKERS_SAVING, screenedTickersResponse);
             screenedTickersService.insertAndUpdateScreenedTickers(Arrays.stream(screenedTickersResponse).map(screenedTicker -> modelMapper.map(screenedTicker, ScreenedTickerDTO.class)).collect(Collectors.toList()));
 
             selectAndSaveScreenedTickers();
@@ -50,26 +50,25 @@ public class Utils {
     }
 
     public void selectAndSaveScreenedTickers(){
-        log.info(SCREENED_TICKERS_PROCESSING);
+        log.debug(SCREENED_TICKERS_PROCESSING);
         List<ScreenedTickerDTO> screenedTickerDTOS = screenedTickersService.getTodayScreenedTickers();
 
-        log.info(SCREENED_TICKERS_FILTERING);
+        log.debug(SCREENED_TICKERS_FILTERING);
         List<ScreenedTicker> screenedTickers = screenedTickerDTOS.stream()
                 .filter(x -> (x.getSector()!=null && (x.getSector().contains("Consumer Cyclical") || x.getSector().contains("Technology") || x.getSector().contains("Communication Services"))))
                 .map(x -> modelMapper.map(x, ScreenedTicker.class))
                 .toList();
 
-        log.info(SCREENED_TICKERS_TO_MARKET_TRADE);
+        log.debug(SCREENED_TICKERS_TO_MARKET_TRADE);
         List<TickersTradeUpdates> tickersTradeUpdates = screenedTickers.stream().map(x -> modelMapper.map(x,TickersTradeUpdates.class)).collect(Collectors.toList());
         tickersTradeUpdatesService.insertTickersTradeUpdates(tickersTradeUpdates);
-        log.info("{}", tickersTradeUpdatesService.getTickersTradeUpdates().size());
     }
 
     public void tickersTechnicalAnalysis() {
-        log.info(TICKER_TECHNICAL_ANALYSIS, LocalDateTime.now());
+        log.debug(TICKER_TECHNICAL_ANALYSIS, LocalDateTime.now());
 
         // Get Ticker Trades Updates
-        log.info(TICKER_TECHNICAL_ANALYSIS_SORTED_TICKERS);
+        log.debug(TICKER_TECHNICAL_ANALYSIS_SORTED_TICKERS);
         List<TickersTradeUpdatesDTO> tickersTradeUpdates = tickersTradeUpdatesService.getSortedTickersTradeUpdates(Constants.SCREENED_TICKERS_NUMBER_OF_SYMBOLS);
 
         // Concurrent distribution for each ticker with a separate thread

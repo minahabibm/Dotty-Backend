@@ -27,13 +27,13 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public List<OrdersDTO> getOrders() {
-        log.info(ENTITIES_READ_OPERATION, "Orders");
+        log.trace(ENTITIES_READ_OPERATION, "Orders");
         return ordersRepository.findAll().stream().map(order -> modelMapper.map(order, OrdersDTO.class)).collect(Collectors.toList());
     }
 
     @Override
     public List<OrdersDTO> getActiveTickerOrders() {
-        log.info(ENTITIES_READ_WITH_FILERS_OPERATION, "Orders", "Active");
+        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "Orders", "Active");
         List<OrdersDTO> ordersDTOList = ordersRepository.findAllByActiveTrue().stream().map(order -> modelMapper.map(order, OrdersDTO.class)).collect(Collectors.toList());
         log.info("Number of Ticker with Active Orders, {}.", ordersDTOList.size());
         return ordersDTOList;
@@ -41,13 +41,13 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public List<OrdersDTO> getOrdersByPositionTracker(Long positionTrackerId) {
-        log.info(ENTITIES_READ_WITH_FILERS_OPERATION, "Orders", "position Tracker Id: "+ positionTrackerId);
+        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "Orders", "position Tracker Id: "+ positionTrackerId);
         return ordersRepository.findByPositionTracker_PositionTrackerIdOrderByCreatedAtAsc(positionTrackerId).stream().map(order -> modelMapper.map(order, OrdersDTO.class)).collect(Collectors.toList());
     }
 
     @Override
     public OrdersDTO getActiveTickerOrder(String symbol) {
-        log.info(ENTITIES_READ_WITH_FILERS_OPERATION, "Orders", "Symbol: "+ symbol +" and Active");
+        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "Orders", "Symbol: "+ symbol +" and Active");
         Optional<Orders> order = ordersRepository.findBySymbolAndActiveTrue(symbol);
         OrdersDTO ordersDTO = null;
         if(order.isPresent())
@@ -62,14 +62,14 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public Long insertOrder(OrdersDTO ordersDTO) {
-        log.info(ENTITY_CREATE_OPERATION, ordersDTO, "Orders");
+        log.trace(ENTITY_CREATE_OPERATION, ordersDTO, "Orders");
         Orders order = ordersRepository.save(modelMapper.map(ordersDTO, Orders.class));
         return order.getOrderTickerId();
     }
 
     @Override
     public Long updateOrder(OrdersDTO ordersDTO) {
-        log.info(ENTITY_UPDATE_OPERATION, ordersDTO.getSymbol(), "Orders");
+        log.trace(ENTITY_UPDATE_OPERATION, ordersDTO.getSymbol(), "Orders");
         if(ordersDTO.getOrderTickerId() == null)
             throw new RuntimeException();
         Optional<Orders> orders = ordersRepository.findById(ordersDTO.getOrderTickerId());

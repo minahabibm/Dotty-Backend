@@ -44,7 +44,7 @@ public class TickerUpdatesWebSocket {
             handler = new WebSocketHandler() {
                 @Override
                 public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-                    log.info(WEBSOCKET_CONNECTION_STARTED, session.getId());
+                    log.debug(WEBSOCKET_CONNECTION_STARTED, session.getId());
                 }
 
                 @Override
@@ -52,7 +52,7 @@ public class TickerUpdatesWebSocket {
                     ObjectMapper objectMapper = new ObjectMapper();
                     TickersUpdateWSMessage messageContent = objectMapper.readValue(message.getPayload().toString(), TickersUpdateWSMessage.class);
 
-                    log.info(WEBSOCKET_MESSAGE_RECEIVED, messageContent.getType());
+                    log.debug(WEBSOCKET_MESSAGE_RECEIVED, messageContent.getType());
                     if(messageContent.getData() != null)
                         concurrentMarketDataFunnel.processTickerMarketTradeUpdates(messageContent.getData());
                 }
@@ -64,7 +64,7 @@ public class TickerUpdatesWebSocket {
 
                 @Override
                 public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-                    log.info(WEBSOCKET_CONNECTION_ENDED, session.getId());
+                    log.debug(WEBSOCKET_CONNECTION_ENDED, session.getId());
                 }
 
                 @Override

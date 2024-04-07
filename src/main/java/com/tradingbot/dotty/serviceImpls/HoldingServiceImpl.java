@@ -28,13 +28,13 @@ public class HoldingServiceImpl implements HoldingService {
 
     @Override
     public List<HoldingDTO> getHoldings() {
-        log.info(ENTITIES_READ_OPERATION, "Holding");
+        log.trace(ENTITIES_READ_OPERATION, "Holding");
         return holdingRepository.findAll().stream().map(holding -> modelMapper.map(holding, HoldingDTO.class)).collect(Collectors.toList());
     }
 
     @Override
     public List<HoldingDTO> compareHoldings() {
-        log.info("Comparing Holdings.");
+        log.trace("Comparing Holdings.");
         int correct=0, other=0, incorrect=0;
         List<HoldingDTO> holdingsDTO = getHoldings();
         for(HoldingDTO holdingDTO : holdingsDTO) {
@@ -55,14 +55,14 @@ public class HoldingServiceImpl implements HoldingService {
 
     @Override
     public Long insertHolding(HoldingDTO holdingDTO) {
-        log.info(ENTITY_CREATE_OPERATION, holdingDTO, "Holding");
+        log.trace(ENTITY_CREATE_OPERATION, holdingDTO, "Holding");
         Holding holding = holdingRepository.save(modelMapper.map(holdingDTO, Holding.class));
         return holding.getHoldingTickerId();
     }
 
     @Override
     public Long updateHolding(HoldingDTO holdingDTO) {
-        log.info(ENTITY_UPDATE_OPERATION, holdingDTO.getSymbol(), "Holding");
+        log.trace(ENTITY_UPDATE_OPERATION, holdingDTO.getSymbol(), "Holding");
         if(holdingDTO.getHoldingTickerId() == null)
             throw new RuntimeException();
         Optional<Holding> holding = holdingRepository.findById(holdingDTO.getHoldingTickerId());
