@@ -4,10 +4,10 @@ public class LoggingConstants {
     public static final String ENTITY_CREATE_OPERATION = "Inserting Record {} into Entity {}";
     public static final String ENTITIES_CREATE_OPERATION = "Inserting Bulk Records into Entity {}";
     public static final String ENTITY_READ_OPERATION = "Reading Record {} from Entity {}";
-    public static final String ENTITIES_READ_OPERATION = "Reading Records {} from Entity {}";
+    public static final String ENTITIES_READ_OPERATION = "Reading Bulk Records from Entity {}";
     public static final String ENTITIES_READ_WITH_FILERS_OPERATION = "Reading Records from Entity {} with Criteria {}";
     public static final String ENTITY_UPDATE_OPERATION = "Updating Record {} into Entity {}";
-    public static final String ENTITIES_UPDATE_OPERATION = "Updating Records {} into Entity {}";
+    public static final String ENTITIES_UPDATE_OPERATION = "Updating Bulk Records into Entity {}";
     public static final String ENTITY_DELETE_OPERATION = "Deleting Record {} from Entity {}";
     public static final String ENTITIES_DELETE_OPERATION = "Deleting All Records from Entity {}";
 
@@ -32,8 +32,8 @@ public class LoggingConstants {
     public static final String SCREENED_TICKERS_PROCESSING = "processing Screened Tickers For market trades.";
     public static final String SCREENED_TICKERS_FILTERING = "Filter Screened Tickers for Sectors";
     public static final String SCREENED_TICKERS_TO_MARKET_TRADE = "Inserting Screened Tickers to market trade updates.";
-    public static final String TICKER_TECHNICAL_ANALYSIS = "TICKERS Technical Analysis at ";
-    public static final String TICKER_TECHNICAL_ANALYSIS_SORTED_TICKERS = "Getting Sorted Tickers for Trade Updates";
+    public static final String TICKER_TECHNICAL_ANALYSIS = "TICKERS Technical Analysis at {}";
+    public static final String TICKER_TECHNICAL_ANALYSIS_SORTED_TICKERS = "Getting Sorted Tickers for Trade Updates.";
 
 
 }

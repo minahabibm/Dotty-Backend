@@ -22,13 +22,6 @@ public class ScheduledTasks {
     @Autowired
     private Utils utils;
 
-    @Autowired
-    private ExternalApiRequests apiRequests;
-
-    @Autowired
-    private ConcurrentMarketDataFunnel marketDataFunnel;
-
-
     @Scheduled(cron = Constants.STOCK_SCREENER_SCHEDULE)
     public void stockScreener() {
         log.info(SCHEDULED_TASK_START, "Stock Screening", LocalDateTime.now());

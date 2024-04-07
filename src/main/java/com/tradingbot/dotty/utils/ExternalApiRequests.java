@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 @Slf4j(topic = "Dotty_Ticker_External_API_Requests")
 @Service
@@ -36,7 +37,7 @@ public class ExternalApiRequests {
     private String APIkeyTechnicalIndicatorAPI;
 
     public ScreenedTickersResponse[] stockScreenerUpdateRetrieve() {
-        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA,  "Stock Screening", "country: " + country + " ,market cap more than: " + marketCapMoreThan + " ,exchange: " + exchange + " ,beta more than " + betaMoreThan + " ,and is actively trading.");
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA,  "Stock Screening", "country: " + country + " ,market cap more than: " + marketCapMoreThan + " ,exchange: " + Arrays.toString(exchange) + " ,beta more than " + betaMoreThan + " ,and is actively trading.");
 
 //        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(500 * 1024)).build();
         WebClient webClient = WebClient.builder().baseUrl(baseUrlStockScreenerAPI).build();               //.exchangeStrategies(exchangeStrategies).build();
