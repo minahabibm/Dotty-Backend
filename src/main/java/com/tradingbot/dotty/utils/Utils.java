@@ -7,6 +7,7 @@ import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
+import static com.tradingbot.dotty.utils.LoggingConstants.*;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -37,40 +39,40 @@ public class Utils {
     private ModelMapper modelMapper;
 
     public void stockScreenerUpdate() {
-        log.info("Getting Screened Tickers.");
+        log.info(SCREENING_TICKERS);
         ScreenedTickersResponse[] screenedTickersResponse = apiRequests.stockScreenerUpdateRetrieve();
         if (screenedTickersResponse != null) {
-            log.info("Saving Tickers {} to Screened Tickers. ", screenedTickersResponse);
-            screenedTickersService.insertScreenedTickers(Arrays.stream(screenedTickersResponse).map(screenedTicker -> modelMapper.map(screenedTicker, ScreenedTickerDTO.class)).collect(Collectors.toList()));
+            log.info(SCREENED_TICKERS_SAVING, screenedTickersResponse);
+            screenedTickersService.insertAndUpdateScreenedTickers(Arrays.stream(screenedTickersResponse).map(screenedTicker -> modelMapper.map(screenedTicker, ScreenedTickerDTO.class)).collect(Collectors.toList()));
 
             selectAndSaveScreenedTickers();
         }
     }
 
     public void selectAndSaveScreenedTickers(){
-        log.info("Getting Screened Tickers to market trades stream.");
+        log.info(SCREENED_TICKERS_PROCESSING);
         List<ScreenedTickerDTO> screenedTickerDTOS = screenedTickersService.getTodayScreenedTickers();
 
-        log.info("Filter Screened Tickers for Sectors");
+        log.info(SCREENED_TICKERS_FILTERING);
         List<ScreenedTicker> screenedTickers = screenedTickerDTOS.stream()
                 .filter(x -> (x.getSector()!=null && (x.getSector().contains("Consumer Cyclical") || x.getSector().contains("Technology") || x.getSector().contains("Communication Services"))))
                 .map(x -> modelMapper.map(x, ScreenedTicker.class))
                 .toList();
 
-        log.info("Inserting Screened Tickers to market trade updates.");
+        log.info(SCREENED_TICKERS_TO_MARKET_TRADE);
         List<TickersTradeUpdates> tickersTradeUpdates = screenedTickers.stream().map(x -> modelMapper.map(x,TickersTradeUpdates.class)).collect(Collectors.toList());
         tickersTradeUpdatesService.insertTickersTradeUpdates(tickersTradeUpdates);
         log.info("{}", tickersTradeUpdatesService.getTickersTradeUpdates().size());
     }
 
     public void tickersTechnicalAnalysis() {
-        log.info("Getting Technical Analysis at " + LocalDateTime.now());
+        log.info(TICKER_TECHNICAL_ANALYSIS, LocalDateTime.now());
 
         // Get Ticker Trades Updates
-        log.info("Getting Sorted Tickers for Trade Updates");
+        log.info(TICKER_TECHNICAL_ANALYSIS_SORTED_TICKERS);
         List<TickersTradeUpdatesDTO> tickersTradeUpdates = tickersTradeUpdatesService.getSortedTickersTradeUpdates(Constants.SCREENED_TICKERS_NUMBER_OF_SYMBOLS);
 
-        // concurrent distribution for each ticker with a separate Thread
+        // Concurrent distribution for each ticker with a separate thread
         LocalDateTime currDateTime = LocalDateTime.now();
         LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), currDateTime.getMinute(),0);
 
@@ -91,7 +93,7 @@ public class Utils {
         return percentRate / 100;
     }
 
-    public static double getMaximumPriceAction(Float price) {
+    public static double getMaximumPriceAction(float price) {
         return price * calculatePercentToDecimal(Constants.MAXIMUM_PRICE_ACTION_EXIT);
     }
 

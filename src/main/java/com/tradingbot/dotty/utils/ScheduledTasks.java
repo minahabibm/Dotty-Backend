@@ -1,5 +1,6 @@
 package com.tradingbot.dotty.utils;
 
+import static com.tradingbot.dotty.utils.LoggingConstants.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,21 +29,20 @@ public class ScheduledTasks {
     private ConcurrentMarketDataFunnel marketDataFunnel;
 
 
-
     @Scheduled(cron = Constants.STOCK_SCREENER_SCHEDULE)
     public void stockScreener() {
-        log.info("Scheduled Stock Screening at {}", LocalDateTime.now());
+        log.info(SCHEDULED_TASK_START, "Stock Screening", LocalDateTime.now());
         utils.stockScreenerUpdate();
     }
 
     @Scheduled(cron = Constants.TECHNICAL_ANALYSIS_SCHEDULE)
     public void tickerTechnicalAnalysis() {
-        log.info("Scheduled ticker Technical Analysis polling start at {}", LocalDateTime.now());
+        log.info(SCHEDULED_TASK_START, "Ticker Technical Analysis Polling", LocalDateTime.now());
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         Runnable task = () -> utils.tickersTechnicalAnalysis();
         ScheduledFuture<?> schedulerHandle = executor.scheduleAtFixedRate(task, 0, Constants.TA_API_POLLING_RATE, TimeUnit.SECONDS);
         Runnable canceller = () -> {
-            log.info("Halt executing at" + LocalDateTime.now());
+            log.info(SCHEDULED_TASK_END, LocalDateTime.now());
             schedulerHandle.cancel(false);
             executor.shutdown(); // <---- Now the call is within the `canceller` Runnable.
         };
@@ -54,6 +54,7 @@ public class ScheduledTasks {
     public void scheduledTasks() {
         utils.stockScreenerUpdate();
         utils.tickersTechnicalAnalysis();
+
 
     }
 

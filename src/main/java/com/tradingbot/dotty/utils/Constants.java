@@ -15,4 +15,10 @@ public class Constants {
     public static final Integer TA_API_STOP_POLLING_HOUR= 16;
     public static final Integer TA_API_STOP_POLLING_MINUTE = 0;
 
+    public static final Integer TA_NUMBER_OF_ENTRY_VALIDATION = 2;
+    public static final Integer TA_NUMBER_OF_EXIT_VALIDATION = 2;
+
+    public static final Double MAXIMUM_PRICE_ACTION_EXIT = 2.5;
+
+
 }

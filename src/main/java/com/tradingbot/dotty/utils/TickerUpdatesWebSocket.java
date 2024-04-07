@@ -1,5 +1,7 @@
 package com.tradingbot.dotty.utils;
 
+import static com.tradingbot.dotty.utils.LoggingConstants.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tradingbot.dotty.models.dto.TickersUpdateWSMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
+
 
 @Slf4j(topic = "Dotty_Ticker_Trades_WebSockets")
 @Service
@@ -35,13 +38,13 @@ public class TickerUpdatesWebSocket {
 
     public WebSocketSession getTickerUpdatesWebSocket() throws ExecutionException, InterruptedException {
         if(session == null) {
-            log.info("WebSocket Session initialization");
+            log.info(WEBSOCKET_INITIALIZATION);
             TickerTradesURI = URI.create(baseUrlTickerTradesWS+APIkeyTickerTradesWS);
             client = new StandardWebSocketClient();
             handler = new WebSocketHandler() {
                 @Override
                 public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-                    log.info("WebSocket Connection Established :: {}", session.getId());
+                    log.info(WEBSOCKET_CONNECTION_STARTED, session.getId());
                 }
 
                 @Override
@@ -49,7 +52,7 @@ public class TickerUpdatesWebSocket {
                     ObjectMapper objectMapper = new ObjectMapper();
                     TickersUpdateWSMessage messageContent = objectMapper.readValue(message.getPayload().toString(), TickersUpdateWSMessage.class);
 
-                    log.info("WebSocket Message Received :: type: {}", messageContent.getType());
+                    log.info(WEBSOCKET_MESSAGE_RECEIVED, messageContent.getType());
                     if(messageContent.getData() != null)
                         concurrentMarketDataFunnel.processTickerMarketTradeUpdates(messageContent.getData());
                 }
@@ -61,7 +64,7 @@ public class TickerUpdatesWebSocket {
 
                 @Override
                 public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-                    log.info("WebSocket Connection Aborted :: {}", session.getId());
+                    log.info(WEBSOCKET_CONNECTION_ENDED, session.getId());
                 }
 
                 @Override
@@ -71,7 +74,7 @@ public class TickerUpdatesWebSocket {
             };
             session = client.execute(handler, TickerTradesURI.toString()).get();
         } else if(!session.isOpen()) {
-            log.info("WebSocket Session Re-initialization");
+            log.info(WEBSOCKET_REINITIALIZATION);
             session = client.execute(handler, TickerTradesURI.toString()).get();
         }
         return session;
@@ -79,7 +82,7 @@ public class TickerUpdatesWebSocket {
 
     public void subscribeToTickersTradesUpdate(String ticker) {
         try {
-            log.info("Trades Update ::Subscribe Ticker:: {}", ticker);
+            log.info(WEBSOCKET_TRADES_TICKER_SUBSCRIBE, ticker);
             WebSocketSession tickerUpdatesWSSession = getTickerUpdatesWebSocket();
             tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"subscribe\",\"symbol\":\"" + ticker + "\"}"));
         } catch (ExecutionException | InterruptedException | IOException e) {
@@ -89,7 +92,7 @@ public class TickerUpdatesWebSocket {
 
     public void unsubscribeToTickersTradesUpdate(String ticker) {
         try {
-            log.info("Trades Update ::Unsubscribe Ticker:: {}", ticker);
+            log.info(WEBSOCKET_TRADES_TICKER_UNSUBSCRIBE, ticker);
             WebSocketSession tickerUpdatesWSSession = getTickerUpdatesWebSocket();
             tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"unsubscribe\",\"symbol\":\"" + ticker + "\"}"));
         } catch (ExecutionException | InterruptedException | IOException e) {
@@ -99,10 +102,10 @@ public class TickerUpdatesWebSocket {
 
     public void closeSession() {
         try {
-            log.info("Closing  WebSocket session.");
+            log.info(WEBSOCKET_ABORTING_SESSION);
             WebSocketSession tickerUpdatesWSSession = getTickerUpdatesWebSocket();
             tickerUpdatesWSSession.close();
-            System.out.println(tickerUpdatesWSSession.isOpen());
+//            System.out.println(tickerUpdatesWSSession.isOpen());
         } catch (ExecutionException | InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }

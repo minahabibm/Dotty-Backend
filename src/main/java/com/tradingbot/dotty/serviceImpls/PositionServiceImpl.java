@@ -1,5 +1,6 @@
 package com.tradingbot.dotty.serviceImpls;
 
+import static com.tradingbot.dotty.utils.LoggingConstants.*;
 import com.tradingbot.dotty.models.Position;
 import com.tradingbot.dotty.models.dto.PositionDTO;
 import com.tradingbot.dotty.repositories.PositionRepository;
@@ -24,19 +25,19 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public List<PositionDTO> getPositions() {
-        log.info("Getting Tickers Position");
+        log.info(ENTITIES_READ_OPERATION, "Position");
         return positionRepository.findAll().stream().map(position -> modelMapper.map(position, PositionDTO.class)).collect(Collectors.toList());
     }
 
     @Override
     public List<PositionDTO> getSortedActiveTickerPositions(String symbol, Long positionTrackerID) {
-        log.info("Getting Active Ticker {} Positions", symbol);
+        log.info(ENTITIES_READ_WITH_FILERS_OPERATION, "Position", "Symbol: "+ symbol +" Sorted and Active");
         return positionRepository.findBySymbolAndPositionTracker_PositionTrackerIdOrderByIntervalsDesc(symbol, positionTrackerID).stream().map(position -> modelMapper.map(position, PositionDTO.class)).collect(Collectors.toList());
     }
 
     @Override
     public List<Long> insertPositions(List<PositionDTO> positions) {
-        log.info("Inserting tickers position");
+        log.info(ENTITIES_CREATE_OPERATION, "Position");
         List<Position> tickersPositionList = positions.stream().map(positionDTO -> modelMapper.map(positionDTO, Position.class)).collect(Collectors.toList());
         List<Position> tickersPositionsList = positionRepository.saveAll(tickersPositionList);
         return tickersPositionsList.stream().map(Position::getPositionId).collect(Collectors.toList());
@@ -44,14 +45,14 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public Long insertPosition(PositionDTO positionDTO) {
-        log.info("Inserting Ticker position ");
+        log.info(ENTITY_CREATE_OPERATION, positionDTO, "Position");
         Position position = positionRepository.save(modelMapper.map(positionDTO, Position.class));
         return position.getPositionId();
     }
 
     @Override
     public Long updatePosition(PositionDTO positionDTO) {
-        log.info("Updating Ticker position ");
+        log.info(ENTITY_UPDATE_OPERATION, positionDTO.getSymbol(), "PositionTracker");
         Position position = positionRepository.save(modelMapper.map(positionDTO, Position.class));
         return position.getPositionId();
     }

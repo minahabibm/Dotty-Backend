@@ -1,5 +1,6 @@
 package com.tradingbot.dotty.serviceImpls;
 
+import static com.tradingbot.dotty.utils.LoggingConstants.*;
 import com.tradingbot.dotty.models.PositionTracker;
 import com.tradingbot.dotty.models.dto.PositionTrackerDTO;
 import com.tradingbot.dotty.repositories.PositionTrackerRepository;
@@ -25,14 +26,14 @@ public class PositionTrackerServiceImpl implements PositionTrackerService {
 
     @Override
     public List<PositionTrackerDTO> getPositionTrackers() {
-        log.info("Getting Tickers Tracker Positions");
+        log.info(ENTITIES_READ_OPERATION, "PositionTracker");
         return positionTrackerRepository.findAll().stream().map(positionTracker -> modelMapper.map(positionTracker, PositionTrackerDTO.class)).collect(Collectors.toList());
     }
 
     @Override
-    public PositionTrackerDTO getPositionTracker(Long Id) {
-        log.info("Getting Tickers Tracker Positions");
-        Optional<PositionTracker> positionTracker = positionTrackerRepository.findById(Id);
+    public PositionTrackerDTO getPositionTracker(Long id) {
+        log.info(ENTITY_READ_OPERATION, id, "PositionTracker");
+        Optional<PositionTracker> positionTracker = positionTrackerRepository.findById(id);
         if(positionTracker.isPresent())
             return modelMapper.map(positionTracker.get(), PositionTrackerDTO.class);
         else
@@ -41,7 +42,7 @@ public class PositionTrackerServiceImpl implements PositionTrackerService {
 
     @Override
     public PositionTrackerDTO getTickerActivePositionTracker(String symbol) {
-        log.info("Getting Tickers Tracker Positions");
+        log.info(ENTITIES_READ_WITH_FILERS_OPERATION, "PositionTracker", "Symbol: "+ symbol+" and Active");
         PositionTracker positionTracker = positionTrackerRepository.findBySymbolAndActiveTrue(symbol);
         log.info("position tracker {}", positionTracker);
         PositionTrackerDTO positionTrackerDTO = null;
@@ -52,14 +53,14 @@ public class PositionTrackerServiceImpl implements PositionTrackerService {
 
     @Override
     public Long insertPositionTracker(PositionTrackerDTO positionTrackerDTO) {
-        log.info("Inserting Ticker Tracker position");
+        log.info(ENTITY_CREATE_OPERATION, positionTrackerDTO, "PositionTracker");
         PositionTracker positionTracker = positionTrackerRepository.save(modelMapper.map(positionTrackerDTO, PositionTracker.class));
         return positionTracker.getPositionTrackerId();
     }
 
     @Override
     public Long updatePositionTracker(PositionTrackerDTO positionTrackerDTO) {
-        log.info("Updating Ticker Tracker position");
+        log.info(ENTITY_UPDATE_OPERATION, positionTrackerDTO.getSymbol(), "PositionTracker");
         PositionTracker positionTracker = positionTrackerRepository.save(modelMapper.map(positionTrackerDTO, PositionTracker.class));
         return positionTracker.getPositionTrackerId();
     }

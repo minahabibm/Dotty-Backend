@@ -2,6 +2,7 @@ package com.tradingbot.dotty.utils;
 
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
+import static com.tradingbot.dotty.utils.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,9 +36,7 @@ public class ExternalApiRequests {
     private String APIkeyTechnicalIndicatorAPI;
 
     public ScreenedTickersResponse[] stockScreenerUpdateRetrieve() {
-        log.info("Stock Screening ::GET Request:: with Criteria country {}, market cap more than {}, exchange {}," +
-                        " beta more than {}, and is actively trading."
-                , country, marketCapMoreThan, exchange, betaMoreThan);
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA,  "Stock Screening", "country: " + country + " ,market cap more than: " + marketCapMoreThan + " ,exchange: " + exchange + " ,beta more than " + betaMoreThan + " ,and is actively trading.");
 
 //        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(500 * 1024)).build();
         WebClient webClient = WebClient.builder().baseUrl(baseUrlStockScreenerAPI).build();               //.exchangeStrategies(exchangeStrategies).build();
@@ -58,10 +57,9 @@ public class ExternalApiRequests {
     }
 
     public TechnicalIndicatorResponse technicalIndicatorRetrieve(String symbol, LocalDateTime localDateTime) {
-        log.info("Technical Indicator ::GET Request:: for ticker {}, start time {}", symbol, localDateTime);
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Technical Indicator", " ticker " + symbol + " and start time " + localDateTime);
 
         ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(1000 * 1024)).build();
-
         WebClient webClient = WebClient.builder().baseUrl(baseUrlTechnicalIndicatorAPI+"rsi").exchangeStrategies(exchangeStrategies).build();// .build();
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder

@@ -1,5 +1,6 @@
 package com.tradingbot.dotty.serviceImpls;
 
+import static com.tradingbot.dotty.utils.LoggingConstants.*;
 import com.tradingbot.dotty.models.TickersTradeUpdates;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import com.tradingbot.dotty.repositories.TickersTradeUpdatesRepository;
@@ -27,13 +28,13 @@ public class TickersTradeUpdatesServiceImpl implements TickersTradeUpdatesServic
 
     @Override
     public List<TickersTradeUpdatesDTO> getTickersTradeUpdates() {
-        log.info("Getting Tickers Trade Updates DTO");
+        log.info(ENTITIES_READ_OPERATION, "TickersTradeUpdates");
         return tickersTradeUpdatesRepository.findAll().stream().map(tickersTradeUpdates -> modelMapper.map(tickersTradeUpdates, TickersTradeUpdatesDTO.class)).collect(Collectors.toList());
     }
 
     @Override
     public List<TickersTradeUpdatesDTO> getSortedTickersTradeUpdates(int numberOfTickers) {
-        log.info("Getting Tickers Trade Updates.");
+        log.info(ENTITIES_READ_OPERATION, "TickersTradeUpdates");
         List<TickersTradeUpdates> tickersTradeUpdates = tickersTradeUpdatesRepository.findAll();
 
         log.info("Sorting Screened Tickers for Sectors and getting the first {}.", numberOfTickers);
@@ -49,19 +50,19 @@ public class TickersTradeUpdatesServiceImpl implements TickersTradeUpdatesServic
                 .peek(x -> System.out.println(x.getScreenedTicker().getExchangeShortName()+ " " + x.getSymbol() + " " + x.getScreenedTicker().getBeta() + " " + x.getScreenedTicker().getSymbol() ))
                 .map(sortedTickerTrades -> modelMapper.map(sortedTickerTrades, TickersTradeUpdatesDTO.class))
                 .collect(Collectors.toList());
-        log.info("Sorted Tickers size: {} and list: {}",sortedTickersTrades.size(), sortedTickersTrades);
 
+        log.info("Sorted Tickers size: {} and list: {}",sortedTickersTrades.size(), sortedTickersTrades);
         return sortedTickersTrades;
     }
 
     @Override
     public String insertTickersTradeUpdates(List<TickersTradeUpdates> tickersTradeUpdates) {
-        log.info("Inserting Tickers Trades Updates");
+        log.info(ENTITIES_CREATE_OPERATION, "TickersTradeUpdates");
         List<TickersTradeUpdates> tickersTradeUpdatesList = tickersTradeUpdates.stream()
                 .map(tickersTradeUpdate -> {
                     Optional<TickersTradeUpdates> ticker = tickersTradeUpdatesRepository.findBySymbol(tickersTradeUpdate.getSymbol());
                     if(ticker.isPresent()) {
-                        log.info("Updating existing Tickers Trades Update");
+                        log.info(ENTITY_CREATE_OPERATION, ticker, "ScreenedTicker");
                         BeanUtils.copyProperties(ticker.get(), tickersTradeUpdate,"updatedAt");
                     }
                     return tickersTradeUpdate;
@@ -73,25 +74,21 @@ public class TickersTradeUpdatesServiceImpl implements TickersTradeUpdatesServic
 
     @Override
     public String insertTickerTradeUpdates(TickersTradeUpdatesDTO tickersTradeUpdatesDTO) {
-        log.info("Inserting Tickers Trade Updates");
         return null;
     }
 
     @Override
     public String updateTickersTradeUpdates(TickersTradeUpdates tickersTradeUpdates) {
-        log.info("Updating Tickers Trade Updates");
         return null;
     }
 
     @Override
     public String deleteTickersTradeUpdates(TickersTradeUpdatesDTO tickersTradeUpdatesDTO) {
-        log.info("Deleting Tickers Trade Updates");
         return null;
     }
 
     @Override
     public String deleteTickersTradeUpdates() {
-        log.info("Deleting Tickers Trade Updates");
         return null;
     }
 }
