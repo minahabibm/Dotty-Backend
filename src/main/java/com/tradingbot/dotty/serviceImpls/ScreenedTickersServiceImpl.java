@@ -38,7 +38,7 @@ public class ScreenedTickersServiceImpl implements ScreenedTickersService {
 
     @Override
     public List<ScreenedTickerDTO> getTodayScreenedTickers() {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "ScreenedTicker", "Today"+LocalDate.now());
+        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "ScreenedTicker", "Today "+LocalDate.now());
         Predicate<ScreenedTicker> localDateTimePredicate = (localDateTime) -> (localDateTime.getCreatedAt().isAfter(LocalDateTime.of(LocalDate.now(), LocalTime.ofSecondOfDay(0)))) || (localDateTime.getUpdatedAt().isAfter(LocalDateTime.of(LocalDate.now(), LocalTime.ofSecondOfDay(0))));
         return screenedTickersRepository.findAll().stream()
                 .filter(localDateTimePredicate)

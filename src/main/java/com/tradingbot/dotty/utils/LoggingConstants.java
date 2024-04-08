@@ -35,5 +35,18 @@ public class LoggingConstants {
     public static final String TICKER_TECHNICAL_ANALYSIS = "TICKERS Technical Analysis at {}";
     public static final String TICKER_TECHNICAL_ANALYSIS_SORTED_TICKERS = "Getting Sorted Tickers for Trade Updates.";
 
+    public static  final String TICKER_MARKET_DATA_RSI_THRESHOLD = "Verify Ticker Oversold or Overbought.";
+    public static  final String TICKER_MARKET_DATA_TICKER_TRACKER = "Verify Ticker {} tracked for Trade.";
+    public static  final String TICKER_MARKET_DATA_TRADE_VALIDITY = "Verify Ticker {} is valid for Trade to  open  position.";
+    public static  final String TICKER_MARKET_DATA_TRACKING = "Ticker {} position tracker {} for trade.";
+    public static  final String TICKER_MARKET_DATA_NOT_TRACKED = "No active position tracker found";
+    public static  final String TICKER_MARKET_DATA_TRACKING_POSITION = "Inserting {} Ticker's  position.";
+
+    public static  final String TICKER_MARKET_TRADE_IN_POSITION = "Verify Ticker {} in a Trade." ;
+    public static  final String TICKER_MARKET_TRADE_OPEN_POSITION = "Entering position for Ticker {} at price {} on {}." ;
+    public static  final String TICKER_MARKET_TRADE_EXIT_POSITION = "Exiting position for Ticker {} at price {} on {}." ;
+    public static  final String TICKER_MARKET_TRADE_ADD_TO_HOLDING = "Inserting {} Ticker's position to Holdings" ;
+    public static  final String TICKER_MARKET_TRADE_TRADE_VALIDITY = "Verify Ticker {} is valid for Trade TO close Position.";
+
 
 }

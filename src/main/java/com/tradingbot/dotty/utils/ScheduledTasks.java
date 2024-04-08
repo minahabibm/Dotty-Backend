@@ -45,9 +45,6 @@ public class ScheduledTasks {
 
     @Scheduled(fixedRate = 1000000)
     public void scheduledTasks() {
-        utils.stockScreenerUpdate();
-        utils.tickersTechnicalAnalysis();
-
 
     }
 

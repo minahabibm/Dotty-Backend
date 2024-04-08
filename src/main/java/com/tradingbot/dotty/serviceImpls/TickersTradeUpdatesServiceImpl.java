@@ -47,7 +47,7 @@ public class TickersTradeUpdatesServiceImpl implements TickersTradeUpdatesServic
         List<TickersTradeUpdatesDTO> sortedTickersTrades = tickersTradeUpdates.stream()
                 .sorted(byExchangeAndBeta)
                 .limit(numberOfTickers)
-                .peek(x -> System.out.println(x.getScreenedTicker().getExchangeShortName()+ " " + x.getSymbol() + " " + x.getScreenedTicker().getBeta() + " " + x.getScreenedTicker().getSymbol() ))
+//                .peek(x -> System.out.println(x.getScreenedTicker().getExchangeShortName()+ " " + x.getSymbol() + " " + x.getScreenedTicker().getBeta() + " " + x.getScreenedTicker().getSymbol() ))
                 .map(sortedTickerTrades -> modelMapper.map(sortedTickerTrades, TickersTradeUpdatesDTO.class))
                 .collect(Collectors.toList());
 

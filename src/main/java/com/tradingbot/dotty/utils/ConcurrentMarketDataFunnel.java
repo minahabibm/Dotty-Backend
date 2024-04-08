@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 
-@Slf4j(topic = "Dotty_market_data_funnel")
+@Slf4j
 @Component
 public class ConcurrentMarketDataFunnel {
 

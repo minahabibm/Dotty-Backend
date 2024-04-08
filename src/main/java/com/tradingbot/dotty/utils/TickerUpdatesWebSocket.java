@@ -18,7 +18,7 @@ import java.net.URI;
 import java.util.concurrent.ExecutionException;
 
 
-@Slf4j(topic = "Dotty_Ticker_Trades_WebSockets")
+@Slf4j
 @Service
 public class TickerUpdatesWebSocket {
 
