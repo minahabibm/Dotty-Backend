@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 
 @Slf4j
@@ -26,31 +27,35 @@ public class ConcurrentMarketDataFunnel {
     @Autowired
     private TickerMarketTradeService tickerMarketTradeService;
 
-//    @Async
-    void processTickerTechnicalAnalysisUpdates(TechnicalIndicatorResponse technicalIndicatorResponse){
-        log.info(MARKET_DATA_FUNNEL,"Technical Analysis Polling");
-        if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty()) {
-            List<TechnicalIndicatorResponse.ValuesDetails> technicalIndicatorResponseVal = technicalIndicatorResponse.getValues();
-            Collections.reverse(technicalIndicatorResponseVal);  // TODO For stored Intervals Only
-            technicalIndicatorResponseVal.forEach(
-                    tIRespVals -> {
-                        log.debug("symbol: {}, RSI: {}, Time: {}, Candle Stick: open: {}, close: {}, high: {}, low: {}", technicalIndicatorResponse.getMeta().getSymbol(), tIRespVals.getRsi(), tIRespVals.getDatetime(), tIRespVals.getOpen(), tIRespVals.getClose(), tIRespVals.getHigh(), tIRespVals.getLow());
-                        // Thread process will determine position entry\exit -> quote&trade and price updates sub/unsub once in trade.
-                        tickerMarketDataService.positionTracker(technicalIndicatorResponse.getMeta().getSymbol(), technicalIndicatorResponse.getMeta().getIndicator(), tIRespVals);
-            });
-        } else {
+    @Async
+    protected CompletableFuture<Void> processTickerTechnicalAnalysisUpdates(TechnicalIndicatorResponse technicalIndicatorResponse){
+        return CompletableFuture.runAsync(()-> {
+            log.info(MARKET_DATA_FUNNEL,"Technical Analysis Polling");
+            if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty()) {
+                List<TechnicalIndicatorResponse.ValuesDetails> technicalIndicatorResponseVal = technicalIndicatorResponse.getValues();
+                Collections.reverse(technicalIndicatorResponseVal);  // TODO For stored Intervals Only
+                technicalIndicatorResponseVal.forEach(
+                        tIRespVals -> {
+                            log.debug("symbol: {}, RSI: {}, Time: {}, Candle Stick: open: {}, close: {}, high: {}, low: {}", technicalIndicatorResponse.getMeta().getSymbol(), tIRespVals.getRsi(), tIRespVals.getDatetime(), tIRespVals.getOpen(), tIRespVals.getClose(), tIRespVals.getHigh(), tIRespVals.getLow());
+                            // Thread process will determine position entry\exit -> quote&trade and price updates sub/unsub once in trade.
+                            tickerMarketDataService.positionTracker(technicalIndicatorResponse.getMeta().getSymbol(), technicalIndicatorResponse.getMeta().getIndicator(), tIRespVals);
+                        });
+            } else {
                 System.out.println(technicalIndicatorResponse);
-        }
+            }
+        });
     }
 
     @Async("taskExecutorForHeavyTasks")
-    void processTickerMarketTradeUpdates(List<TickersUpdateWSMessage.TradeDetails> data) throws InterruptedException {
-        log.info(MARKET_DATA_FUNNEL,"Market Trades Update");
-        tickerMarketTradeService.monitorTickerTradesUpdates(data);
-        data.forEach(x -> log.debug("{} {} {} {}", x.getS(), x.getP(), x.getV(), Instant.ofEpochMilli(x.getT()).atZone(ZoneId.systemDefault()).toLocalDateTime())); // ZoneId.of("America/New_York")
+    protected CompletableFuture<Void> processTickerMarketTradeUpdates(List<TickersUpdateWSMessage.TradeDetails> data) throws InterruptedException {
+        return CompletableFuture.runAsync(()-> {
+            log.info(MARKET_DATA_FUNNEL,"Market Trades Update");
+            tickerMarketTradeService.monitorTickerTradesUpdates(data);
+            data.forEach(x -> log.debug("{} {} {} {}", x.getS(), x.getP(), x.getV(), Instant.ofEpochMilli(x.getT()).atZone(ZoneId.systemDefault()).toLocalDateTime())); // ZoneId.of("America/New_York")
 
-        //catch (InterruptedException e)
-        //catch (RejectedExecutionException e)
+            //catch (InterruptedException e)
+            //catch (RejectedExecutionException e)
+        });
     }
 
 }

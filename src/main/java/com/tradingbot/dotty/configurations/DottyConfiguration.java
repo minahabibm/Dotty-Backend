@@ -1,5 +1,11 @@
 package com.tradingbot.dotty.configurations;
 
+import com.tradingbot.dotty.models.Orders;
+import com.tradingbot.dotty.models.Position;
+import com.tradingbot.dotty.models.TickersTradeUpdates;
+import com.tradingbot.dotty.models.dto.OrdersDTO;
+import com.tradingbot.dotty.models.dto.PositionDTO;
+import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +21,14 @@ public class DottyConfiguration {
 
     @Bean
     public ModelMapper modelMapperBean() {
-        return new ModelMapper();
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.typeMap(TickersTradeUpdates.class, TickersTradeUpdatesDTO.class).addMapping(TickersTradeUpdates::getScreenedTicker, TickersTradeUpdatesDTO::setScreenedTickerDTO);
+        modelMapper.typeMap(TickersTradeUpdatesDTO.class, TickersTradeUpdates.class).addMapping(TickersTradeUpdatesDTO::getScreenedTickerDTO, TickersTradeUpdates::setScreenedTicker);
+        modelMapper.typeMap(Position.class, PositionDTO.class).addMapping(Position::getPositionTracker, PositionDTO::setPositionTrackerDTO);
+        modelMapper.typeMap(PositionDTO.class, Position.class).addMapping(PositionDTO::getPositionTrackerDTO, Position::setPositionTracker);
+        modelMapper.typeMap(Orders.class, OrdersDTO.class).addMapping(Orders::getPositionTracker, OrdersDTO::setPositionTrackerDTO);
+        modelMapper.typeMap(OrdersDTO.class, Orders.class).addMapping(OrdersDTO::getPositionTrackerDTO, Orders::setPositionTracker);
+        return modelMapper;
     }
 
     @Primary
@@ -24,7 +37,7 @@ public class DottyConfiguration {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(2);
-        executor.setQueueCapacity(500);
+        executor.setQueueCapacity(1000);
         executor.setThreadNamePrefix("Async-1-");
         executor.initialize();
         return executor;

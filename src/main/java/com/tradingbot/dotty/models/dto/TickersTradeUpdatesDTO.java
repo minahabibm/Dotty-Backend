@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -14,4 +16,7 @@ public class TickersTradeUpdatesDTO {
     private String name;
     private String symbol;
     private Boolean isActive;
+    private ScreenedTickerDTO screenedTickerDTO;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
