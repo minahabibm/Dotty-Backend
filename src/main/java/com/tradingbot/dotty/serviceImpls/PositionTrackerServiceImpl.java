@@ -44,7 +44,7 @@ public class PositionTrackerServiceImpl implements PositionTrackerService {
     public PositionTrackerDTO getTickerActivePositionTracker(String symbol) {
         log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "PositionTracker", "Symbol: "+ symbol+" and Active");
         PositionTracker positionTracker = positionTrackerRepository.findBySymbolAndActiveTrue(symbol);
-        log.debug("position tracker {}", positionTracker);
+
         PositionTrackerDTO positionTrackerDTO = null;
         if(positionTracker != null)
             positionTrackerDTO = modelMapper.map(positionTracker, PositionTrackerDTO.class);
