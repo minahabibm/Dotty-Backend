@@ -16,7 +16,7 @@ public class LoggingConstants {
 
     public static final String EXTERNAL_GET_REQUEST_WITH_CRITERIA = "External GET Request - {} with Criteria {}";
 
-    public static final String  MARKET_DATA_FUNNEL = "Concurrent  Thread for {}.";
+    public static final String  MARKET_DATA_FUNNEL = "Concurrent Thread for {}.";
 
     public static final String WEBSOCKET_INITIALIZATION = "WebSocket Session initialization";
     public static final String WEBSOCKET_REINITIALIZATION = "WebSocket Session Re-initialization";
