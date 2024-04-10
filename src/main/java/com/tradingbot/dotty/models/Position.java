@@ -3,6 +3,8 @@ package com.tradingbot.dotty.models;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import java.time.LocalDateTime;
 
@@ -41,7 +43,8 @@ public class Position {
     @Column(name="volume")
     private Long volume;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne//(fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.JOIN)
     @JoinColumn(name = "positionTracker")
     private PositionTracker positionTracker;
 
