@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface TickersTradeUpdatesRepository extends JpaRepository<TickersTradeUpdates, Long> {
     Optional<TickersTradeUpdates> findBySymbol(String symbol);
+
 }

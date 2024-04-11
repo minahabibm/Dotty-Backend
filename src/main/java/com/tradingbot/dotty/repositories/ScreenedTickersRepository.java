@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ScreenedTickersRepository extends JpaRepository<ScreenedTicker, Long> {
     Optional<ScreenedTicker> findBySymbol(String symbol);
+
 }
