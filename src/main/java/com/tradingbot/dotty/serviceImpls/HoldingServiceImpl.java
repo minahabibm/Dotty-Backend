@@ -47,7 +47,7 @@ public class HoldingServiceImpl implements HoldingService {
                 else if (holdingDTO.getEntryPrice() - holdingDTO.getExitPrice() == 0) other += 1;
                 else incorrect +=1;
         }
-        log.info("Correct {} , Incorrect {}, Other {}", correct, incorrect, other);
+        log.warn("Correct {} , Incorrect {}, Other {}", correct, incorrect, other);
 //        List<OrdersDTO> activeOrdersDTO = ordersService.getOrders().stream().filter(ordersDTO -> ordersDTO.getActive()).collect(Collectors.toList());
 //        activeOrdersDTO.stream().forEach(System.out::println);
         return holdingsDTO;

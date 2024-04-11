@@ -35,7 +35,7 @@ public class OrdersServiceImpl implements OrdersService {
     public List<OrdersDTO> getActiveTickerOrders() {
         log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "Orders", "Active");
         List<OrdersDTO> ordersDTOList = ordersRepository.findAllByActiveTrue().stream().map(order -> modelMapper.map(order, OrdersDTO.class)).collect(Collectors.toList());
-        log.info("Number of Ticker with Active Orders, {}.", ordersDTOList.size());
+        log.warn("Number of Ticker with Active Orders, {}.", ordersDTOList.size());
         return ordersDTOList;
     }
 

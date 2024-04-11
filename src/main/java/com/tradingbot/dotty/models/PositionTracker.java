@@ -6,8 +6,8 @@ import org.hibernate.annotations.*;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Data
+@Entity
 public class PositionTracker {
 
     @Id
@@ -28,5 +28,8 @@ public class PositionTracker {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @Version
+    private int version;
 
 }

@@ -1,18 +1,14 @@
 package com.tradingbot.dotty.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 public class Holding {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -44,5 +40,8 @@ public class Holding {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @Version
+    private int version;
 
 }

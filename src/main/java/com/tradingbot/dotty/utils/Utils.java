@@ -4,6 +4,7 @@ import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.TickersTradeUpdates;
 import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
+import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
@@ -76,9 +77,13 @@ public class Utils {
         LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), currDateTime.getMinute(),0);
 
         LocalDateTime dateTime = LocalDateTime.of(2024,1,1, 9,30,0);
-
         for(int i=0; i<tickersTradeUpdates.size(); i++){
-            marketDataFunnel.processTickerTechnicalAnalysisUpdates(apiRequests.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), dateTime));
+            TechnicalIndicatorResponse technicalIndicatorResponse = apiRequests.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), dateTime);
+            if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty())
+                marketDataFunnel.processTickerTechnicalAnalysisUpdates(technicalIndicatorResponse);
+            else
+                log.warn("{}", technicalIndicatorResponse);
+
             if(i==Constants.TA_API_MAX_REQUESTS_PER_MIN)
                 try {
                     Thread.sleep(Constants.TA_API_MAX_REQUESTS_REACHED_WAIT_TIME);

@@ -28,26 +28,23 @@ public class ConcurrentMarketDataFunnel {
     private TickerMarketTradeService tickerMarketTradeService;
 
     @Async
-    protected CompletableFuture<Void> processTickerTechnicalAnalysisUpdates(TechnicalIndicatorResponse technicalIndicatorResponse){
+    public CompletableFuture<Void> processTickerTechnicalAnalysisUpdates(TechnicalIndicatorResponse technicalIndicatorResponse){
+//      Thread process will determine position entry\exit, quote&trade, and price updates sub/unsub once in trade.
         return CompletableFuture.runAsync(()-> {
             log.info(MARKET_DATA_FUNNEL,"Technical Analysis Polling");
-            if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty()) {
-                List<TechnicalIndicatorResponse.ValuesDetails> technicalIndicatorResponseVal = technicalIndicatorResponse.getValues();
-                Collections.reverse(technicalIndicatorResponseVal);  // TODO For stored Intervals Only
-                technicalIndicatorResponseVal.forEach(
-                        tIRespVals -> {
-                            log.debug("symbol: {}, RSI: {}, Time: {}, Candle Stick: open: {}, close: {}, high: {}, low: {}", technicalIndicatorResponse.getMeta().getSymbol(), tIRespVals.getRsi(), tIRespVals.getDatetime(), tIRespVals.getOpen(), tIRespVals.getClose(), tIRespVals.getHigh(), tIRespVals.getLow());
-                            // Thread process will determine position entry\exit -> quote&trade and price updates sub/unsub once in trade.
-                            tickerMarketDataService.positionTracker(technicalIndicatorResponse.getMeta().getSymbol(), technicalIndicatorResponse.getMeta().getIndicator(), tIRespVals);
-                        });
-            } else {
-                System.out.println(technicalIndicatorResponse);
-            }
+            List<TechnicalIndicatorResponse.ValuesDetails> technicalIndicatorResponseVal = technicalIndicatorResponse.getValues();
+            Collections.reverse(technicalIndicatorResponseVal);  // TODO For stored Intervals Only
+            log.info("response size {}", technicalIndicatorResponseVal.size());
+            technicalIndicatorResponseVal.forEach(
+                tIRespVales -> {
+                    log.debug("symbol: {}, RSI: {}, Time: {}, Candle Stick: open: {}, close: {}, high: {}, low: {}", technicalIndicatorResponse.getMeta().getSymbol(), tIRespVales.getRsi(), tIRespVales.getDatetime(), tIRespVales.getOpen(), tIRespVales.getClose(), tIRespVales.getHigh(), tIRespVales.getLow());
+                    tickerMarketDataService.positionTracker(technicalIndicatorResponse.getMeta().getSymbol(), technicalIndicatorResponse.getMeta().getIndicator(), tIRespVales);
+                });
         });
     }
 
     @Async("taskExecutorForHeavyTasks")
-    protected CompletableFuture<Void> processTickerMarketTradeUpdates(List<TickersUpdateWSMessage.TradeDetails> data) throws InterruptedException {
+    public CompletableFuture<Void> processTickerMarketTradeUpdates(List<TickersUpdateWSMessage.TradeDetails> data) throws InterruptedException {
         return CompletableFuture.runAsync(()-> {
             log.info(MARKET_DATA_FUNNEL,"Market Trades Update");
             tickerMarketTradeService.monitorTickerTradesUpdates(data);

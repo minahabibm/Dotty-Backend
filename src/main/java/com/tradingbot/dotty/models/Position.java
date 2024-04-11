@@ -51,4 +51,7 @@ public class Position {
     @CreationTimestamp
     private LocalDateTime createdOn;
 
+    @Version
+    private int version;
+
 }
