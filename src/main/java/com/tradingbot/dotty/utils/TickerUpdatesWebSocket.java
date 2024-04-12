@@ -37,9 +37,9 @@ public class TickerUpdatesWebSocket {
     private WebSocketSession session;
 
     public WebSocketSession getTickerUpdatesWebSocket() throws ExecutionException, InterruptedException {
-        if(session == null) {
+        if (session == null) {
             log.info(WEBSOCKET_INITIALIZATION);
-            TickerTradesURI = URI.create(baseUrlTickerTradesWS+APIkeyTickerTradesWS);
+            TickerTradesURI = URI.create(baseUrlTickerTradesWS + APIkeyTickerTradesWS);
             client = new StandardWebSocketClient();
             handler = new WebSocketHandler() {
                 @Override
@@ -53,7 +53,7 @@ public class TickerUpdatesWebSocket {
                     TickersUpdateWSMessage messageContent = objectMapper.readValue(message.getPayload().toString(), TickersUpdateWSMessage.class);
 
                     log.debug(WEBSOCKET_MESSAGE_RECEIVED, messageContent.getType());
-                    if(messageContent.getData() != null)
+                    if (messageContent.getData() != null)
                         concurrentMarketDataFunnel.processTickerMarketTradeUpdates(messageContent.getData());
                 }
 
@@ -73,28 +73,33 @@ public class TickerUpdatesWebSocket {
                 }
             };
             session = client.execute(handler, TickerTradesURI.toString()).get();
-        } else if(!session.isOpen()) {
+        } else if (!session.isOpen()) {
             log.info(WEBSOCKET_REINITIALIZATION);
             session = client.execute(handler, TickerTradesURI.toString()).get();
         }
         return session;
+
     }
 
     public void subscribeToTickersTradesUpdate(String ticker) {
+        log.info(WEBSOCKET_TRADES_TICKER_SUBSCRIBE, ticker);
         try {
-            log.info(WEBSOCKET_TRADES_TICKER_SUBSCRIBE, ticker);
             WebSocketSession tickerUpdatesWSSession = getTickerUpdatesWebSocket();
-            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"subscribe\",\"symbol\":\"" + ticker + "\"}"));
+            synchronized (tickerUpdatesWSSession) {
+                tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"subscribe\",\"symbol\":\"" + ticker + "\"}"));
+            }
         } catch (ExecutionException | InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void unsubscribeToTickersTradesUpdate(String ticker) {
+        log.info(WEBSOCKET_TRADES_TICKER_UNSUBSCRIBE, ticker);
         try {
-            log.info(WEBSOCKET_TRADES_TICKER_UNSUBSCRIBE, ticker);
             WebSocketSession tickerUpdatesWSSession = getTickerUpdatesWebSocket();
-            tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"unsubscribe\",\"symbol\":\"" + ticker + "\"}"));
+            synchronized (tickerUpdatesWSSession) {
+                tickerUpdatesWSSession.sendMessage(new TextMessage("{\"type\":\"unsubscribe\",\"symbol\":\"" + ticker + "\"}"));
+            }
         } catch (ExecutionException | InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }

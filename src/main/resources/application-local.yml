@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dotty
+    username: dev
+    password: fyrgag-tehpe6-Jitkox
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+#    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  error:
+    include-message: always
+
+logging:
+  level:
+    com.tradingbot.dotty: WARN
