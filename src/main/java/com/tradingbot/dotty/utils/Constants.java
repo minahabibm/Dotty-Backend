@@ -2,8 +2,8 @@ package com.tradingbot.dotty.utils;
 
 public class Constants {
 
-    public static final String STOCK_SCREENER_SCHEDULE = "0 56 20 * * MON,TUE,WED,THU,FRI,SAT,SUN";
-    public static final String TECHNICAL_ANALYSIS_SCHEDULE = "0 56 20 * * MON,TUE,WED,THU,FRI,SAT,SUN";
+    public static final String STOCK_SCREENER_SCHEDULE = "0 0 9 * * MON,TUE,WED,THU,FRI";
+    public static final String TECHNICAL_ANALYSIS_SCHEDULE = "0 30 9 * * MON,TUE,WED,THU,FRI";
 
     public static final Integer SCREENED_TICKERS_NUMBER_OF_SYMBOLS = 10;
 
