@@ -32,7 +32,7 @@ public class ConcurrentMarketDataFunnel {
 //        CompletableFuture.runAsync(() -> {
             log.info(MARKET_DATA_FUNNEL, "Technical Analysis Polling");
             List<TechnicalIndicatorResponse.ValuesDetails> technicalIndicatorResponseVal = technicalIndicatorResponse.getValues();
-            Collections.reverse(technicalIndicatorResponseVal);  // TODO For stored Intervals Only
+            Collections.reverse(technicalIndicatorResponseVal);  // For stored Intervals Only
             log.warn("response size {}", technicalIndicatorResponseVal.size());
             technicalIndicatorResponseVal.forEach(
                     tIRespVales -> {
