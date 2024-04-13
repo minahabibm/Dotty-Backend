@@ -11,18 +11,28 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/dotty
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=1234
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
     networks:
       - test
 
-#  db:
-#    platform: linux/x86_64
-#    image: mysql:5.7.37
-#    container_name: db
-#    ports:
-#      - "13306:3306"
-#    environment:
-#      MYSQL_ROOT_PASSWORD: root
-#      MYSQL_DATABASE: DOCKERDB
+  db:
+    platform: linux/x86_64
+    image: postgres:14-alpine
+    container_name: db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=dotty
 #    command: [
 #      '--default-authentication-plugin=mysql_native_password',
 #      '--lower-case-table-names=1'
@@ -31,9 +41,9 @@ services:
 #      - ./db-init-scripts:/docker-entrypoint-initdb.d
 #    restart: always
 #    healthcheck:
-#      test: [ "CMD", "mysql", "-h", "localhost", "-P", "3306", "-u", "root", "--password=root", "-e", "select 1", "DOCKERDB" ]
+#      test: ["CMD-SHELL", "pg_isready"]
 #      interval: 1s
 #      timeout: 3s
 #      retries: 30
-#    networks:
-#      - test
+    networks:
+      - test

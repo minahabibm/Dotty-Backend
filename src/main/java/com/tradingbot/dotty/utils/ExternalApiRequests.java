@@ -2,6 +2,8 @@ package com.tradingbot.dotty.utils;
 
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
+
+import static com.tradingbot.dotty.utils.Constants.*;
 import static com.tradingbot.dotty.utils.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,16 +22,6 @@ public class ExternalApiRequests {
     private String baseUrlStockScreenerAPI;
     @Value("${stock-screener-api.APIkey}")
     private String apiKeyStockScreenerAPI;
-    @Value("${stock-screener-api.query-params.country}")
-    private String country;
-    @Value("${stock-screener-api.query-params.market-cap-more-than}")
-    private Long marketCapMoreThan;
-    @Value("${stock-screener-api.query-params.exchange}")
-    private String[] exchange;
-    @Value("${stock-screener-api.query-params.beta-more-than}")
-    private float betaMoreThan;
-    @Value("${stock-screener-api.query-params.is-actively-trading}")
-    private boolean isActivelyTrading;
 
     @Value("${technical-indicators-api.base-url}")
     private String baseUrlTechnicalIndicatorAPI;
@@ -37,19 +29,19 @@ public class ExternalApiRequests {
     private String APIkeyTechnicalIndicatorAPI;
 
     public ScreenedTickersResponse[] stockScreenerUpdateRetrieve() {
-        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA,  "Stock Screening", "country: " + country + ", market cap more than: " + marketCapMoreThan + ", exchange: " + Arrays.toString(exchange) + ", beta more than " + betaMoreThan + ", and is actively trading.");
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA,  "Stock Screening", "country: " + SCREENING_TICKERS_QUERY_PARAMS_COUNTRY + ", market cap more than: " + SCREENING_TICKERS_QUERY_PARAMS_MARKET_CAP_MORE_THAN + ", exchange: " + Arrays.toString(SCREENING_TICKERS_QUERY_PARAMS_EXCHANGE) + ", beta more than " + SCREENING_TICKERS_QUERY_PARAMS_BETA_MORE_THAN + ", and is actively trading.");
 
 //        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(500 * 1024)).build();
         WebClient webClient = WebClient.builder().baseUrl(baseUrlStockScreenerAPI).build();               //.exchangeStrategies(exchangeStrategies).build();
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .queryParam("country", country)
-                        .queryParam("marketCapMoreThan", marketCapMoreThan)
-                        .queryParam("exchange", exchange[0])
-                        .queryParam("exchange", exchange[1])
-                        .queryParam("exchange", exchange[2])
-                        .queryParam("betaMoreThan", betaMoreThan)
-                        .queryParam("isActivelyTrading", isActivelyTrading)
+                        .queryParam("country", SCREENING_TICKERS_QUERY_PARAMS_COUNTRY)
+                        .queryParam("marketCapMoreThan", SCREENING_TICKERS_QUERY_PARAMS_MARKET_CAP_MORE_THAN)
+                        .queryParam("exchange", SCREENING_TICKERS_QUERY_PARAMS_EXCHANGE[0])
+                        .queryParam("exchange", SCREENING_TICKERS_QUERY_PARAMS_EXCHANGE[1])
+                        .queryParam("exchange", SCREENING_TICKERS_QUERY_PARAMS_EXCHANGE[2])
+                        .queryParam("betaMoreThan", SCREENING_TICKERS_QUERY_PARAMS_BETA_MORE_THAN)
+                        .queryParam("isActivelyTrading", SCREENING_TICKERS_QUERY_PARAMS_IS_ACTIVELY_TRADING)
                         .queryParam("apikey", apiKeyStockScreenerAPI)
                         .build())
                 .retrieve()

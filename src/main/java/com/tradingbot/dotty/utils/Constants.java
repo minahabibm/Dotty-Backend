@@ -5,6 +5,12 @@ public class Constants {
     public static final String STOCK_SCREENER_SCHEDULE = "0 0 9 * * MON,TUE,WED,THU,FRI";
     public static final String TECHNICAL_ANALYSIS_SCHEDULE = "0 30 9 * * MON,TUE,WED,THU,FRI";
 
+    public static final String SCREENING_TICKERS_QUERY_PARAMS_COUNTRY = "US";
+    public static final Long SCREENING_TICKERS_QUERY_PARAMS_MARKET_CAP_MORE_THAN = 200000000000L;
+    public static final String[] SCREENING_TICKERS_QUERY_PARAMS_EXCHANGE = new String[]{"nasdaq", "nyse", "amex"};
+    public static final Double SCREENING_TICKERS_QUERY_PARAMS_BETA_MORE_THAN = 0.0;
+    public static final Boolean SCREENING_TICKERS_QUERY_PARAMS_IS_ACTIVELY_TRADING = true;
+
     public static final Integer SCREENED_TICKERS_NUMBER_OF_SYMBOLS = 10;
 
     public static final String TA_API_PARAMS_INTERVAL = "5min";
