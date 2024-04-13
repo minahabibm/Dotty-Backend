@@ -10,7 +10,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,6 +29,15 @@ public class PositionServiceImpl implements PositionService {
     public List<PositionDTO> getPositions() {
         log.trace(ENTITIES_READ_OPERATION, "Position");
         return positionRepository.findAll().stream().map(position -> modelMapper.map(position, PositionDTO.class)).collect(Collectors.toList());
+    }
+
+    @Override
+    public PositionDTO getPositionBySymbolAndIntervals(String symbol, LocalDateTime interval) {
+        Optional<Position> position = positionRepository.findBySymbolAndIntervals(symbol, interval);
+        PositionDTO positionDTO = null;
+        if(position.isPresent())
+            positionDTO = modelMapper.map(position.get(), PositionDTO.class);
+        return positionDTO;
     }
 
     @Override
