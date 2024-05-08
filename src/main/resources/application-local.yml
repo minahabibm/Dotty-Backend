@@ -13,10 +13,16 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-server:
-  error:
-    include-message: always
-
 logging:
   level:
     com.tradingbot.dotty: WARN
+
+server:
+  port: 443
+  ssl:
+    key-store: keystore.p12
+    key-store-password: dotty!
+    keyStoreType: PKCS12
+    keyAlias: tomcat
+  error:
+    include-message: always
