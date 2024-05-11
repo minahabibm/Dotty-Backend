@@ -101,6 +101,29 @@ public class Utils {
         return price * calculatePercentToDecimal(Constants.MAXIMUM_PRICE_ACTION_EXIT);
     }
 
+    public static void getAuthenticUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication instanceof OAuth2AuthenticationToken) {
+                // If the authentication is OAuth2, retrieve user details
+                OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+                DefaultOAuth2User user = (DefaultOAuth2User) oauthToken.getPrincipal();
+
+                // Extract user attributes
+                String name = user.getAttribute("name");
+                String email = user.getAttribute("email");
+
+                System.out.println("Authenticated user: " + name + ", Email: " + email);
+            } else {
+                // Handle other types of authentication if needed
+                System.out.println("Authenticated user (non-OAuth2): " + authentication.getName());
+            }
+        } else {
+            System.out.println ("No authenticated user");
+        }
+    }
+
 //    public void sortScreenedTickers(){
 //        List<ScreenedTickerDTO> screenedTickerDTOS = screenedTickersService.getScreenedTickers();
 //
