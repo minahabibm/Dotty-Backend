@@ -1,5 +1,7 @@
 package com.tradingbot.dotty.utils;
 
+import com.tradingbot.dotty.models.dto.AccessTokenAudAndJti;
+import com.tradingbot.dotty.models.dto.AccessTokenResponse;
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
 
@@ -7,9 +9,15 @@ import static com.tradingbot.dotty.utils.Constants.*;
 import static com.tradingbot.dotty.utils.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -27,6 +35,13 @@ public class ExternalApiRequests {
     private String baseUrlTechnicalIndicatorAPI;
     @Value("${technical-indicators-api.APIkey}")
     private String APIkeyTechnicalIndicatorAPI;
+
+    @Value("${spring.security.oauth2.client.registration.auth0.client-id}")
+    private String clientId;
+    @Value("${spring.security.oauth2.client.registration.auth0.client-secret}")
+    private String clientSecret;
+
+
 
     public ScreenedTickersResponse[] stockScreenerUpdateRetrieve() {
         log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA,  "Stock Screening", "country: " + SCREENING_TICKERS_QUERY_PARAMS_COUNTRY + ", market cap more than: " + SCREENING_TICKERS_QUERY_PARAMS_MARKET_CAP_MORE_THAN + ", exchange: " + Arrays.toString(SCREENING_TICKERS_QUERY_PARAMS_EXCHANGE) + ", beta more than " + SCREENING_TICKERS_QUERY_PARAMS_BETA_MORE_THAN + ", and is actively trading.");
@@ -66,6 +81,70 @@ public class ExternalApiRequests {
                 .bodyToMono(TechnicalIndicatorResponse.class)
                 .block();
     }
+
+    public AccessTokenResponse getMGMApiAccessToken() {
+
+        WebClient webClient = WebClient.builder().baseUrl("https://dev-z383db7saml34grv.us.auth0.com/oauth/token").build();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("grant_type", "client_credentials");
+        formData.add("client_id", "bQcekSK2v0GCztAuFn8E9aqK4QD7n2Br");
+        formData.add("client_secret", "nRSDHwBeStC6IcuOmafNOjfgIUPhuoK9e_05utPDmgjcjD17AUdQ1SjwlzPjEaBJ");
+        formData.add("audience", "https://dev-z383db7saml34grv.us.auth0.com/api/v2/");
+        return webClient.post()
+                .header("content-type", "application/json")
+                .body(BodyInserters.fromFormData(formData))
+                .retrieve()
+                .bodyToMono(AccessTokenResponse.class)
+                .block();
+    }
+
+    public AccessTokenAudAndJti[] getRevokedAccessTokens(String mgmAccessToken) {
+
+        WebClient webClient = WebClient.builder().baseUrl("https://dev-z383db7saml34grv.us.auth0.com/api/v2/blacklists/tokens").build();
+        return webClient.get()
+                .header("Authorization", "Bearer " + mgmAccessToken)
+                .retrieve()
+                .bodyToMono(AccessTokenAudAndJti[].class)
+                .block();
+    }
+
+    public String revokeAccessToken(String mgmAccessToken, String jti) {
+//        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Technical Indicator", "ticker " + symbol + " and start time " + localDateTime);
+
+        WebClient webClient = WebClient.builder().baseUrl("https://dev-z383db7saml34grv.us.auth0.com/api/v2/blacklists/tokens").build();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("aud", clientId);
+        formData.add("jti", jti);
+        return webClient.post()
+                .header("content-type", "application/json")
+                .header("Authorization", "Bearer " + mgmAccessToken)
+                .body(BodyInserters.fromFormData(formData))
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> {
+                    if (response.statusCode() == HttpStatus.BAD_REQUEST) {
+                        System.out.println("Invalid request body");
+//                        return Mono.error(new BadRequestException("Invalid request body"));
+                    } else if (response.statusCode() == HttpStatus.UNAUTHORIZED) {
+                        System.out.println("Invalid token or client is not global");
+//                        return Mono.error(new UnauthorizedException("Invalid token or client is not global"));
+                    } else if (response.statusCode() == HttpStatus.FORBIDDEN) {
+                        System.out.println("Insufficient scope or cannot blacklist tokens for the specified audience");
+//                        return Mono.error(new ForbiddenException("Insufficient scope or cannot blacklist tokens for the specified audience"));
+                    } else if (response.statusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                        System.out.println("Too many requests");
+//                        return Mono.error(new TooManyRequestsException("Too many requests"));
+                    } else {
+                        System.out.println("Unknown client error");
+//                        return Mono.error(new RuntimeException("Unknown client error"));
+                    }
+                    return null;
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(new RuntimeException("Server error")))
+                .bodyToMono(String.class)
+                .block();
+    }
+
+
 //                .onStatus()
 //                .doOnError();
 //                .doOnNext(x -> System.out.println(x[0]))
@@ -75,4 +154,23 @@ public class ExternalApiRequests {
 //                .doOnNext(x -> System.out.println(x))
 //                .subscribe();
 
+//    public void doOauth2RefreshTokenFlowForAuth0(String refreshToken) {
+//        System.out.println("user trying to refresh Token /Web");
+//
+//        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+//        formData.add("grant_type", "refresh_token");
+//        formData.add("client_id", clientId);
+//        formData.add("client_secret", clientSecret);
+//        formData.add("refresh_token", refreshToken);
+//
+//        WebClient webClient = WebClient.builder().baseUrl(tokenUri).build();
+//        webClient.post()
+//                .body(BodyInserters.fromFormData(formData))
+//                .retrieve()
+//                .bodyToMono(String.class)
+//                .doOnNext(x -> System.out.println(x))
+//                .block();
+//
+//        return ResponseEntity.ok().build();
+//    }
 }

@@ -1,8 +1,9 @@
 package com.tradingbot.dotty.service;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
+import com.tradingbot.dotty.models.dto.AuthRequestUserLogIn;
 
 public interface UserAccountService {
-    void verifyGoogleIdToken(String idTokenString) throws GeneralSecurityException, IOException;
+
+    String authorizeUserAfterAuthentication(AuthRequestUserLogIn authRequestUserLogIn);
+
 }
