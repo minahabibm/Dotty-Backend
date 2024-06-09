@@ -1,5 +1,6 @@
 package com.tradingbot.dotty.utils;
 
+import com.tradingbot.dotty.exceptions.Auth0Exceptions;
 import com.tradingbot.dotty.models.dto.AccessTokenAudAndJti;
 import com.tradingbot.dotty.models.dto.AccessTokenResponse;
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
@@ -122,28 +123,21 @@ public class ExternalApiRequests {
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> {
                     if (response.statusCode() == HttpStatus.BAD_REQUEST) {
-                        System.out.println("Invalid request body");
-//                        return Mono.error(new BadRequestException("Invalid request body"));
+                        return Mono.error(new Auth0Exceptions.BadRequestException("Invalid request body"));
                     } else if (response.statusCode() == HttpStatus.UNAUTHORIZED) {
-                        System.out.println("Invalid token or client is not global");
-//                        return Mono.error(new UnauthorizedException("Invalid token or client is not global"));
+                        return Mono.error(new Auth0Exceptions.UnauthorizedAccessException("Invalid token or client is not global"));
                     } else if (response.statusCode() == HttpStatus.FORBIDDEN) {
-                        System.out.println("Insufficient scope or cannot blacklist tokens for the specified audience");
-//                        return Mono.error(new ForbiddenException("Insufficient scope or cannot blacklist tokens for the specified audience"));
+                        return Mono.error(new Auth0Exceptions.ForbiddenException("Insufficient scope or cannot blacklist tokens for the specified audience"));
                     } else if (response.statusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                        System.out.println("Too many requests");
-//                        return Mono.error(new TooManyRequestsException("Too many requests"));
+                        return Mono.error(new Auth0Exceptions.TooManyRequestsException("Too many requests"));
                     } else {
-                        System.out.println("Unknown client error");
-//                        return Mono.error(new RuntimeException("Unknown client error"));
+                        return Mono.error(new RuntimeException("Unknown client error"));
                     }
-                    return null;
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(new RuntimeException("Server error")))
                 .bodyToMono(String.class)
                 .block();
     }
-
 
 //                .onStatus()
 //                .doOnError();
