@@ -35,7 +35,19 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public Optional<UsersDTO> getUser(Long id) {
         log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, id, "Users");
-        return Optional.ofNullable(modelMapper.map(usersRepository.findById(id), UsersDTO.class));
+        Optional user = usersRepository.findById(id);
+        if(user.isPresent())
+            return Optional.of(modelMapper.map(user.get(), UsersDTO.class));
+        return user;
+    }
+
+    @Override
+    public Optional<UsersDTO> getUserByEmail(String email) {
+        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, email, "Users");
+        Optional user = usersRepository.findByEmailAddress(email);
+        if(user.isPresent())
+            return Optional.of(modelMapper.map(user.get(), UsersDTO.class));
+        return user;
     }
 
     @Override

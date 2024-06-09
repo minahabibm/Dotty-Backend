@@ -21,7 +21,13 @@ public class Users {
     private String lastName;
 
     @Column(name="userEmailAddress")
-    private String userEmailAddress;
+    private String emailAddress;
+
+    @Column(name="nickName")
+    private String nickname;
+
+    @Column(name="loginType")
+    private String loginType;
 
     @Column(name="pictureUrl")
     private String pictureUrl;

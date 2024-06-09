@@ -9,6 +9,7 @@ public interface UsersService {
 
     List<UsersDTO> getUsers();
     Optional<UsersDTO> getUser(Long Id);
+    Optional<UsersDTO> getUserByEmail(String email);
     Long insertUser(UsersDTO usersDTO);
     Long updateUser(UsersDTO usersDTO);
     String deleteUser(Long Id);

@@ -2,7 +2,9 @@ package com.tradingbot.dotty.serviceImpls;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
 import com.tradingbot.dotty.models.dto.AccessTokenAudAndJti;
+import com.tradingbot.dotty.models.dto.UsersDTO;
 import com.tradingbot.dotty.service.AuthService;
+import com.tradingbot.dotty.service.UsersService;
 import com.tradingbot.dotty.utils.ExternalApiRequests;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -11,14 +13,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Enumeration;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,6 +27,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private ExternalApiRequests externalApiRequests;
+
+    @Autowired
+    UsersService usersService;
 
     @Override
     public String getRedirectUrl(HttpServletRequest httpRequest) {
@@ -83,6 +86,33 @@ public class AuthServiceImpl implements AuthService {
         Map<String, AccessTokenAudAndJti> tokens = Arrays.stream(revokedAccessTokens).collect(Collectors.toMap(AccessTokenAudAndJti::getJti, tokenAudAndJti -> tokenAudAndJti));
         return tokens.containsKey(accessToken);
     }
+
+    @Override
+    public void addOrUpdateAuthenticatedUser(Authentication authentication) {
+        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();                                         // attributes.forEach((key, value) -> System.out.println(key + ": " + value));
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+        String email = (String) attributes.get("email");
+        Optional<UsersDTO> user = usersService.getUserByEmail(email);
+        if(!user.isPresent()) {
+            UsersDTO usersDTO = new UsersDTO();
+            usersDTO.setFirstName(attributes.get("given_name").toString());
+            usersDTO.setLastName(attributes.get("family_name").toString());
+            usersDTO.setEmailAddress(attributes.get("email").toString());
+            usersDTO.setLoginType(attributes.get("sub").toString());
+            usersDTO.setNickname(attributes.get("nickname").toString());
+            usersDTO.setPictureUrl(attributes.get("picture").toString());
+            usersService.insertUser(usersDTO);
+        } else {
+            UsersDTO usersDTO = user.get();
+            usersDTO.setFirstName(attributes.get("given_name").toString());
+            usersDTO.setLastName(attributes.get("family_name").toString());
+            usersDTO.setLoginType(attributes.get("sub").toString());
+            usersDTO.setNickname(attributes.get("nickname").toString());
+            usersDTO.setPictureUrl(attributes.get("picture").toString());
+            usersService.updateUser(usersDTO);
+        }
+    }
+
 
     @Override
     public void getAuthenticUser() {

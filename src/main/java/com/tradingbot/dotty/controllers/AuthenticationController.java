@@ -26,13 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-
 
 @RestController
 @RequestMapping("/api/dotty/oauth2/auth0/")
-public class AuthorizationController {
+public class AuthenticationController {
 
     @Autowired
     private AuthService authService;
@@ -42,7 +39,7 @@ public class AuthorizationController {
 
     private final OAuth2AuthorizedClientService authorizedClientService;
 
-    public AuthorizationController(OAuth2AuthorizedClientService authorizedClientService) {
+    public AuthenticationController(OAuth2AuthorizedClientService authorizedClientService) {
         this.authorizedClientService = authorizedClientService;
     }
 
@@ -66,8 +63,7 @@ public class AuthorizationController {
             // Handle JWT-based authentication
             String token = jwtAuth.getToken().getTokenValue();
             // Process the JWT token
-        } else if (authentication instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken oauth2Auth = (OAuth2AuthenticationToken) authentication;
+        } else if (authentication instanceof OAuth2AuthenticationToken oauth2Auth) {
             System.out.println("OAuth2AuthenticationToken");
             // Handle OAuth2 client-based authentication
             String principalName = oauth2Auth.getPrincipal().getName();
@@ -82,10 +78,8 @@ public class AuthorizationController {
     @GetMapping("/login")
     public ResponseEntity<?> doOauth2UserDetailsAndTokensAndRedirectFLowForAuth0(HttpServletRequest httpRequest, HttpServletResponse httpResponse, @RequestParam String code, @RequestParam String state, Authentication authentication) throws URISyntaxException { //AuthRequest
 
-        String redirectUri = authService.getRedirectUrl(httpRequest);
+        String redirectUri = authService.getRedirectUrl(httpRequest);                                                   // System.out.println(code + " " + state);
         System.out.println("user trying to log in " + redirectUri);
-//        System.out.println(code + " " + state);
-//        System.out.println(authentication.getPrincipal());
 
         OAuth2AuthenticationToken authenticationToken = (OAuth2AuthenticationToken) authentication;
         String clientRegistrationId = authenticationToken.getAuthorizedClientRegistrationId();
@@ -95,20 +89,16 @@ public class AuthorizationController {
             OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
             OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
 
-            // Do something with the tokens
-            System.out.println("Access Token: " + accessToken.getTokenValue());
-            if (refreshToken != null) {
-                System.out.println("Refresh Token: " + refreshToken.getTokenValue());
-            }
-
             DefaultOidcUser oidcUser = (DefaultOidcUser) authentication.getPrincipal();
             OidcIdToken idToken = oidcUser.getIdToken();
-            System.out.println("Id Token: " + idToken.getTokenValue());
 
-            Map<String, String> response = new HashMap<>();
-            response.put("accessToken", accessToken.getTokenValue());
-            response.put("idToken", idToken.getTokenValue());
+//            System.out.println("Access Token: " + accessToken.getTokenValue());
+//            if (refreshToken != null) {
+//                System.out.println("Refresh Token: " + refreshToken.getTokenValue());
+//            }
+//            System.out.println("Id Token: " + idToken.getTokenValue());
 
+            authService.addOrUpdateAuthenticatedUser(authentication);
 
             URI redirectUrl = new URI(redirectUri+"?access_token="+accessToken.getTokenValue()+"&id_token="+idToken.getTokenValue());
             System.out.println(redirectUrl);

@@ -51,7 +51,6 @@ import java.net.URL;
 import java.util.List;
 
 // TODO using a refresh token
-// TODO save signed in user to the DB
 // TODO get  signed in from sessions
 // TODO save tokens for auth api
 // TODO add Logs
@@ -82,6 +81,7 @@ public class DottySecurityConfiguration  {
             .securityContext(getSecurityContextConfigurerCustomizer(securityContextRepository))
             .exceptionHandling(customizeExceptionHandling())
             .logout(getLogoutCustomizer())
+            .headers(getHeadersConfigurerCustomizer())                                                                  // Allow frames from the same origin
             .cors(getCorsConfigurerCustomizer())                                                                        // provide cors
             .csrf(AbstractHttpConfigurer::disable)                                                                      // provide a csrf token
             .addFilterBefore(getRequestFilter(), BearerTokenAuthenticationFilter.class);
@@ -168,6 +168,10 @@ public class DottySecurityConfiguration  {
                 .accessDeniedHandler((request, response, authException)-> {
                     System.out.println("response");
                 });
+    }
+
+    private Customizer<HeadersConfigurer<HttpSecurity>> getHeadersConfigurerCustomizer() {
+        return headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin);
     }
 
     private Customizer<LogoutConfigurer<HttpSecurity>> getLogoutCustomizer() {
