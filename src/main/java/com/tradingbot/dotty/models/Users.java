@@ -32,6 +32,10 @@ public class Users {
     @Column(name="pictureUrl")
     private String pictureUrl;
 
+    @OneToOne
+    @JoinColumn(name = "userConfigurationId")
+    private UserConfiguration userConfiguration;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

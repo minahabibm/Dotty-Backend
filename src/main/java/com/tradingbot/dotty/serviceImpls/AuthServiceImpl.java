@@ -2,8 +2,10 @@ package com.tradingbot.dotty.serviceImpls;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
 import com.tradingbot.dotty.models.dto.AccessTokenAudAndJti;
+import com.tradingbot.dotty.models.dto.UserConfigurationDTO;
 import com.tradingbot.dotty.models.dto.UsersDTO;
 import com.tradingbot.dotty.service.AuthService;
+import com.tradingbot.dotty.service.UserConfigurationService;
 import com.tradingbot.dotty.service.UsersService;
 import com.tradingbot.dotty.utils.ExternalApiRequests;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +32,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     UsersService usersService;
+
+    @Autowired
+    UserConfigurationService userConfigurationService;
 
     @Override
     public String getRedirectUrl(HttpServletRequest httpRequest) {
@@ -94,6 +99,7 @@ public class AuthServiceImpl implements AuthService {
         String email = (String) attributes.get("email");
         Optional<UsersDTO> user = usersService.getUserByEmail(email);
         if(!user.isPresent()) {
+            Long userConfigurationID = userConfigurationService.insertUserConfiguration(new UserConfigurationDTO());
             UsersDTO usersDTO = new UsersDTO();
             usersDTO.setFirstName(attributes.get("given_name").toString());
             usersDTO.setLastName(attributes.get("family_name").toString());
@@ -101,6 +107,7 @@ public class AuthServiceImpl implements AuthService {
             usersDTO.setLoginType(attributes.get("sub").toString());
             usersDTO.setNickname(attributes.get("nickname").toString());
             usersDTO.setPictureUrl(attributes.get("picture").toString());
+            usersDTO.setUserConfigurationDTO(userConfigurationService.getUserConfiguration(userConfigurationID).get());
             usersService.insertUser(usersDTO);
         } else {
             UsersDTO usersDTO = user.get();

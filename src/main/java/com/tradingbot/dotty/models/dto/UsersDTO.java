@@ -16,6 +16,7 @@ public class UsersDTO {
     private String nickname;
     private String loginType;
     private String pictureUrl;
+    private UserConfigurationDTO userConfigurationDTO;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private int version;
