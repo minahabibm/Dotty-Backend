@@ -84,6 +84,7 @@ public class ExternalApiRequests {
     }
 
     public AccessTokenResponse getMGMApiAccessToken() {
+        log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "get MGM Access Token");
 
         WebClient webClient = WebClient.builder().baseUrl("https://dev-z383db7saml34grv.us.auth0.com/oauth/token").build();
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
@@ -100,6 +101,7 @@ public class ExternalApiRequests {
     }
 
     public AccessTokenAudAndJti[] getRevokedAccessTokens(String mgmAccessToken) {
+        log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "get Revoked Access Token");
 
         WebClient webClient = WebClient.builder().baseUrl("https://dev-z383db7saml34grv.us.auth0.com/api/v2/blacklists/tokens").build();
         return webClient.get()
@@ -110,7 +112,7 @@ public class ExternalApiRequests {
     }
 
     public String revokeAccessToken(String mgmAccessToken, String jti) {
-//        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Technical Indicator", "ticker " + symbol + " and start time " + localDateTime);
+        log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "Revoke user Access token, jti " + jti);
 
         WebClient webClient = WebClient.builder().baseUrl("https://dev-z383db7saml34grv.us.auth0.com/api/v2/blacklists/tokens").build();
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
@@ -138,6 +140,7 @@ public class ExternalApiRequests {
                 .bodyToMono(String.class)
                 .block();
     }
+
 
 //                .onStatus()
 //                .doOnError();

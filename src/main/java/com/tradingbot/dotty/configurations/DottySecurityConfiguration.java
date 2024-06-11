@@ -15,6 +15,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.filters.RequestFilter;
 import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,10 +51,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import static com.tradingbot.dotty.utils.LoggingConstants.*;
+
 // TODO using a refresh token
 // TODO save tokens for auth api
-// TODO add Logs
+// TODO user redirect to login page
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 public class DottySecurityConfiguration  {
@@ -106,9 +110,12 @@ public class DottySecurityConfiguration  {
         return new RequestFilter() {
             @Override
             public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+                log.debug(USER_AUTHORIZATION);
                 HttpServletRequest request = (HttpServletRequest) servletRequest;
                 final String authorizationHeader = request.getHeader("Authorization");
-                if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                Boolean isAuthorizationHeader = (authorizationHeader != null && authorizationHeader.startsWith("Bearer "));
+                log.debug(USER_AUTHORIZATION_TOKEN_STATUS, isAuthorizationHeader);
+                if (isAuthorizationHeader) {
                     String token = authorizationHeader.split(" ")[1];
                     if (!authService.validateToken(token)) {
                         servletResponse.setContentType("application/json");
@@ -176,11 +183,13 @@ public class DottySecurityConfiguration  {
     }
 
     private Customizer<LogoutConfigurer<HttpSecurity>> getLogoutCustomizer() {
+        log.debug(USER_AUTHENTICATION_LOGOUT);
         CookieClearingLogoutHandler cookies = new CookieClearingLogoutHandler("JSESSIONID");
         HeaderWriterLogoutHandler clearSiteData = new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(ClearSiteDataHeaderWriter.Directive.ALL));
         LogoutSuccessHandler oidcLogoutSuccessHandler = (request, response, authentication) -> {
             String redirectUrl = request.getRequestURI();
             String queryString = request.getQueryString();
+            log.debug(USER_AUTHENTICATION_LOGOUT_TOKEN);
             if(queryString != null) {
                 String[] queryParams = request.getQueryString().split("=");
                 if(queryParams.length >= 2)
@@ -191,11 +200,6 @@ public class DottySecurityConfiguration  {
             oidcClientInitiatedLogoutSuccessHandler.setPostLogoutRedirectUri("{baseUrl}/api/dotty/oauth2/auth0/logout");
             oidcClientInitiatedLogoutSuccessHandler.setDefaultTargetUrl(authService.getRedirectUrl(request));
             oidcClientInitiatedLogoutSuccessHandler.onLogoutSuccess(request, response, authentication);
-
-//            if (!redirectUrl.contains("postLogout=true")) {
-//            } else {
-//                response.setStatus(HttpServletResponse.SC_OK);
-//            }
         };
 
         return (logout) -> logout

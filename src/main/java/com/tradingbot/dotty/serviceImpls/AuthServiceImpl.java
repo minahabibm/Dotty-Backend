@@ -13,15 +13,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.OAuth2RefreshToken;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.tradingbot.dotty.utils.LoggingConstants.*;
 
 @Slf4j
 @Service
@@ -31,13 +41,20 @@ public class AuthServiceImpl implements AuthService {
     private ExternalApiRequests externalApiRequests;
 
     @Autowired
-    UsersService usersService;
+    private UsersService usersService;
 
     @Autowired
-    UserConfigurationService userConfigurationService;
+    private UserConfigurationService userConfigurationService;
+
+    private final OAuth2AuthorizedClientService authorizedClientService;
+
+    public AuthServiceImpl(OAuth2AuthorizedClientService authorizedClientService) {
+        this.authorizedClientService = authorizedClientService;
+    }
 
     @Override
     public String getRedirectUrl(HttpServletRequest httpRequest) {
+        log.trace(USER_AUTHENTICATION_GETTING_REDIRECT_URL_TYPE);
         String redirectUrl = null;
         try {
             String userAgent = httpRequest.getHeader("User-Agent");
@@ -49,18 +66,44 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        log.trace(USER_AUTHENTICATION_REDIRECT_URL_TYPE, redirectUrl);
         return redirectUrl.equals("webRedirectUrl") ? "http://localhost:8081" :  "com.anonymous.dotty-app://localhost:8081";
     }
 
     @Override
+    public URI getResponseRedirectUri(HttpServletRequest httpRequest, Authentication authentication) throws URISyntaxException {
+        String redirectUri = getRedirectUrl(httpRequest);                                                   // System.out.println(code + " " + state);
+
+        OAuth2AuthenticationToken authenticationToken = (OAuth2AuthenticationToken) authentication;
+        String clientRegistrationId = authenticationToken.getAuthorizedClientRegistrationId();
+        String principalName = authenticationToken.getName();
+        OAuth2AuthorizedClient authorizedClient = authorizedClientService.loadAuthorizedClient(clientRegistrationId, principalName);
+        if (authorizedClient != null) {
+            log.info(USER_AUTHENTICATION_LOGIN_ACCESS_REFRESH_TOKENS);
+            OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
+            OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
+            log.info(USER_AUTHENTICATION_LOGIN_ID_TOKENS);
+            DefaultOidcUser oidcUser = (DefaultOidcUser) authentication.getPrincipal();
+            OidcIdToken idToken = oidcUser.getIdToken();
+            log.info(USER_AUTHENTICATION_LOGIN_USER_TO_API);
+            addOrUpdateAuthenticatedUser(authentication);
+
+            URI redirectUrl = new URI(redirectUri+"?access_token="+accessToken.getTokenValue()+"&id_token="+idToken.getTokenValue());
+            return redirectUrl;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public Map<String, Object> getJwtPayloadDecoder(String token) {
+        log.trace(USER_AUTHENTICATION_TOKEN_PAYLOAD);
         try {
             Base64.Decoder decoder = Base64.getUrlDecoder();
-
             String[] chunks = token.split("\\.");
             String header = new String(decoder.decode(chunks[0]));
             String payload = new String(decoder.decode(chunks[1]));
-
+            log.trace(USER_AUTHENTICATION_TOKEN_DETAILS, header, payload);
             return JSONObjectUtils.parse(payload);
         } catch (JwtException e) {
             // Handle any exceptions that occur during decoding or verification
@@ -73,6 +116,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void revokeToken(String token) {
+        log.trace(USER_AUTHENTICATION_TOKEN_REVOKE, token);
         Map<String, Object> tokenPayload = getJwtPayloadDecoder(token);
         String mgmAccesstoken = externalApiRequests.getMGMApiAccessToken().getAccess_token();
         externalApiRequests.revokeAccessToken(mgmAccesstoken, tokenPayload.get("jti").toString());
@@ -80,24 +124,29 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean validateToken(String token) {
+        log.trace(USER_AUTHENTICATION_TOKEN_VALIDATION, token);
         return (isTokenBlacklisted(token)) ? false : true;
     }
 
     private boolean isTokenBlacklisted(String token) {
+        log.trace(USER_AUTHENTICATION_TOKEN_GETTING_REVOKED_LIST);
         String mgmAccesstoken = externalApiRequests.getMGMApiAccessToken().getAccess_token();
         AccessTokenAudAndJti[] revokedAccessTokens = externalApiRequests.getRevokedAccessTokens(mgmAccesstoken);
 
         String accessToken = getJwtPayloadDecoder(token).get("jti").toString();
         Map<String, AccessTokenAudAndJti> tokens = Arrays.stream(revokedAccessTokens).collect(Collectors.toMap(AccessTokenAudAndJti::getJti, tokenAudAndJti -> tokenAudAndJti));
+        log.trace(USER_AUTHENTICATION_TOKEN_REVOKED_LIST, tokens);
         return tokens.containsKey(accessToken);
     }
 
     @Override
     public void addOrUpdateAuthenticatedUser(Authentication authentication) {
+        log.trace(USER_AUTHENTICATION_DATA);
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();                                         // attributes.forEach((key, value) -> System.out.println(key + ": " + value));
         Map<String, Object> attributes = oAuth2User.getAttributes();
         String email = (String) attributes.get("email");
         Optional<UsersDTO> user = usersService.getUserByEmail(email);
+
         if(!user.isPresent()) {
             Long userConfigurationID = userConfigurationService.insertUserConfiguration(new UserConfigurationDTO());
             UsersDTO usersDTO = new UsersDTO();
@@ -108,6 +157,8 @@ public class AuthServiceImpl implements AuthService {
             usersDTO.setNickname(attributes.get("nickname").toString());
             usersDTO.setPictureUrl(attributes.get("picture").toString());
             usersDTO.setUserConfigurationDTO(userConfigurationService.getUserConfiguration(userConfigurationID).get());
+
+            log.debug(USER_AUTHENTICATION_CREATE, usersDTO);
             usersService.insertUser(usersDTO);
         } else {
             UsersDTO usersDTO = user.get();
@@ -116,6 +167,8 @@ public class AuthServiceImpl implements AuthService {
             usersDTO.setLoginType(attributes.get("sub").toString());
             usersDTO.setNickname(attributes.get("nickname").toString());
             usersDTO.setPictureUrl(attributes.get("picture").toString());
+
+            log.debug(USER_AUTHENTICATION_UPDATE, usersDTO);
             usersService.updateUser(usersDTO);
         }
     }

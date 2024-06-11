@@ -35,7 +35,7 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
 
     @Override
     public Optional<UserConfigurationDTO> getUserConfiguration(Long id) {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, id, "User Configuration");
+        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "User Configuration", id);
         Optional userConfiguration = userConfigurationRepository.findById(id);
         if(userConfiguration.isPresent())
             return Optional.of(modelMapper.map(userConfiguration.get(), UserConfigurationDTO.class));
