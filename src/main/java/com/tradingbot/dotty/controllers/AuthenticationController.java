@@ -63,7 +63,8 @@ public class AuthenticationController {
             // Handle JWT-based authentication
             String token = jwtAuth.getToken().getTokenValue();
             // Process the JWT token
-        } else if (authentication instanceof OAuth2AuthenticationToken oauth2Auth) {
+        } else if (authentication instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken oauth2Auth = (OAuth2AuthenticationToken) authentication;
             System.out.println("OAuth2AuthenticationToken");
             // Handle OAuth2 client-based authentication
             String principalName = oauth2Auth.getPrincipal().getName();

@@ -51,7 +51,6 @@ import java.net.URL;
 import java.util.List;
 
 // TODO using a refresh token
-// TODO get  signed in from sessions
 // TODO save tokens for auth api
 // TODO add Logs
 
@@ -72,13 +71,12 @@ public class DottySecurityConfiguration  {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
         http
             .authorizeHttpRequests(getAuthorizationManagerRequestMatcherRegistryCustomizer())
             .oauth2Login(getoAuth2LoginConfigurerCustomizer())                                                          // withDefaults()
             .oauth2ResourceServer(getoAuth2ResourceServerConfigurerCustomizer())
             .sessionManagement(getSessionManagementConfigurerCustomizer())
-            .securityContext(getSecurityContextConfigurerCustomizer(securityContextRepository))
+            .securityContext(getSecurityContextConfigurerCustomizer(securityContextRepository()))
             .exceptionHandling(customizeExceptionHandling())
             .logout(getLogoutCustomizer())
             .headers(getHeadersConfigurerCustomizer())                                                                  // Allow frames from the same origin
@@ -88,7 +86,10 @@ public class DottySecurityConfiguration  {
         return http.build();
     }
 
-
+    @Bean
+    public HttpSessionSecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
+    }
 
     @Bean
     public JwtDecoder jwtDecoder() throws MalformedURLException, KeySourceException {

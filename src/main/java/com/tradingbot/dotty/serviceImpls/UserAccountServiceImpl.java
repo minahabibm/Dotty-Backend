@@ -16,8 +16,6 @@ public class UserAccountServiceImpl implements UserAccountService {
 
         System.out.println(authorizationCode + " " +idToken);
 
-//        Authentication auth =
-
         return null;
     }
 
