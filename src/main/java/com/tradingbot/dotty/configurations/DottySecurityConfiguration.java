@@ -183,10 +183,10 @@ public class DottySecurityConfiguration  {
     }
 
     private Customizer<LogoutConfigurer<HttpSecurity>> getLogoutCustomizer() {
-        log.debug(USER_AUTHENTICATION_LOGOUT);
         CookieClearingLogoutHandler cookies = new CookieClearingLogoutHandler("JSESSIONID");
         HeaderWriterLogoutHandler clearSiteData = new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(ClearSiteDataHeaderWriter.Directive.ALL));
         LogoutSuccessHandler oidcLogoutSuccessHandler = (request, response, authentication) -> {
+            log.debug(USER_AUTHENTICATION_LOGOUT);
             String redirectUrl = request.getRequestURI();
             String queryString = request.getQueryString();
             log.debug(USER_AUTHENTICATION_LOGOUT_TOKEN);
