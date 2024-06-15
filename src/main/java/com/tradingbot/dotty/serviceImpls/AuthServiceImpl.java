@@ -92,8 +92,7 @@ public class AuthServiceImpl implements AuthService {
             log.info(USER_AUTHENTICATION_LOGIN_USER_TO_API);
             addOrUpdateAuthenticatedUser(authentication);
 
-            URI redirectUrl = new URI(redirectUri+"?access_token="+accessToken.getTokenValue()+"&id_token="+idToken.getTokenValue());
-            return redirectUrl;
+            return new URI(redirectUri+"?access_token="+accessToken.getTokenValue()+"&id_token="+idToken.getTokenValue());
         } else {
             return null;
         }
@@ -148,7 +147,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean validateToken(String token) {
         log.trace(USER_AUTHENTICATION_TOKEN_VALIDATION, token);
-        return (isTokenBlacklisted(token)) ? false : true;
+        return !isTokenBlacklisted(token);
     }
 
     private boolean isTokenBlacklisted(String token) {
@@ -170,7 +169,7 @@ public class AuthServiceImpl implements AuthService {
         String email = (String) attributes.get("email");
         Optional<UsersDTO> user = usersService.getUserByEmail(email);
 
-        if(!user.isPresent()) {
+        if(user.isEmpty()) {
             Long userConfigurationID = userConfigurationService.insertUserConfiguration(new UserConfigurationDTO());
             UsersDTO usersDTO = new UsersDTO();
             usersDTO.setFirstName(attributes.get("given_name").toString());
@@ -224,8 +223,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void extractRequestDetails(HttpServletRequest servletRequest) {
-        HttpServletRequest request = servletRequest;
+    public void extractRequestDetails(HttpServletRequest request) {
 
         System.out.println("1 - preHandle() : Before sending request to the Controller");
         System.out.println("Method Type: " + request.getMethod());
