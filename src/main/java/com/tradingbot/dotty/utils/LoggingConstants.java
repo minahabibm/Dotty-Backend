@@ -78,3 +78,19 @@ public class LoggingConstants {
 
 
 }
+
+
+//Logging involves capturing and storing relevant information about API requests, responses, errors, and other events. This information can be invaluable for troubleshooting, auditing, and security analysis.
+//When logging API requests and responses, you should consider capturing the following information:
+//Timestamp
+//Client IP address
+//User agent
+//Request method (GET, POST, PUT, DELETE)
+//Request URL
+//Request headers
+//Request body
+//Response status code
+//Response headers
+//Response body (or a truncated version to avoid logging sensitive data)
+//Execution time
+//Error messages (if any)
