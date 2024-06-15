@@ -109,6 +109,7 @@ public class ExternalApiRequests {
                 .block();
     }
 
+    @Cacheable(value = "tokens", key = "'revokedTokens'")
     public AccessTokenAudAndJti[] getRevokedAccessTokens(String mgmAccessToken) {
         log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "get Revoked Access Token");
 

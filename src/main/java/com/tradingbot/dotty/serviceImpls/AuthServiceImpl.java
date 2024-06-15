@@ -142,6 +142,7 @@ public class AuthServiceImpl implements AuthService {
         Map<String, Object> tokenPayload = getJwtPayloadDecoder(token);
         String mgmAccesstoken = getMGMAccessToken();
         externalApiRequests.revokeAccessToken(mgmAccesstoken, tokenPayload.get("jti").toString());
+        cacheManager.getCache("tokens").evictIfPresent("revokedTokens");
     }
 
     @Override
