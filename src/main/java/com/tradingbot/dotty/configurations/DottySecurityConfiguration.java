@@ -54,8 +54,21 @@ import java.util.List;
 import static com.tradingbot.dotty.utils.LoggingConstants.*;
 
 // TODO using a refresh token
-// TODO save tokens for auth api
 // TODO user redirect to login page
+//Logging involves capturing and storing relevant information about API requests, responses, errors, and other events. This information can be invaluable for troubleshooting, auditing, and security analysis.
+//When logging API requests and responses, you should consider capturing the following information:
+//Timestamp
+//Client IP address
+//User agent
+//Request method (GET, POST, PUT, DELETE)
+//Request URL
+//Request headers
+//Request body
+//Response status code
+//Response headers
+//Response body (or a truncated version to avoid logging sensitive data)
+//Execution time
+//Error messages (if any)
 
 @Slf4j
 @Configuration
@@ -67,7 +80,6 @@ public class DottySecurityConfiguration  {
 
     @Autowired
     private AuthService authService;
-
 
     @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
     private String jwkSetUrl;
@@ -172,6 +184,7 @@ public class DottySecurityConfiguration  {
                     cookies = null;
 
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
+//                    response.sendRedirect("http://localhost:8080/oauth2/authorization/auth0");
                 })
                 .accessDeniedHandler((request, response, authException)-> {
                     System.out.println("response");

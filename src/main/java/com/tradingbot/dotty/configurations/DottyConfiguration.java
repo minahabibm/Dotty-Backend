@@ -7,6 +7,9 @@ import com.tradingbot.dotty.models.dto.OrdersDTO;
 import com.tradingbot.dotty.models.dto.PositionDTO;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -16,6 +19,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 @EnableScheduling
+@EnableCaching
 @EnableAsync
 public class DottyConfiguration {
 
@@ -55,6 +59,20 @@ public class DottyConfiguration {
         executor.initialize();
         return executor;
     }
+
+    @Bean
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager("tokens");
+    }
+
+//    @Bean
+//    public WebClient webClient() {
+//        return WebClient.builder()
+//                .filter((request, next) -> next.exchange(request)
+//                        .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+//                                .filter(throwable -> throwable instanceof WebClientResponseException)))
+//                .build();
+//    }
 
 
 //    @Bean

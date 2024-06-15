@@ -12,6 +12,7 @@ public interface AuthService {
     String getRedirectUrl(HttpServletRequest httpRequest);
     URI getResponseRedirectUri(HttpServletRequest httpRequest, Authentication authentication) throws URISyntaxException;
     Map<String, Object> getJwtPayloadDecoder(String token);
+    String getMGMAccessToken();
     void revokeToken(String token);
     boolean validateToken(String token);
     void addOrUpdateAuthenticatedUser(Authentication authentication);

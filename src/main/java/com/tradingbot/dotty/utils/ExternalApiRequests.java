@@ -10,6 +10,7 @@ import static com.tradingbot.dotty.utils.Constants.*;
 import static com.tradingbot.dotty.utils.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,13 @@ public class ExternalApiRequests {
     private String clientId;
     @Value("${spring.security.oauth2.client.registration.auth0.client-secret}")
     private String clientSecret;
+
+    @Value("${mgm-auth0-api.client-id}")
+    private String mgmClientId;
+    @Value("${mgm-auth0-api.client-secret}")
+    private String mgmClientSecret;
+    @Value("${mgm-auth0-api.audience}")
+    private String mgmAudience;
 
 
 
@@ -83,15 +91,16 @@ public class ExternalApiRequests {
                 .block();
     }
 
+    @Cacheable(value = "tokens", key = "'mgmAccessToken'")
     public AccessTokenResponse getMGMApiAccessToken() {
         log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "get MGM Access Token");
 
         WebClient webClient = WebClient.builder().baseUrl("https://dev-z383db7saml34grv.us.auth0.com/oauth/token").build();
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "client_credentials");
-        formData.add("client_id", "bQcekSK2v0GCztAuFn8E9aqK4QD7n2Br");
-        formData.add("client_secret", "nRSDHwBeStC6IcuOmafNOjfgIUPhuoK9e_05utPDmgjcjD17AUdQ1SjwlzPjEaBJ");
-        formData.add("audience", "https://dev-z383db7saml34grv.us.auth0.com/api/v2/");
+        formData.add("client_id", mgmClientId);
+        formData.add("client_secret", mgmClientSecret);
+        formData.add("audience", mgmAudience);
         return webClient.post()
                 .header("content-type", "application/json")
                 .body(BodyInserters.fromFormData(formData))

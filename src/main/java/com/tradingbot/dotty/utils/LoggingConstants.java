@@ -56,7 +56,7 @@ public class LoggingConstants {
     public static final String USER_AUTHENTICATION_LOGIN_SUCCESS = "User Login Successfully completed.";
     public static final String USER_AUTHENTICATION_LOGIN_ERROR = "User Login error ";
     public static final String USER_AUTHENTICATION_LOGOUT = "Authenticate User trying to logout.";
-    public static final String USER_AUTHENTICATION_LOGOUT_TOKEN = "REvoking user Access token on logout.";
+    public static final String USER_AUTHENTICATION_LOGOUT_TOKEN = "Revoking user Access token on logout.";
     public static final String USER_AUTHENTICATION_DATA = "Authentication service handling user data.";
     public static final String USER_AUTHENTICATION_CREATE = "Authentication service adding a new user {}.";
     public static final String USER_AUTHENTICATION_UPDATE = "Authentication service updating user {}.";
@@ -71,6 +71,8 @@ public class LoggingConstants {
     public static final String USER_AUTHORIZATION = "Authorize User trying to access api endpoint.";
     public static final String USER_AUTHORIZATION_TOKEN_STATUS = "User uses an access token to access api endpoint: {}.";
 
+    public static final String CACHE_MGM_ACCESS_TOKEN = "Fetching MGM Access Token";
+    public static final String CACHE_MGM_ACCESS_TOKEN_EXP = "Expired Access Token, Fetching MGM Access Token from Auth0 API";
 
 
 
