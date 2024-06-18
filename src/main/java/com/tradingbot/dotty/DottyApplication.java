@@ -6,8 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 // TODO WebSockets
 // TODO Messaging
 // TODO Application restarts
-// TODO Exceptions Handling \ Retries
-// TODO user redirects to login page
 
 @SpringBootApplication()
 public class DottyApplication {

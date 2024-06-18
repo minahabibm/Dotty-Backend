@@ -53,7 +53,8 @@ import java.util.List;
 
 import static com.tradingbot.dotty.utils.LoggingConstants.*;
 
-// TODO using a refresh token
+// TODO Update Access token when refreshed
+// TODO user redirects to login page
 
 @Slf4j
 @Configuration
@@ -68,7 +69,6 @@ public class DottySecurityConfiguration  {
 
     @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
     private String jwkSetUrl;
-
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

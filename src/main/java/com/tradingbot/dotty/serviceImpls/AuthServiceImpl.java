@@ -24,6 +24,7 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -92,7 +93,7 @@ public class AuthServiceImpl implements AuthService {
             log.info(USER_AUTHENTICATION_LOGIN_USER_TO_API);
             addOrUpdateAuthenticatedUser(authentication);
 
-            return new URI(redirectUri+"?access_token="+accessToken.getTokenValue()+"&id_token="+idToken.getTokenValue());
+            return new URI(redirectUri+"?access_token="+accessToken.getTokenValue()+"&refresh_token="+refreshToken.getTokenValue()+"&id_token="+idToken.getTokenValue());
         } else {
             return null;
         }
@@ -219,6 +220,25 @@ public class AuthServiceImpl implements AuthService {
             }
         } else {
             System.out.println ("No authenticated user");
+        }
+    }
+
+    @Override
+    public void getAuthorizationType() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
+            System.out.println("JwtAuthenticationToken");
+            // Handle JWT-based authentication
+            String token = jwtAuth.getToken().getTokenValue();
+            // Process the JWT token
+        } else if (authentication instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken oauth2Auth = (OAuth2AuthenticationToken) authentication;
+            System.out.println("OAuth2AuthenticationToken");
+            // Handle OAuth2 client-based authentication
+            String principalName = oauth2Auth.getPrincipal().getName();
+            // Process the OAuth2 authentication
+        } else {
+            throw new IllegalArgumentException("Unexpected authentication type: " + authentication.getClass());
         }
     }
 

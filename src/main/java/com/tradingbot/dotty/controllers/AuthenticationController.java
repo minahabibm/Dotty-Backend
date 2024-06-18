@@ -9,13 +9,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2RefreshToken;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,38 +27,28 @@ public class AuthenticationController {
     @Autowired
     private AuthService authService;
 
-    @GetMapping("/") //"/userAccount"
-    public ResponseEntity<?> doOAuthFlowAppAuthorization(@RegisteredOAuth2AuthorizedClient("auth0") OAuth2AuthorizedClient authorizedClient) {
-
-        OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
-        OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
-        if (refreshToken != null) {
-            System.out.println(accessToken.getTokenValue());
-            System.out.println(refreshToken.getTokenValue());
-        } else {
-            System.out.println("No refresh token available");
-        }
 
 
+//    @GetMapping("/refresh")
+//    public ResponseEntity<?> doOAuthFlowAppAuthorization(@RegisteredOAuth2AuthorizedClient("auth0") OAuth2AuthorizedClient authorizedClient) {
+//
+//        OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
+//        OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
+//        if (refreshToken != null) {
+//            System.out.println(accessToken.getTokenValue());
+//            System.out.println(refreshToken.getTokenValue());
+//        } else {
+//            System.out.println("No refresh token available");
+//        }
+//
+//        authService.getAuthorizationType();
+//
+//
+//        HashMap<String, String> jsonResponse = new HashMap<>();
+//        jsonResponse.put("accessToken", accessToken.getTokenValue());
+//        return ResponseEntity.ok(jsonResponse);
+//    }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
-            System.out.println("JwtAuthenticationToken");
-            // Handle JWT-based authentication
-            String token = jwtAuth.getToken().getTokenValue();
-            // Process the JWT token
-        } else if (authentication instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken oauth2Auth = (OAuth2AuthenticationToken) authentication;
-            System.out.println("OAuth2AuthenticationToken");
-            // Handle OAuth2 client-based authentication
-            String principalName = oauth2Auth.getPrincipal().getName();
-            // Process the OAuth2 authentication
-        } else {
-            throw new IllegalArgumentException("Unexpected authentication type: " + authentication.getClass());
-        }
-
-        return ResponseEntity.ok().build();
-    }
 
     @GetMapping("/login")
     public ResponseEntity<?> doOauth2UserDetailsAndTokensAndRedirectFLowForAuth0(HttpServletRequest httpRequest, HttpServletResponse httpResponse, @RequestParam String code, @RequestParam String state, Authentication authentication) throws URISyntaxException { //AuthRequest

@@ -17,6 +17,7 @@ public interface AuthService {
     boolean validateToken(String token);
     void addOrUpdateAuthenticatedUser(Authentication authentication);
     void getAuthenticUser();
+    void getAuthorizationType();
     void extractRequestDetails(HttpServletRequest servletRequest);
 
 }
