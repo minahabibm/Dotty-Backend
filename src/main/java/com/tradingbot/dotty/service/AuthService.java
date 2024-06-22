@@ -2,6 +2,7 @@ package com.tradingbot.dotty.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,7 +17,7 @@ public interface AuthService {
     void revokeToken(String token);
     boolean validateToken(String token);
     void addOrUpdateAuthenticatedUser(Authentication authentication);
-    void getAuthenticUser();
+    DefaultOAuth2User getAuthenticUser();
     void getAuthorizationType();
     void extractRequestDetails(HttpServletRequest servletRequest);
 

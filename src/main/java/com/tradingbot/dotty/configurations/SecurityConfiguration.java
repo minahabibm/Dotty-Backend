@@ -59,7 +59,7 @@ import static com.tradingbot.dotty.utils.LoggingConstants.*;
 @Slf4j
 @Configuration
 @EnableWebSecurity
-public class DottySecurityConfiguration  {
+public class SecurityConfiguration {
 
     @Autowired
     private ClientRegistrationRepository clientRegistrationRepository;

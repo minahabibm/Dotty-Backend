@@ -26,5 +26,11 @@ public class Constants {
 
     public static final Double MAXIMUM_PRICE_ACTION_EXIT = 2.5;
 
+    public static final String WEBSOCKET_SUBSCRIPTION_TYPE = "type";
+    public static final String WEBSOCKET_SUBSCRIPTION_TOPIC = "topic";
+    public static final String WEBSOCKET_SUBSCRIPTION_MESSAGE = "message";
+    public static final String WEBSOCKET_SUBSCRIPTION_SESSION_ID = "sessionId";
+    public static final String WEBSOCKET_SUBSCRIPTION_USER_ID = "userId";
+
 
 }

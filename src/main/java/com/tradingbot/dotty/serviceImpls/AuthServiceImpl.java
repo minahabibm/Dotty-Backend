@@ -198,7 +198,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public void getAuthenticUser() {
+    public DefaultOAuth2User getAuthenticUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
@@ -214,6 +214,7 @@ public class AuthServiceImpl implements AuthService {
                 System.out.println(user.getAttributes());
 
                 System.out.println("Authenticated user: " + name + ", Email: " + email);
+                return user;
             } else {
                 // Handle other types of authentication if needed
                 System.out.println("Authenticated user (non-OAuth2): " + authentication.getName());
@@ -221,6 +222,7 @@ public class AuthServiceImpl implements AuthService {
         } else {
             System.out.println ("No authenticated user");
         }
+        return (DefaultOAuth2User) authentication;
     }
 
     @Override
