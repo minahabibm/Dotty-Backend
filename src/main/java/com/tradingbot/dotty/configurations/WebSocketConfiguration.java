@@ -3,9 +3,21 @@ package com.tradingbot.dotty.configurations;
 import com.tradingbot.dotty.utils.WebSocketsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.web.socket.server.HandshakeInterceptor;
+
+import java.util.Map;
+
+import static com.tradingbot.dotty.utils.Constants.WEBSOCKET_SESSION_ATTRIBUTE_USER;
 
 @Configuration
 @EnableWebSocket
@@ -16,8 +28,42 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(webSocketHandler, "dotty");
-        registry.addHandler(webSocketHandler, "dotty").withSockJS();
+
+        HandshakeInterceptor authInterceptor = new HandshakeInterceptor() {
+            @Override
+            public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
+
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                if (authentication != null && authentication.isAuthenticated()) {
+                    if (authentication instanceof JwtAuthenticationToken jwtToken) {
+                        String userId = jwtToken.getName();
+                        attributes.put(WEBSOCKET_SESSION_ATTRIBUTE_USER, userId);
+                        return true;
+                    } else if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
+                        String userId = oauthToken.getPrincipal().getAttribute("sub");
+                        attributes.put(WEBSOCKET_SESSION_ATTRIBUTE_USER, userId);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
+
+            }
+        };
+
+
+        registry.addHandler(webSocketHandler, "dotty")
+                .setAllowedOrigins("*")
+                .addInterceptors(authInterceptor);
+        registry.addHandler(webSocketHandler, "dotty")
+                .addInterceptors(authInterceptor)
+                .setAllowedOrigins("*")
+                .withSockJS();
     }
 
 }

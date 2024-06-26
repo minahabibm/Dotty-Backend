@@ -196,15 +196,29 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    @Override
+    public void getAuthorizationType() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
+            System.out.println("JwtAuthenticationToken");
+            // Handle JWT-based authentication
+            String token = jwtAuth.getToken().getTokenValue();
+        } else if (authentication instanceof OAuth2AuthenticationToken oauth2Auth) {
+            System.out.println("OAuth2AuthenticationToken");
+            // Handle OAuth2 client-based authentication
+            String principalName = oauth2Auth.getPrincipal().getName();
+        } else {
+            throw new IllegalArgumentException("Unexpected authentication type: " + authentication.getClass());
+        }
+    }
 
     @Override
-    public DefaultOAuth2User getAuthenticUser() {
+    public DefaultOAuth2User getAuthenticOAuth2User() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            if (authentication instanceof OAuth2AuthenticationToken) {
+            if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
                 // If the authentication is OAuth2, retrieve user details
-                OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
                 DefaultOAuth2User user = (DefaultOAuth2User) oauthToken.getPrincipal();
 
                 // Extract user attributes
@@ -226,22 +240,21 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void getAuthorizationType() {
+    public JwtAuthenticationToken getAuthenticJwtUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
-            System.out.println("JwtAuthenticationToken");
-            // Handle JWT-based authentication
-            String token = jwtAuth.getToken().getTokenValue();
-            // Process the JWT token
-        } else if (authentication instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken oauth2Auth = (OAuth2AuthenticationToken) authentication;
-            System.out.println("OAuth2AuthenticationToken");
-            // Handle OAuth2 client-based authentication
-            String principalName = oauth2Auth.getPrincipal().getName();
-            // Process the OAuth2 authentication
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication instanceof JwtAuthenticationToken) {
+                JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
+
+                System.out.println(jwtToken.getName());
+                return jwtToken;
+            } else {
+                System.out.println("Authenticated user (non-JWT): " + authentication.getName());
+            }
         } else {
-            throw new IllegalArgumentException("Unexpected authentication type: " + authentication.getClass());
+            System.out.println ("No authenticated user");
         }
+        return (JwtAuthenticationToken) authentication;
     }
 
     @Override

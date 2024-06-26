@@ -24,7 +24,7 @@ public class WebSocketsHandler extends TextWebSocketHandler {
 
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession session) {
         webSocketService.addSession(session);
         System.out.println("Websocket connection opened, with session id "  + session.getId());
 
@@ -33,7 +33,7 @@ public class WebSocketsHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         try {
-            Map<String, Object> messageContent = objectMapper.readValue(message.getPayload().toString(), Map.class);
+            Map messageContent = objectMapper.readValue(message.getPayload(), Map.class);
             String type = messageContent.get(WEBSOCKET_SUBSCRIPTION_TYPE).toString();
             String topic = (String) messageContent.computeIfPresent(WEBSOCKET_SUBSCRIPTION_TOPIC, (k, v) -> v.toString());
             String msg = (String) messageContent.computeIfPresent(WEBSOCKET_SUBSCRIPTION_MESSAGE, (k, v) -> v.toString());
