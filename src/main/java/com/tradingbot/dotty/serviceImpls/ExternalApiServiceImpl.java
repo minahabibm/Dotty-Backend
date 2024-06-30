@@ -1,10 +1,7 @@
 package com.tradingbot.dotty.serviceImpls;
 
 import com.tradingbot.dotty.exceptions.Auth0Exceptions;
-import com.tradingbot.dotty.models.dto.AccessTokenAudAndJti;
-import com.tradingbot.dotty.models.dto.AccessTokenResponse;
-import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
-import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
+import com.tradingbot.dotty.models.dto.*;
 import com.tradingbot.dotty.service.ExternalApiService;
 import com.tradingbot.dotty.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -22,10 +20,12 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Base64;
 
 import static com.tradingbot.dotty.utils.Constants.*;
 import static com.tradingbot.dotty.utils.Constants.SCREENING_TICKERS_QUERY_PARAMS_IS_ACTIVELY_TRADING;
 import static com.tradingbot.dotty.utils.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
+import static org.springframework.web.reactive.function.BodyInserters.fromFormData;
 
 @Slf4j
 @Service
@@ -52,6 +52,11 @@ public class ExternalApiServiceImpl implements ExternalApiService {
     private String mgmClientSecret;
     @Value("${mgm-auth0-api.audience}")
     private String mgmAudience;
+
+    @Value("${trading-account-api.client-id}")
+    private String tradingAccountClientId;
+    @Value("${trading-account-api.client-secret}")
+    private String tradingAccountClientSecret;
 
 
     @Override
@@ -155,6 +160,46 @@ public class ExternalApiServiceImpl implements ExternalApiService {
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(new RuntimeException("Server error")))
                 .bodyToMono(String.class)
+                .block();
+    }
+
+    @Override
+    public AuthUserTradingAccountAccessToken OAuthFlowAppAuthorization(String code, String session, String redirect_uri) {
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Trading Account");
+
+        AuthUserTradingAccountAccessToken authUserTradingAccountAccessToken = authorizeUserTradingAccountAccessToken(code, redirect_uri);
+        System.out.println(authUserTradingAccountAccessToken);
+
+        return authUserTradingAccountAccessToken;
+    }
+
+    @Override
+    public AuthUserTradingAccountAccessToken authorizeUserTradingAccountAccessToken(String code, String redirect_uri) {
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Trading Account");
+
+        String encodedCredentials = Base64.getEncoder().encodeToString((tradingAccountClientId + ":" + tradingAccountClientSecret).getBytes());
+        WebClient webClient = WebClient.builder().baseUrl("https://api.schwabapi.com/v1/oauth/token").build();
+        return webClient.post()
+                .contentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+                .header("Authorization", "Basic " + encodedCredentials)
+                .body(fromFormData("grant_type", "authorization_code").with("code", code).with("redirect_uri",  redirect_uri))
+                .retrieve()
+                .bodyToMono(AuthUserTradingAccountAccessToken.class)
+                .block();
+    }
+
+    @Override
+    public AuthUserTradingAccountAccessToken authorizeUserTradingAccountRefreshToken(String RefreshToken) {
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Trading Account");
+
+        String encodedCredentials = Base64.getEncoder().encodeToString((tradingAccountClientId + ":" + tradingAccountClientSecret).getBytes());
+        WebClient webClient = WebClient.builder().baseUrl("https://api.schwabapi.com/v1/oauth/token").build();
+        return webClient.post()
+                .contentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+                .header("Authorization", "Basic " + encodedCredentials)
+                .body(fromFormData("grant_type", "refresh_token").with("refresh_token", RefreshToken))
+                .retrieve()
+                .bodyToMono(AuthUserTradingAccountAccessToken.class)
                 .block();
     }
 
