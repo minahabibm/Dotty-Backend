@@ -1,13 +1,12 @@
-package com.tradingbot.dotty.utils;
+package com.tradingbot.dotty.serviceImpls;
 
 import com.tradingbot.dotty.exceptions.Auth0Exceptions;
 import com.tradingbot.dotty.models.dto.AccessTokenAudAndJti;
 import com.tradingbot.dotty.models.dto.AccessTokenResponse;
 import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
-
-import static com.tradingbot.dotty.utils.Constants.*;
-import static com.tradingbot.dotty.utils.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
+import com.tradingbot.dotty.service.ExternalApiService;
+import com.tradingbot.dotty.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -24,9 +23,13 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
+import static com.tradingbot.dotty.utils.Constants.*;
+import static com.tradingbot.dotty.utils.Constants.SCREENING_TICKERS_QUERY_PARAMS_IS_ACTIVELY_TRADING;
+import static com.tradingbot.dotty.utils.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
+
 @Slf4j
 @Service
-public class ExternalApiRequests {
+public class ExternalApiServiceImpl implements ExternalApiService {
 
     @Value("${stock-screener-api.base-url}")
     private String baseUrlStockScreenerAPI;
@@ -51,7 +54,7 @@ public class ExternalApiRequests {
     private String mgmAudience;
 
 
-
+    @Override
     public ScreenedTickersResponse[] stockScreenerUpdateRetrieve() {
         log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA,  "Stock Screening", "country: " + SCREENING_TICKERS_QUERY_PARAMS_COUNTRY + ", market cap more than: " + SCREENING_TICKERS_QUERY_PARAMS_MARKET_CAP_MORE_THAN + ", exchange: " + Arrays.toString(SCREENING_TICKERS_QUERY_PARAMS_EXCHANGE) + ", beta more than " + SCREENING_TICKERS_QUERY_PARAMS_BETA_MORE_THAN + ", and is actively trading.");
 
@@ -73,6 +76,7 @@ public class ExternalApiRequests {
                 .block();
     }
 
+    @Override
     public TechnicalIndicatorResponse technicalIndicatorRetrieve(String symbol, LocalDateTime localDateTime) {
         log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Technical Indicator", "ticker " + symbol + " and start time " + localDateTime);
 
@@ -91,6 +95,7 @@ public class ExternalApiRequests {
                 .block();
     }
 
+    @Override
     @Cacheable(value = "tokens", key = "'mgmAccessToken'")
     public AccessTokenResponse getMGMApiAccessToken() {
         log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "get MGM Access Token");
@@ -109,6 +114,7 @@ public class ExternalApiRequests {
                 .block();
     }
 
+    @Override
     @Cacheable(value = "tokens", key = "'revokedTokens'")
     public AccessTokenAudAndJti[] getRevokedAccessTokens(String mgmAccessToken) {
         log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "get Revoked Access Token");
@@ -121,6 +127,7 @@ public class ExternalApiRequests {
                 .block();
     }
 
+    @Override
     public String revokeAccessToken(String mgmAccessToken, String jti) {
         log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "Revoke user Access token, jti " + jti);
 
@@ -151,33 +158,4 @@ public class ExternalApiRequests {
                 .block();
     }
 
-
-//                .onStatus()
-//                .doOnError();
-//                .doOnNext(x -> System.out.println(x[0]))
-//                .subscribe();
-
-//                .bodyToMono(String.class)
-//                .doOnNext(x -> System.out.println(x))
-//                .subscribe();
-
-//    public void doOauth2RefreshTokenFlowForAuth0(String refreshToken) {
-//        System.out.println("user trying to refresh Token /Web");
-//
-//        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-//        formData.add("grant_type", "refresh_token");
-//        formData.add("client_id", clientId);
-//        formData.add("client_secret", clientSecret);
-//        formData.add("refresh_token", refreshToken);
-//
-//        WebClient webClient = WebClient.builder().baseUrl(tokenUri).build();
-//        webClient.post()
-//                .body(BodyInserters.fromFormData(formData))
-//                .retrieve()
-//                .bodyToMono(String.class)
-//                .doOnNext(x -> System.out.println(x))
-//                .block();
-//
-//        return ResponseEntity.ok().build();
-//    }
 }

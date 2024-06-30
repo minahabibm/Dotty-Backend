@@ -1,11 +1,13 @@
 package com.tradingbot.dotty.utils;
 
 import static com.tradingbot.dotty.utils.LoggingConstants.*;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -18,6 +20,16 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class ScheduledTasks {
+
+//    @Autowired
+//    private WebSocketService webSocketService;
+
+//    @Autowired
+//    private final KafkaTemplate<String, String> kafkaTemplate;
+//
+//    public ScheduledTasks(KafkaTemplate<String, String> kafkaTemplate) {
+//        this.kafkaTemplate = kafkaTemplate;
+//    }
 
     @Autowired
     private Utils utils;
@@ -43,9 +55,20 @@ public class ScheduledTasks {
         executor.schedule(canceller, seconds, TimeUnit.SECONDS);
     }
 
-    @Scheduled(fixedRate = 1000000)
-    public void scheduledTasks() {
+    int count = 0;
+    @Scheduled(fixedRate = 1000)
+    public void scheduledTasks() throws IOException {
+//        System.out.println("hello");
+//        webSocketService.broadcast("/topic/public", "Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User! Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User! Hello User!  Hello User!Hello User!  Hello User!  Hello User!  Hello User!  Hello User!"+ count++);
+//        webSocketService.broadcast("/queue/private", "user_id", "hello  there!");
+
+//        kafkaTemplate.send("topic-1" , "Hello from Kafka");
 
     }
+
+//    @KafkaListener(topics = "topic-1")
+//    public void consume(String message) {
+//        System.out.println("Consumed message: " + message);
+//    }
 
 }
