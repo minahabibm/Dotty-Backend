@@ -44,6 +44,8 @@ import org.springframework.security.web.authentication.logout.HeaderWriterLogout
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.io.IOException;
@@ -70,6 +72,18 @@ public class SecurityConfiguration {
     @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
     private String jwkSetUrl;
 
+    @Value("${oauth2-info.token-type}")
+    private String tokenType;
+
+    @Value("${oauth2-info.login-url-path}")
+    private String loginUrlPath;
+
+    @Value("${oauth2-info.logout-url-path}")
+    private String logoutUrlPath;
+
+    @Value("${trading-account-api.redirect-url-path}")
+    private String tradingAccountRedirectUrlPath;
+
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -83,7 +97,7 @@ public class SecurityConfiguration {
             .headers(getHeadersConfigurerCustomizer())                                                                  // Allow frames from the same origin
             .cors(getCorsConfigurerCustomizer())                                                                        // provide cors
             .csrf(AbstractHttpConfigurer::disable)                                                                      // provide a csrf token
-            .addFilterBefore(getRequestFilter(), BearerTokenAuthenticationFilter.class);
+            .addFilterBefore(tokenValidator(), BearerTokenAuthenticationFilter.class);
         return http.build();
     }
 
@@ -98,12 +112,12 @@ public class SecurityConfiguration {
         JWSKeySelector<SecurityContext> jwsKeySelector = JWSAlgorithmFamilyJWSKeySelector.fromJWKSetURL(new URL(jwkSetUrl));
         DefaultJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
         jwtProcessor.setJWSKeySelector(jwsKeySelector);
-        jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(new JOSEObjectType("at+jwt")));
+        jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(new JOSEObjectType(tokenType)));
 
         return new NimbusJwtDecoder(jwtProcessor);
     }
 
-    private RequestFilter getRequestFilter() {
+    private RequestFilter tokenValidator() {
         return new RequestFilter() {
             @Override
             public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -131,15 +145,18 @@ public class SecurityConfiguration {
         };
     }
 
+
     private Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> getAuthorizationManagerRequestMatcherRegistryCustomizer() {
-        return authorizeRequests -> authorizeRequests                                                                   //  RequestMatcher refreshToken = new AntPathRequestMatcher( "/api/dotty/oauth2/auth0/refresh");
-                .anyRequest().authenticated();                                                                          // .requestMatchers(url).permitAll()
+        RequestMatcher userTradingAccountAuth = new AntPathRequestMatcher(tradingAccountRedirectUrlPath);
+        return authorizeRequests -> authorizeRequests
+                .requestMatchers(userTradingAccountAuth).permitAll()
+                .anyRequest().authenticated();
                                                                                                                         // .anyRequest().permitAll();
     }
 
     private Customizer<OAuth2LoginConfigurer<HttpSecurity>> getoAuth2LoginConfigurerCustomizer() {
         return oauth2 -> oauth2
-                .successHandler(new ForwardAuthenticationSuccessHandler("/api/dotty/oauth2/auth0/login"))
+                .successHandler(new ForwardAuthenticationSuccessHandler(loginUrlPath))
                 .addObjectPostProcessor(new ObjectPostProcessor<OAuth2LoginAuthenticationFilter>() {
                     @Override
                     public <O extends OAuth2LoginAuthenticationFilter> O postProcess(O filter) {
@@ -195,13 +212,13 @@ public class SecurityConfiguration {
             }
 
             OidcClientInitiatedLogoutSuccessHandler oidcClientInitiatedLogoutSuccessHandler = new OidcClientInitiatedLogoutSuccessHandler(this.clientRegistrationRepository);
-            oidcClientInitiatedLogoutSuccessHandler.setPostLogoutRedirectUri("{baseUrl}/api/dotty/oauth2/auth0/logout");
+            oidcClientInitiatedLogoutSuccessHandler.setPostLogoutRedirectUri("{baseUrl}" + logoutUrlPath);
             oidcClientInitiatedLogoutSuccessHandler.setDefaultTargetUrl(authService.getRedirectUrl(request));
             oidcClientInitiatedLogoutSuccessHandler.onLogoutSuccess(request, response, authentication);
         };
 
         return (logout) -> logout
-                .logoutUrl("/api/dotty/oauth2/auth0/logout")
+                .logoutUrl(logoutUrlPath)
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
