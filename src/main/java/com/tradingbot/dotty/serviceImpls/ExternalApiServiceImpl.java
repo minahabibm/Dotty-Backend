@@ -57,6 +57,8 @@ public class ExternalApiServiceImpl implements ExternalApiService {
     private String tradingAccountClientId;
     @Value("${trading-account-api.client-secret}")
     private String tradingAccountClientSecret;
+    @Value("${trading-account-api.redirect-uri}")
+    private String tradingAccountRedirectUri;
 
 
     @Override
@@ -163,26 +165,19 @@ public class ExternalApiServiceImpl implements ExternalApiService {
                 .block();
     }
 
-    @Override
-    public AuthUserTradingAccountAccessToken OAuthFlowAppAuthorization(String code, String session, String redirect_uri) {
-        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Trading Account");
-
-        AuthUserTradingAccountAccessToken authUserTradingAccountAccessToken = authorizeUserTradingAccountAccessToken(code, redirect_uri);
-        System.out.println(authUserTradingAccountAccessToken);
-
-        return authUserTradingAccountAccessToken;
-    }
 
     @Override
-    public AuthUserTradingAccountAccessToken authorizeUserTradingAccountAccessToken(String code, String redirect_uri) {
-        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Trading Account");
+    public AuthUserTradingAccountAccessToken authorizeUserTradingAccountAccessToken(String code, String session) {
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Trading Account", "authorize User Trading Account AccessToken");
+
+        System.out.println(code+ " " + tradingAccountRedirectUri);
 
         String encodedCredentials = Base64.getEncoder().encodeToString((tradingAccountClientId + ":" + tradingAccountClientSecret).getBytes());
         WebClient webClient = WebClient.builder().baseUrl("https://api.schwabapi.com/v1/oauth/token").build();
         return webClient.post()
                 .contentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
                 .header("Authorization", "Basic " + encodedCredentials)
-                .body(fromFormData("grant_type", "authorization_code").with("code", code).with("redirect_uri",  redirect_uri))
+                .body(fromFormData("grant_type", "authorization_code").with("code", code).with("redirect_uri",  tradingAccountRedirectUri))
                 .retrieve()
                 .bodyToMono(AuthUserTradingAccountAccessToken.class)
                 .block();
@@ -190,7 +185,7 @@ public class ExternalApiServiceImpl implements ExternalApiService {
 
     @Override
     public AuthUserTradingAccountAccessToken authorizeUserTradingAccountRefreshToken(String RefreshToken) {
-        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Trading Account");
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Trading Account", "authorize User Trading Account RefreshToken");
 
         String encodedCredentials = Base64.getEncoder().encodeToString((tradingAccountClientId + ":" + tradingAccountClientSecret).getBytes());
         WebClient webClient = WebClient.builder().baseUrl("https://api.schwabapi.com/v1/oauth/token").build();

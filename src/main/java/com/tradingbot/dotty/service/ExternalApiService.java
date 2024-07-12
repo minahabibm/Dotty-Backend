@@ -14,8 +14,7 @@ public interface ExternalApiService {
     AccessTokenAudAndJti[] getRevokedAccessTokens(String mgmAccessToken);
     String revokeAccessToken(String mgmAccessToken, String jti);
 
-    AuthUserTradingAccountAccessToken OAuthFlowAppAuthorization(String code, String session, String redirect_uri);
-    AuthUserTradingAccountAccessToken authorizeUserTradingAccountAccessToken(String code, String redirect_uri);
+    AuthUserTradingAccountAccessToken authorizeUserTradingAccountAccessToken(String code, String session);
     AuthUserTradingAccountAccessToken authorizeUserTradingAccountRefreshToken(String RefreshToken);
 
 }
