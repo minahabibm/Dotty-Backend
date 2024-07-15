@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.models.dto;
+package com.tradingbot.dotty.models.dto.websockets;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

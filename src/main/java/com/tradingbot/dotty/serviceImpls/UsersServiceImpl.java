@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.tradingbot.dotty.utils.LoggingConstants.*;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
 @Slf4j
 @Service

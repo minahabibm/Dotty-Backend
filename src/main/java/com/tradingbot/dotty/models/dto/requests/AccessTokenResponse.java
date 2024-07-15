@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.models.dto;
+package com.tradingbot.dotty.models.dto.requests;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -11,9 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AccessTokenAudAndJti {
+public class AccessTokenResponse {
 
-    private String aud;
-    private String jti;
+    private String access_token;
+    private String expires_in;
+    private String scope;
+    private String token_type;
 
 }

@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.utils;
+package com.tradingbot.dotty.utils.constants;
 
 public class LoggingConstants {
     public static final String ENTITY_CREATE_OPERATION = "Inserting Record {} into Entity {}";

@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.models.dto;
+package com.tradingbot.dotty.models.dto.requests;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

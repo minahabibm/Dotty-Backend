@@ -1,11 +1,11 @@
-package com.tradingbot.dotty.serviceImpls;
+package com.tradingbot.dotty.serviceImpls.handler;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
-import com.tradingbot.dotty.models.dto.AccessTokenAudAndJti;
+import com.tradingbot.dotty.models.dto.requests.AccessTokenAudAndJti;
 import com.tradingbot.dotty.models.dto.UserConfigurationDTO;
 import com.tradingbot.dotty.models.dto.UsersDTO;
-import com.tradingbot.dotty.service.AuthService;
-import com.tradingbot.dotty.service.ExternalApiService;
+import com.tradingbot.dotty.service.handler.AuthService;
+import com.tradingbot.dotty.service.handler.ExternalApiService;
 import com.tradingbot.dotty.service.UserConfigurationService;
 import com.tradingbot.dotty.service.UsersService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +33,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.tradingbot.dotty.utils.LoggingConstants.*;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
 @Slf4j
 @Service

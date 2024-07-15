@@ -3,12 +3,13 @@ package com.tradingbot.dotty.utils;
 import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.TickersTradeUpdates;
 import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
-import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
-import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
+import com.tradingbot.dotty.models.dto.requests.ScreenedTickersResponse;
+import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
-import com.tradingbot.dotty.service.ExternalApiService;
+import com.tradingbot.dotty.service.handler.ExternalApiService;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
+import com.tradingbot.dotty.utils.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.tradingbot.dotty.utils.LoggingConstants.*;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
 
 @Slf4j

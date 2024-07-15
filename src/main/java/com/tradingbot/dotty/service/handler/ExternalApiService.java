@@ -1,6 +1,6 @@
-package com.tradingbot.dotty.service;
+package com.tradingbot.dotty.service.handler;
 
-import com.tradingbot.dotty.models.dto.*;
+import com.tradingbot.dotty.models.dto.requests.*;
 
 import java.time.LocalDateTime;
 

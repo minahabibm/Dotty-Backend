@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.service;
+package com.tradingbot.dotty.service.handler;
 
 
 public interface UserTradingAccountService {

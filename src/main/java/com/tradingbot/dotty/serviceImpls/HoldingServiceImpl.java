@@ -1,11 +1,11 @@
 package com.tradingbot.dotty.serviceImpls;
 
-import static com.tradingbot.dotty.utils.LoggingConstants.*;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 import com.tradingbot.dotty.models.Holding;
 import com.tradingbot.dotty.models.dto.HoldingDTO;
 import com.tradingbot.dotty.repositories.HoldingRepository;
 import com.tradingbot.dotty.service.HoldingService;
-import com.tradingbot.dotty.utils.TradeDetails;
+import com.tradingbot.dotty.utils.constants.TradeDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;

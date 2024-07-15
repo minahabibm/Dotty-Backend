@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.models.dto;
+package com.tradingbot.dotty.models.dto.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

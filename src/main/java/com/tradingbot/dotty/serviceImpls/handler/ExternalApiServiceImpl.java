@@ -1,9 +1,9 @@
-package com.tradingbot.dotty.serviceImpls;
+package com.tradingbot.dotty.serviceImpls.handler;
 
 import com.tradingbot.dotty.exceptions.Auth0Exceptions;
-import com.tradingbot.dotty.models.dto.*;
-import com.tradingbot.dotty.service.ExternalApiService;
-import com.tradingbot.dotty.utils.Constants;
+import com.tradingbot.dotty.models.dto.requests.*;
+import com.tradingbot.dotty.service.handler.ExternalApiService;
+import com.tradingbot.dotty.utils.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -22,9 +22,9 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
 
-import static com.tradingbot.dotty.utils.Constants.*;
-import static com.tradingbot.dotty.utils.Constants.SCREENING_TICKERS_QUERY_PARAMS_IS_ACTIVELY_TRADING;
-import static com.tradingbot.dotty.utils.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
+import static com.tradingbot.dotty.utils.constants.Constants.*;
+import static com.tradingbot.dotty.utils.constants.Constants.SCREENING_TICKERS_QUERY_PARAMS_IS_ACTIVELY_TRADING;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
 import static org.springframework.web.reactive.function.BodyInserters.fromFormData;
 
 @Slf4j
@@ -46,18 +46,18 @@ public class ExternalApiServiceImpl implements ExternalApiService {
     @Value("${spring.security.oauth2.client.registration.auth0.client-secret}")
     private String clientSecret;
 
-    @Value("${mgm-auth0-api.client-id}")
+    @Value("${spring.security.oauth2.client.registration.auth0-mgm.client-id}")
     private String mgmClientId;
-    @Value("${mgm-auth0-api.client-secret}")
+    @Value("${spring.security.oauth2.client.registration.auth0-mgm.client-secret}")
     private String mgmClientSecret;
-    @Value("${mgm-auth0-api.audience}")
+    @Value("${oauth2-info.auth0-mgm.audience}")
     private String mgmAudience;
 
-    @Value("${trading-account-api.client-id}")
+    @Value("${spring.security.oauth2.client.registration.trading-account.client-id}")
     private String tradingAccountClientId;
-    @Value("${trading-account-api.client-secret}")
+    @Value("${spring.security.oauth2.client.registration.trading-account.client-secret}")
     private String tradingAccountClientSecret;
-    @Value("${trading-account-api.redirect-uri}")
+    @Value("${spring.security.oauth2.client.registration.trading-account.redirect-uri}")
     private String tradingAccountRedirectUri;
 
 
@@ -119,6 +119,7 @@ public class ExternalApiServiceImpl implements ExternalApiService {
                 .retrieve()
                 .bodyToMono(AccessTokenResponse.class)
                 .block();
+
     }
 
     @Override

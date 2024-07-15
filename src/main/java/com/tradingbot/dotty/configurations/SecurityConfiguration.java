@@ -7,7 +7,7 @@ import com.nimbusds.jose.proc.JWSAlgorithmFamilyJWSKeySelector;
 import com.nimbusds.jose.proc.JWSKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
-import com.tradingbot.dotty.service.AuthService;
+import com.tradingbot.dotty.service.handler.AuthService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -53,7 +53,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import static com.tradingbot.dotty.utils.LoggingConstants.*;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
 // TODO Update Access token when refreshed
 // TODO user redirects to login page
@@ -81,7 +81,7 @@ public class SecurityConfiguration {
     @Value("${oauth2-info.logout-url-path}")
     private String logoutUrlPath;
 
-    @Value("${trading-account-api.redirect-url-path}")
+    @Value("${oauth2-info.trading-account.redirect-url-path}")
     private String tradingAccountRedirectUrlPath;
 
     @Bean

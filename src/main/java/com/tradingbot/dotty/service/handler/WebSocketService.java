@@ -1,10 +1,8 @@
-package com.tradingbot.dotty.service;
+package com.tradingbot.dotty.service.handler;
 
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
 
 public interface WebSocketService {
 

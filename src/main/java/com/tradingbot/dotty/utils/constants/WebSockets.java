@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.utils;
+package com.tradingbot.dotty.utils.constants;
 
 public enum WebSockets {
     SUBSCRIBE("subscribe"),

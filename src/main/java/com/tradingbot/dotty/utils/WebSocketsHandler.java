@@ -1,8 +1,9 @@
 package com.tradingbot.dotty.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tradingbot.dotty.models.dto.WebsocketMessageDTO;
-import com.tradingbot.dotty.service.WebSocketService;
+import com.tradingbot.dotty.models.dto.websockets.WebsocketMessageDTO;
+import com.tradingbot.dotty.service.handler.WebSocketService;
+import com.tradingbot.dotty.utils.constants.WebSockets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
@@ -13,7 +14,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.Map;
 
-import static com.tradingbot.dotty.utils.Constants.*;
+import static com.tradingbot.dotty.utils.constants.Constants.*;
 
 @Service
 public class WebSocketsHandler extends TextWebSocketHandler {

@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.utils;
+package com.tradingbot.dotty.utils.constants;
 
 public enum TradeDetails {
     OVERSOLD(30, "Buy", "Long"),

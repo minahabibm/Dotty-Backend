@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.service;
+package com.tradingbot.dotty.service.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
@@ -13,10 +13,12 @@ public interface AuthService {
 
     String getRedirectUrl(HttpServletRequest httpRequest);
     URI getResponseRedirectUri(HttpServletRequest httpRequest, Authentication authentication) throws URISyntaxException;
+
     Map<String, Object> getJwtPayloadDecoder(String token);
     String getMGMAccessToken();
     void revokeToken(String token);
     boolean validateToken(String token);
+
     void addOrUpdateAuthenticatedUser(Authentication authentication);
     void getAuthorizationType();
     DefaultOAuth2User getAuthenticOAuth2User();

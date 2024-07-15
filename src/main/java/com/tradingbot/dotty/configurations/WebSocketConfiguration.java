@@ -17,7 +17,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Map;
 
-import static com.tradingbot.dotty.utils.Constants.WEBSOCKET_SESSION_ATTRIBUTE_USER;
+import static com.tradingbot.dotty.utils.constants.Constants.WEBSOCKET_SESSION_ATTRIBUTE_USER;
 
 @Configuration
 @EnableWebSocket

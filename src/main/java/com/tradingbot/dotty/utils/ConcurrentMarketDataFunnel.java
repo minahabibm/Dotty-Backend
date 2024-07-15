@@ -1,10 +1,10 @@
 package com.tradingbot.dotty.utils;
 
-import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
-import com.tradingbot.dotty.models.dto.TickersUpdateWSMessage;
-import com.tradingbot.dotty.service.TickerMarketDataService;
-import com.tradingbot.dotty.service.TickerMarketTradeService;
-import static com.tradingbot.dotty.utils.LoggingConstants.MARKET_DATA_FUNNEL;
+import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
+import com.tradingbot.dotty.models.dto.websockets.TickersUpdateWSMessage;
+import com.tradingbot.dotty.service.algoTrading.TickerMarketDataService;
+import com.tradingbot.dotty.service.algoTrading.TickerMarketTradeService;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.MARKET_DATA_FUNNEL;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;

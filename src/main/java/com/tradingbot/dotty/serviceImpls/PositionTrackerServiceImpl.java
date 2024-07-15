@@ -1,6 +1,6 @@
 package com.tradingbot.dotty.serviceImpls;
 
-import static com.tradingbot.dotty.utils.LoggingConstants.*;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 import com.tradingbot.dotty.models.PositionTracker;
 import com.tradingbot.dotty.models.dto.PositionTrackerDTO;
 import com.tradingbot.dotty.repositories.PositionTrackerRepository;
