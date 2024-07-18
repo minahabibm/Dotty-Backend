@@ -18,6 +18,15 @@ public class UserConfiguration {
     @Column(name="activeTrading")
     private Boolean activeTrading;
 
+    @Column(name="isActiveTradingAccount")
+    private Boolean isActiveTradingAccount;
+
+    @Column(name="alpacaApiKey")
+    private String alpacaApiKey;
+
+    @Column(name="alpacaSecretKey")
+    private String alpacaSecretKey;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

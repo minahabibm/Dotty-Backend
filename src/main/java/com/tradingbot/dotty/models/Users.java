@@ -26,8 +26,8 @@ public class Users {
     @Column(name="nickName")
     private String nickname;
 
-    @Column(name="loginType")
-    private String loginType;
+    @Column(name="loginUid")
+    private String loginUid;
 
     @Column(name="pictureUrl")
     private String pictureUrl;

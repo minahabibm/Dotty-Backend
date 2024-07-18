@@ -11,6 +11,9 @@ public class UserConfigurationDTO {
 
     private Long userConfigurationId;
     private Boolean activeTrading;
+    private Boolean isActiveTradingAccount;
+    private String alpacaApiKey;
+    private String alpacaSecretKey;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private int version;

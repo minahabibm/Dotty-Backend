@@ -44,8 +44,6 @@ import org.springframework.security.web.authentication.logout.HeaderWriterLogout
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.io.IOException;
@@ -147,9 +145,9 @@ public class SecurityConfiguration {
 
 
     private Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> getAuthorizationManagerRequestMatcherRegistryCustomizer() {
-        RequestMatcher userTradingAccountAuth = new AntPathRequestMatcher(tradingAccountRedirectUrlPath);
+//        RequestMatcher userTradingAccountAuth = new AntPathRequestMatcher(tradingAccountRedirectUrlPath);
         return authorizeRequests -> authorizeRequests
-                .requestMatchers(userTradingAccountAuth).permitAll()
+//                .requestMatchers(userTradingAccountAuth).permitAll()
                 .anyRequest().authenticated();
                                                                                                                         // .anyRequest().permitAll();
     }
@@ -229,9 +227,12 @@ public class SecurityConfiguration {
 
     private Customizer<CorsConfigurer<HttpSecurity>> getCorsConfigurerCustomizer() {
         return cors -> cors
-                .configurationSource(request -> {                                                                       // config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));                            // Specify allowed methods
-                    CorsConfiguration config = new CorsConfiguration();                                                 // config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));                           // Specify allowed headers
-                    config.setAllowedOrigins(List.of("*"));                                                         // Specify allowed origins
+                .configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:8081"));                                         // Allow specific origin
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+                    config.setAllowCredentials(true);                                                                   // Allow credentials
                     return config;
                 });
     }

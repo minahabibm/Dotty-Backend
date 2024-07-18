@@ -1,6 +1,8 @@
 package com.tradingbot.dotty.controllers;
 
 import com.tradingbot.dotty.models.dto.requests.AuthUserTradingAccountAccessToken;
+import com.tradingbot.dotty.models.dto.requests.UserTradingAccountAlpacaRequest;
+import com.tradingbot.dotty.service.UsersService;
 import com.tradingbot.dotty.service.handler.AuthService;
 import com.tradingbot.dotty.service.handler.ExternalApiService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,13 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -29,20 +27,20 @@ import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/dotty/oauth2")
+@RequestMapping("/api/dotty")
 public class AuthenticationController {
 
     @Autowired
     private AuthService authService;
 
     @Autowired
-    private  ExternalApiService externalApiService;
+    private ExternalApiService externalApiService;
 
     @Autowired
-    private ClientRegistrationRepository clientRegistrationRepository;
+    private UsersService usersService;
 
 
-    @GetMapping("/auth0/login")
+    @GetMapping("/oauth2/auth0/login")
     public ResponseEntity<?> doOauth2UserDetailsAndTokensAndRedirectFLowForAuth0(HttpServletRequest httpRequest, HttpServletResponse httpResponse, @RequestParam String code, @RequestParam String state, Authentication authentication) throws URISyntaxException { //AuthRequest
         log.debug(USER_AUTHENTICATION_LOGIN);
         URI redirectUrl = authService.getResponseRedirectUri(httpRequest, authentication);
@@ -57,7 +55,7 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/userTradingAccount")
+    @GetMapping("/oauth2/userTradingAccount/schwab")
     public ResponseEntity<?> doOAuthFlowAppAuthorization(@RequestParam String code , @RequestParam String session) throws URISyntaxException {
         AuthUserTradingAccountAccessToken authUserTradingAccountAccessToken = externalApiService.authorizeUserTradingAccountAccessToken(code, session);
         System.out.println(authUserTradingAccountAccessToken);
@@ -68,7 +66,7 @@ public class AuthenticationController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/refresh")
+    @GetMapping("/oauth2/userTradingAccount/schwab/refresh")
     public ResponseEntity<?> doOAuthFlowAppAuthorization(@RegisteredOAuth2AuthorizedClient("auth0") OAuth2AuthorizedClient authorizedClient) {
 
         OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
@@ -86,6 +84,13 @@ public class AuthenticationController {
         HashMap<String, String> jsonResponse = new HashMap<>();
         jsonResponse.put("accessToken", accessToken.getTokenValue());
         return ResponseEntity.ok(jsonResponse);
+    }
+
+
+    @PostMapping("/userTradingAccount/alpaca")
+    public ResponseEntity<?> saveUserAlpacaKeyAndSecret(@RequestBody UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest) {
+        usersService.updateUserTradingAccountAlpaca(userTradingAccountAlpacaRequest, authService.getAuthenticJwtUser());
+        return ResponseEntity.ok().build();
     }
 
 }

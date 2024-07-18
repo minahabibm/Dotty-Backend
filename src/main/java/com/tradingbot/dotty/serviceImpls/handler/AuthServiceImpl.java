@@ -176,7 +176,7 @@ public class AuthServiceImpl implements AuthService {
             usersDTO.setFirstName(attributes.get("given_name").toString());
             usersDTO.setLastName(attributes.get("family_name").toString());
             usersDTO.setEmailAddress(attributes.get("email").toString());
-            usersDTO.setLoginType(attributes.get("sub").toString());
+            usersDTO.setLoginUid(attributes.get("sub").toString());
             usersDTO.setNickname(attributes.get("nickname").toString());
             usersDTO.setPictureUrl(attributes.get("picture").toString());
             usersDTO.setUserConfigurationDTO(userConfigurationService.getUserConfiguration(userConfigurationID).get());
@@ -187,7 +187,7 @@ public class AuthServiceImpl implements AuthService {
             UsersDTO usersDTO = user.get();
             usersDTO.setFirstName(attributes.get("given_name").toString());
             usersDTO.setLastName(attributes.get("family_name").toString());
-            usersDTO.setLoginType(attributes.get("sub").toString());
+            usersDTO.setLoginUid(attributes.get("sub").toString());
             usersDTO.setNickname(attributes.get("nickname").toString());
             usersDTO.setPictureUrl(attributes.get("picture").toString());
 
@@ -245,8 +245,7 @@ public class AuthServiceImpl implements AuthService {
         if (authentication != null && authentication.isAuthenticated()) {
             if (authentication instanceof JwtAuthenticationToken) {
                 JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
-
-                System.out.println(jwtToken.getName());
+//                System.out.println(jwtToken.getName());
                 return jwtToken;
             } else {
                 System.out.println("Authenticated user (non-JWT): " + authentication.getName());
