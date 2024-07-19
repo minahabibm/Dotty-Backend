@@ -1,5 +1,6 @@
 package com.tradingbot.dotty.models;
 
+import com.tradingbot.dotty.utils.EncryptionUtil;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,9 +23,11 @@ public class UserConfiguration {
     private Boolean isActiveTradingAccount;
 
     @Column(name="alpacaApiKey")
+    @Convert(converter = EncryptionUtil.class)
     private String alpacaApiKey;
 
     @Column(name="alpacaSecretKey")
+    @Convert(converter = EncryptionUtil.class)
     private String alpacaSecretKey;
 
     @CreationTimestamp
