@@ -2,13 +2,16 @@ package com.tradingbot.dotty.serviceImpls;
 
 import com.tradingbot.dotty.models.UserConfiguration;
 import com.tradingbot.dotty.models.dto.UserConfigurationDTO;
+import com.tradingbot.dotty.models.dto.requests.UserTradingAccountAlpacaRequest;
 import com.tradingbot.dotty.repositories.UserConfigurationRepository;
 import com.tradingbot.dotty.service.UserConfigurationService;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,8 +61,37 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
         return userConfigurationUpdated.getUserConfigurationId();
     }
 
+
+    @Override
+    public String updateUserTradingAccountAlpaca(UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest, String loginUid) {
+        System.out.println(userTradingAccountAlpacaRequest.getKey() + " " + userTradingAccountAlpacaRequest.getSecret());
+
+        if (userTradingAccountAlpacaRequest.getKey() == null || userTradingAccountAlpacaRequest.getSecret() == null || userTradingAccountAlpacaRequest.getKey().isEmpty() || userTradingAccountAlpacaRequest.getSecret().isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+        userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid).ifPresentOrElse(userConfiguration -> {
+            userConfiguration.setAlpacaApiKey(userTradingAccountAlpacaRequest.getKey());
+            userConfiguration.setAlpacaSecretKey(userTradingAccountAlpacaRequest.getSecret());
+            userConfiguration.setIsActiveTradingAccount(true);
+            updateUserConfiguration(modelMapper.map(userConfiguration, UserConfigurationDTO.class));
+        }, () -> {
+            System.out.println("User configuration is not present");
+            throw new RuntimeException("User configuration not found");
+        });
+        return "user configuration updated";
+    }
+
+    @Override
+    public Boolean isUserTradingAccountActive(String loginUid) {
+        Optional<UserConfiguration> userConfiguration =  userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid);
+        if(userConfiguration.isPresent())
+            return userConfiguration.get().getIsActiveTradingAccount() != null ? userConfiguration.get().getIsActiveTradingAccount() : false;
+        return false;
+    }
+
     @Override
     public String deleteUserConfiguration() {
         return null;
     }
+
 }

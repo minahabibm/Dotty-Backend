@@ -35,4 +35,7 @@ public class UserConfiguration {
 
     @Version
     private int version;
+
+    @OneToOne(mappedBy = "userConfiguration")
+    private Users users;
 }

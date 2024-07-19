@@ -2,7 +2,7 @@ package com.tradingbot.dotty.controllers;
 
 import com.tradingbot.dotty.models.dto.requests.AuthUserTradingAccountAccessToken;
 import com.tradingbot.dotty.models.dto.requests.UserTradingAccountAlpacaRequest;
-import com.tradingbot.dotty.service.UsersService;
+import com.tradingbot.dotty.service.UserConfigurationService;
 import com.tradingbot.dotty.service.handler.AuthService;
 import com.tradingbot.dotty.service.handler.ExternalApiService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,7 +37,7 @@ public class AuthenticationController {
     private ExternalApiService externalApiService;
 
     @Autowired
-    private UsersService usersService;
+    private UserConfigurationService userConfigurationService;
 
 
     @GetMapping("/oauth2/auth0/login")
@@ -89,7 +89,7 @@ public class AuthenticationController {
 
     @PostMapping("/userTradingAccount/alpaca")
     public ResponseEntity<?> saveUserAlpacaKeyAndSecret(@RequestBody UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest) {
-        usersService.updateUserTradingAccountAlpaca(userTradingAccountAlpacaRequest, authService.getAuthenticJwtUser());
+        userConfigurationService.updateUserTradingAccountAlpaca(userTradingAccountAlpacaRequest, authService.getAuthenticJwtUser().getName());
         return ResponseEntity.ok().build();
     }
 
