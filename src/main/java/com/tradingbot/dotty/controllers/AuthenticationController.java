@@ -4,7 +4,7 @@ import com.tradingbot.dotty.models.dto.requests.AuthUserTradingAccountAccessToke
 import com.tradingbot.dotty.models.dto.requests.UserTradingAccountAlpacaRequest;
 import com.tradingbot.dotty.service.UserConfigurationService;
 import com.tradingbot.dotty.service.handler.AuthService;
-import com.tradingbot.dotty.service.handler.ExternalApiService;
+import com.tradingbot.dotty.utils.ExternalAPi.SchwabUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,8 @@ public class AuthenticationController {
     private AuthService authService;
 
     @Autowired
-    private ExternalApiService externalApiService;
+    private SchwabUtil schwabUtil;
+
 
     @Autowired
     private UserConfigurationService userConfigurationService;
@@ -57,7 +58,7 @@ public class AuthenticationController {
 
     @GetMapping("/oauth2/userTradingAccount/schwab")
     public ResponseEntity<?> doOAuthFlowAppAuthorization(@RequestParam String code , @RequestParam String session) throws URISyntaxException {
-        AuthUserTradingAccountAccessToken authUserTradingAccountAccessToken = externalApiService.authorizeUserTradingAccountAccessToken(code, session);
+        AuthUserTradingAccountAccessToken authUserTradingAccountAccessToken = schwabUtil.authorizeUserTradingAccountAccessToken(code, session);
         System.out.println(authUserTradingAccountAccessToken);
 
         URI uri = new URI("https://127.0.0.1");

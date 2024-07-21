@@ -29,5 +29,27 @@ public class UserTradingAccountController {
         response.put("isActive", isActive);
         return ResponseEntity.ok(response);
     }
-
 }
+
+/*
+    @Autowired
+    @Qualifier("userTradingAccountApiAccessAndPreferencesWebClient")
+    WebClient webClient;
+
+
+
+    @GetMapping("/accounts")
+    public ResponseEntity<?> getTradingAccounts(@RegisteredOAuth2AuthorizedClient("trading-account") OAuth2AuthorizedClient authorizedClient){
+        System.out.println(authorizedClient.getAccessToken().getTokenValue());
+        WebClient webClient = WebClient.builder().baseUrl("https://api.schwabapi.com/trader/v1/accounts/accountNumbers").build();
+        webClient
+                .get()
+                .uri("https://api.schwabapi.com/trader/v1/accounts/accountNumbers")
+                .attributes(ServerOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient(authorizedClient))
+                .retrieve()
+                .bodyToMono(String.class)
+                .doOnNext(response -> System.out.println("Response from API: " + response)) // Print the response
+                .doOnError(error -> System.err.println("Error retrieving resource: " + error.getMessage())); // Handle errors if any
+        return ResponseEntity.ok().build();
+    }
+ */

@@ -5,9 +5,9 @@ import com.tradingbot.dotty.models.dto.requests.AccessTokenAudAndJti;
 import com.tradingbot.dotty.models.dto.UserConfigurationDTO;
 import com.tradingbot.dotty.models.dto.UsersDTO;
 import com.tradingbot.dotty.service.handler.AuthService;
-import com.tradingbot.dotty.service.handler.ExternalApiService;
 import com.tradingbot.dotty.service.UserConfigurationService;
 import com.tradingbot.dotty.service.UsersService;
+import com.tradingbot.dotty.utils.ExternalAPi.Auth0Util;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 public class AuthServiceImpl implements AuthService {
 
     @Autowired
-    private ExternalApiService externalApiService;
+    private Auth0Util auth0Util;
 
     @Autowired
     private UsersService usersService;
@@ -121,11 +121,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String getMGMAccessToken() {
         log.debug(CACHE_MGM_ACCESS_TOKEN);
-        String mgmAccessToken = externalApiService.getMGMApiAccessToken().getAccess_token();
+        String mgmAccessToken = auth0Util.getMGMApiAccessToken().getAccess_token();
         if(isTokenExpired(mgmAccessToken)) {
             log.debug(CACHE_MGM_ACCESS_TOKEN_EXP);
             cacheManager.getCache("tokens").evictIfPresent("mgmAccessToken");
-            return externalApiService.getMGMApiAccessToken().getAccess_token();
+            return auth0Util.getMGMApiAccessToken().getAccess_token();
         } else {
             return mgmAccessToken;
         }
@@ -141,7 +141,7 @@ public class AuthServiceImpl implements AuthService {
         log.trace(USER_AUTHENTICATION_TOKEN_REVOKE, token);
         Map<String, Object> tokenPayload = getJwtPayloadDecoder(token);
         String mgmAccesstoken = getMGMAccessToken();
-        externalApiService.revokeAccessToken(mgmAccesstoken, tokenPayload.get("jti").toString());
+        auth0Util.revokeAccessToken(mgmAccesstoken, tokenPayload.get("jti").toString());
         cacheManager.getCache("tokens").evictIfPresent("revokedTokens");
     }
 
@@ -154,7 +154,7 @@ public class AuthServiceImpl implements AuthService {
     private boolean isTokenBlacklisted(String token) {
         log.trace(USER_AUTHENTICATION_TOKEN_GETTING_REVOKED_LIST);
         String mgmAccesstoken = getMGMAccessToken();
-        AccessTokenAudAndJti[] revokedAccessTokens = externalApiService.getRevokedAccessTokens(mgmAccesstoken);
+        AccessTokenAudAndJti[] revokedAccessTokens = auth0Util.getRevokedAccessTokens(mgmAccesstoken);
 
         String accessToken = getJwtPayloadDecoder(token).get("jti").toString();
         Map<String, AccessTokenAudAndJti> tokens = Arrays.stream(revokedAccessTokens).collect(Collectors.toMap(AccessTokenAudAndJti::getJti, tokenAudAndJti -> tokenAudAndJti));

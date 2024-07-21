@@ -6,9 +6,9 @@ import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.models.dto.requests.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
-import com.tradingbot.dotty.service.handler.ExternalApiService;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
+import com.tradingbot.dotty.utils.ExternalAPi.TickerUtil;
 import com.tradingbot.dotty.utils.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -28,7 +28,7 @@ import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 public class Utils {
 
     @Autowired
-    private ExternalApiService externalApiService;
+    private TickerUtil tickerUtil;
 
     @Autowired
     private ScreenedTickersService screenedTickersService;
@@ -44,7 +44,7 @@ public class Utils {
 
     public void stockScreenerUpdate() {
         log.debug(SCREENING_TICKERS);
-        ScreenedTickersResponse[] screenedTickersResponse = externalApiService.stockScreenerUpdateRetrieve();
+        ScreenedTickersResponse[] screenedTickersResponse = tickerUtil.stockScreenerUpdateRetrieve();
         if (screenedTickersResponse != null) {
             log.debug(SCREENED_TICKERS_SAVING, screenedTickersResponse);
             screenedTickersService.insertAndUpdateScreenedTickers(Arrays.stream(screenedTickersResponse).map(screenedTicker -> modelMapper.map(screenedTicker, ScreenedTickerDTO.class)).collect(Collectors.toList()));
@@ -81,7 +81,7 @@ public class Utils {
 
         LocalDateTime dateTime = LocalDateTime.of(2024,1,1, 9,30,0);
         for(int i=0; i<tickersTradeUpdates.size(); i++){
-            TechnicalIndicatorResponse technicalIndicatorResponse = externalApiService.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), dateTime);
+            TechnicalIndicatorResponse technicalIndicatorResponse = tickerUtil.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), dateTime);
             if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty())
                 marketDataFunnel.processTickerTechnicalAnalysisUpdates(technicalIndicatorResponse);
             else
