@@ -30,6 +30,9 @@ public class UserConfiguration {
     @Convert(converter = EncryptionUtil.class)
     private String alpacaSecretKey;
 
+    @Column(name="alpacaPaperAccount")
+    private Boolean alpacaPaperAccount;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

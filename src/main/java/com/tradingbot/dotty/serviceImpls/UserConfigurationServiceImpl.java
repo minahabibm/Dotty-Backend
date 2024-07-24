@@ -72,6 +72,7 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
         userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid).ifPresentOrElse(userConfiguration -> {
             userConfiguration.setAlpacaApiKey(userTradingAccountAlpacaRequest.getKey());
             userConfiguration.setAlpacaSecretKey(userTradingAccountAlpacaRequest.getSecret());
+            userConfiguration.setAlpacaPaperAccount(userTradingAccountAlpacaRequest.getPaperAccount());
             userConfiguration.setIsActiveTradingAccount(true);
             updateUserConfiguration(modelMapper.map(userConfiguration, UserConfigurationDTO.class));
         }, () -> {

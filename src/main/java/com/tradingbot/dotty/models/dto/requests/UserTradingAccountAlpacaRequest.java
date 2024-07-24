@@ -15,5 +15,6 @@ public class UserTradingAccountAlpacaRequest {
 
     private String key;
     private String secret;
+    private Boolean paperAccount;
 
 }
