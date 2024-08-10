@@ -77,11 +77,12 @@ public class Utils {
 
         // Concurrent distribution for each ticker with a separate thread
         LocalDateTime currDateTime = LocalDateTime.now();
-        LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), currDateTime.getMinute(),0);
+        int currentMinutes = currDateTime.getMinute();
+        int tIMinutes = ((currentMinutes / 5) * 5) - 5;
+        LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), tIMinutes,0);
 
-        LocalDateTime dateTime = LocalDateTime.of(2024,1,1, 9,30,0);
         for(int i=0; i<tickersTradeUpdates.size(); i++){
-            TechnicalIndicatorResponse technicalIndicatorResponse = tickerUtil.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), dateTime);
+            TechnicalIndicatorResponse technicalIndicatorResponse = tickerUtil.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), localDateTime);
             if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty())
                 marketDataFunnel.processTickerTechnicalAnalysisUpdates(technicalIndicatorResponse);
             else
