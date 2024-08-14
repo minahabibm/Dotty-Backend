@@ -1,49 +1,63 @@
-#Connection url for connection in the DatabaseView:
-#  jdbc:mysql://0.0.0.0:13306/DOCKERDB, login=root, password=root
-#App is available at: http://localhost:<local-port>/entitybus/post
+# Connection url for connection in the DatabaseView:
+# jdbc:mysql://0.0.0.0:13306/DOCKERDB, login=root, password=root
+# App is available at: http://localhost:<local-port>/entitybus/post
 version: "3.8"
-networks:
-  test:
+#networks:
+#  test:
 
 services:
-  java:
-    platform: linux/x86_64
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/dotty
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=1234
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-    networks:
-      - test
+#  java:
+#    platform: linux/x86_64
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/dotty
+#      - SPRING_DATASOURCE_USERNAME=admin
+#      - SPRING_DATASOURCE_PASSWORD=1234
+#      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - db
+#    networks:
+#      - test
 
-  db:
-    platform: linux/x86_64
-    image: postgres:14-alpine
-    container_name: db
+#  db:
+#    platform: linux/x86_64
+#    image: postgres:14-alpine
+#    container_name: db
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      - POSTGRES_USER=admin
+#      - POSTGRES_PASSWORD=1234
+#      - POSTGRES_DB=dotty
+##    command: [
+##      '--default-authentication-plugin=mysql_native_password',
+##      '--lower-case-table-names=1'
+##    ]
+##    volumes:
+##      - ./db-init-scripts:/docker-entrypoint-initdb.d
+##    restart: always
+##    healthcheck:
+##      test: ["CMD-SHELL", "pg_isready"]
+##      interval: 1s
+##      timeout: 3s
+##      retries: 30
+#    networks:
+#      - test
+
+  zookeeper:
+    image: zookeeper
+    container_name: zookeeper
     ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=1234
-      - POSTGRES_DB=dotty
-#    command: [
-#      '--default-authentication-plugin=mysql_native_password',
-#      '--lower-case-table-names=1'
-#    ]
-#    volumes:
-#      - ./db-init-scripts:/docker-entrypoint-initdb.d
-#    restart: always
-#    healthcheck:
-#      test: ["CMD-SHELL", "pg_isready"]
-#      interval: 1s
-#      timeout: 3s
-#      retries: 30
-    networks:
-      - test
+      - "2181:2181"
+
+  kafka:
+    image: apache/kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"

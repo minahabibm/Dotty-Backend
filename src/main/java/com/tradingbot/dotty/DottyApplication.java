@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 // TODO Application restarts
 
-@SpringBootApplication
+@SpringBootApplication()
 public class DottyApplication {
 
 	public static void main(String[] args) {

@@ -1,8 +1,8 @@
-package com.tradingbot.dotty.utils;
+package com.tradingbot.dotty.utils.constants;
 
 public class Constants {
 
-    public static final String STOCK_SCREENER_SCHEDULE = "0 0 9 * * MON,TUE,WED,THU,FRI";
+    public static final String STOCK_SCREENER_SCHEDULE = "0 30 8 * * MON,TUE,WED,THU,FRI";
     public static final String TECHNICAL_ANALYSIS_SCHEDULE = "0 30 9 * * MON,TUE,WED,THU,FRI";
 
     public static final String SCREENING_TICKERS_QUERY_PARAMS_COUNTRY = "US";
@@ -26,5 +26,11 @@ public class Constants {
 
     public static final Double MAXIMUM_PRICE_ACTION_EXIT = 2.5;
 
+    public static final String WEBSOCKET_SESSION_ATTRIBUTE_USER = "user";
+    public static final String WEBSOCKET_SUBSCRIPTION_TYPE = "type";
+    public static final String WEBSOCKET_SUBSCRIPTION_TOPIC = "topic";
+    public static final String WEBSOCKET_SUBSCRIPTION_MESSAGE = "message";
+    public static final String WEBSOCKET_SUBSCRIPTION_SESSION_ID = "sessionId";
+    public static final String WEBSOCKET_SUBSCRIPTION_USER_ID = "userId";
 
 }

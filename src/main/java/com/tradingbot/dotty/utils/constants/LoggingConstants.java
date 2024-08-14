@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.utils;
+package com.tradingbot.dotty.utils.constants;
 
 public class LoggingConstants {
     public static final String ENTITY_CREATE_OPERATION = "Inserting Record {} into Entity {}";
@@ -49,4 +49,48 @@ public class LoggingConstants {
     public static  final String TICKER_MARKET_TRADE_TRADE_VALIDITY = "Verify Ticker {} is valid for Trade TO close Position.";
 
 
+    public static final String USER_AUTHENTICATION_LOGIN = "Authenticate User trying to login.";
+    public static final String USER_AUTHENTICATION_LOGIN_ACCESS_REFRESH_TOKENS = "Obtaining User access and Refresh tokens.";
+    public static final String USER_AUTHENTICATION_LOGIN_ID_TOKENS = "Obtaining User Id tokens.";
+    public static final String USER_AUTHENTICATION_LOGIN_USER_TO_API = "Adding\\updating user Details to the api.";
+    public static final String USER_AUTHENTICATION_LOGIN_SUCCESS = "User Login Successfully completed.";
+    public static final String USER_AUTHENTICATION_LOGIN_ERROR = "User Login error ";
+    public static final String USER_AUTHENTICATION_LOGOUT = "Authenticate User trying to logout.";
+    public static final String USER_AUTHENTICATION_LOGOUT_TOKEN = "Revoking user Access token on logout.";
+    public static final String USER_AUTHENTICATION_DATA = "Authentication service handling user data.";
+    public static final String USER_AUTHENTICATION_CREATE = "Authentication service adding a new user {}.";
+    public static final String USER_AUTHENTICATION_UPDATE = "Authentication service updating user {}.";
+    public static final String USER_AUTHENTICATION_GETTING_REDIRECT_URL_TYPE = "Authentication service getting Redirect url type.";
+    public static final String USER_AUTHENTICATION_REDIRECT_URL_TYPE = "Redirect url to {}.";
+    public static final String USER_AUTHENTICATION_TOKEN_PAYLOAD = "Authentication service Token Decoder.";
+    public static final String USER_AUTHENTICATION_TOKEN_DETAILS = "Token Header {} & Payload {}.";
+    public static final String USER_AUTHENTICATION_TOKEN_REVOKE = "Authentication service revoke user Access token {}.";
+    public static final String USER_AUTHENTICATION_TOKEN_VALIDATION = "Authentication service validating user access token {}.";
+    public static final String USER_AUTHENTICATION_TOKEN_GETTING_REVOKED_LIST = "Authentication service Getting Revoked tokens.";
+    public static final String USER_AUTHENTICATION_TOKEN_REVOKED_LIST = "Authentication service Revoked tokens {}.";
+    public static final String USER_AUTHORIZATION = "Authorize User trying to access api endpoint.";
+    public static final String USER_AUTHORIZATION_TOKEN_STATUS = "User uses an access token to access api endpoint: {}.";
+
+    public static final String CACHE_MGM_ACCESS_TOKEN = "Fetching MGM Access Token";
+    public static final String CACHE_MGM_ACCESS_TOKEN_EXP = "Expired Access Token, Fetching MGM Access Token from Auth0 API";
+
+
+
+
 }
+
+
+//Logging involves capturing and storing relevant information about API requests, responses, errors, and other events. This information can be invaluable for troubleshooting, auditing, and security analysis.
+//When logging API requests and responses, you should consider capturing the following information:
+//Timestamp
+//Client IP address
+//User agent
+//Request method (GET, POST, PUT, DELETE)
+//Request URL
+//Request headers
+//Request body
+//Response status code
+//Response headers
+//Response body (or a truncated version to avoid logging sensitive data)
+//Execution time
+//Error messages (if any)

@@ -3,12 +3,13 @@ package com.tradingbot.dotty.utils;
 import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.TickersTradeUpdates;
 import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
-import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
-import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
+import com.tradingbot.dotty.models.dto.requests.ScreenedTickersResponse;
+import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
-import static com.tradingbot.dotty.utils.LoggingConstants.*;
+import com.tradingbot.dotty.utils.ExternalAPi.TickerUtil;
+import com.tradingbot.dotty.utils.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +20,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
+
 
 @Slf4j
 @Service
 public class Utils {
 
     @Autowired
-    private ExternalApiRequests apiRequests;
+    private TickerUtil tickerUtil;
 
     @Autowired
     private ScreenedTickersService screenedTickersService;
@@ -41,7 +44,7 @@ public class Utils {
 
     public void stockScreenerUpdate() {
         log.debug(SCREENING_TICKERS);
-        ScreenedTickersResponse[] screenedTickersResponse = apiRequests.stockScreenerUpdateRetrieve();
+        ScreenedTickersResponse[] screenedTickersResponse = tickerUtil.stockScreenerUpdateRetrieve();
         if (screenedTickersResponse != null) {
             log.debug(SCREENED_TICKERS_SAVING, screenedTickersResponse);
             screenedTickersService.insertAndUpdateScreenedTickers(Arrays.stream(screenedTickersResponse).map(screenedTicker -> modelMapper.map(screenedTicker, ScreenedTickerDTO.class)).collect(Collectors.toList()));
@@ -74,9 +77,12 @@ public class Utils {
 
         // Concurrent distribution for each ticker with a separate thread
         LocalDateTime currDateTime = LocalDateTime.now();
-        LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), currDateTime.getMinute(),0);
+        int currentMinutes = currDateTime.getMinute();
+        int tIMinutes = ((currentMinutes / 5) * 5) - 5;
+        LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), tIMinutes,0);
+
         for(int i=0; i<tickersTradeUpdates.size(); i++){
-            TechnicalIndicatorResponse technicalIndicatorResponse = apiRequests.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), localDateTime);
+            TechnicalIndicatorResponse technicalIndicatorResponse = tickerUtil.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), localDateTime);
             if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty())
                 marketDataFunnel.processTickerTechnicalAnalysisUpdates(technicalIndicatorResponse);
             else

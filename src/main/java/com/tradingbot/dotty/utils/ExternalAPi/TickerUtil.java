@@ -1,10 +1,8 @@
-package com.tradingbot.dotty.utils;
+package com.tradingbot.dotty.utils.ExternalAPi;
 
-import com.tradingbot.dotty.models.dto.ScreenedTickersResponse;
-import com.tradingbot.dotty.models.dto.TechnicalIndicatorResponse;
-
-import static com.tradingbot.dotty.utils.Constants.*;
-import static com.tradingbot.dotty.utils.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
+import com.tradingbot.dotty.models.dto.requests.ScreenedTickersResponse;
+import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
+import com.tradingbot.dotty.utils.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,9 +12,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
+import static com.tradingbot.dotty.utils.constants.Constants.*;
+import static com.tradingbot.dotty.utils.constants.Constants.SCREENING_TICKERS_QUERY_PARAMS_IS_ACTIVELY_TRADING;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
+
+
 @Slf4j
 @Service
-public class ExternalApiRequests {
+public class TickerUtil {
 
     @Value("${stock-screener-api.base-url}")
     private String baseUrlStockScreenerAPI;
@@ -27,6 +30,7 @@ public class ExternalApiRequests {
     private String baseUrlTechnicalIndicatorAPI;
     @Value("${technical-indicators-api.APIkey}")
     private String APIkeyTechnicalIndicatorAPI;
+
 
     public ScreenedTickersResponse[] stockScreenerUpdateRetrieve() {
         log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA,  "Stock Screening", "country: " + SCREENING_TICKERS_QUERY_PARAMS_COUNTRY + ", market cap more than: " + SCREENING_TICKERS_QUERY_PARAMS_MARKET_CAP_MORE_THAN + ", exchange: " + Arrays.toString(SCREENING_TICKERS_QUERY_PARAMS_EXCHANGE) + ", beta more than " + SCREENING_TICKERS_QUERY_PARAMS_BETA_MORE_THAN + ", and is actively trading.");
@@ -66,13 +70,5 @@ public class ExternalApiRequests {
                 .bodyToMono(TechnicalIndicatorResponse.class)
                 .block();
     }
-//                .onStatus()
-//                .doOnError();
-//                .doOnNext(x -> System.out.println(x[0]))
-//                .subscribe();
-
-//                .bodyToMono(String.class)
-//                .doOnNext(x -> System.out.println(x))
-//                .subscribe();
 
 }

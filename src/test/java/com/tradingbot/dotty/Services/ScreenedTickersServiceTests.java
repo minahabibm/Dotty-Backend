@@ -1,7 +1,5 @@
 package com.tradingbot.dotty.Services;
 
-import com.tradingbot.dotty.models.ScreenedTicker;
-import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.repositories.ScreenedTickersRepository;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.serviceImpls.ScreenedTickersServiceImpl;
@@ -9,17 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 public class ScreenedTickersServiceTests {
