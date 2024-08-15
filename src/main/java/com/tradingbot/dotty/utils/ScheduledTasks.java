@@ -10,27 +10,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
 @Service
 public class ScheduledTasks {
-
-//    @Autowired
-//    private WebSocketService webSocketService;
-
-//    @Autowired
-//    private final KafkaTemplate<String, String> kafkaTemplate;
-//
-//    public ScheduledTasks(KafkaTemplate<String, String> kafkaTemplate) {
-//        this.kafkaTemplate = kafkaTemplate;
-//    }
 
     @Autowired
     private Utils utils;
@@ -44,16 +28,7 @@ public class ScheduledTasks {
     @Scheduled(cron = Constants.TECHNICAL_ANALYSIS_SCHEDULE)
     public void tickerTechnicalAnalysis() {
         log.info(SCHEDULED_TASK_START, "Ticker Technical Analysis Polling", LocalDateTime.now());
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        Runnable task = () -> utils.tickersTechnicalAnalysis();
-        ScheduledFuture<?> schedulerHandle = executor.scheduleAtFixedRate(task, 0, Constants.TA_API_POLLING_RATE, TimeUnit.SECONDS);
-        Runnable canceller = () -> {
-            log.info(SCHEDULED_TASK_END, LocalDateTime.now());
-            schedulerHandle.cancel(false);
-            executor.shutdown(); // <---- Now the call is within the `canceller` Runnable.
-        };
-        long seconds = ChronoUnit.SECONDS.between(LocalTime.now(), LocalTime.of(Constants.TA_API_STOP_POLLING_HOUR, Constants.TA_API_STOP_POLLING_MINUTE));
-        executor.schedule(canceller, seconds, TimeUnit.SECONDS);
+        utils.technicalAnalysisPolling();
     }
 
     int count = 0;
@@ -66,10 +41,5 @@ public class ScheduledTasks {
 //        kafkaTemplate.send("topic-1" , "Hello from Kafka");
 
     }
-
-//    @KafkaListener(topics = "topic-1")
-//    public void consume(String message) {
-//        System.out.println("Consumed message: " + message);
-//    }
 
 }
