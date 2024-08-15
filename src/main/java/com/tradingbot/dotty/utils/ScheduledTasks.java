@@ -38,7 +38,8 @@ public class ScheduledTasks {
 //        webSocketService.broadcast("/topic/public", "Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User! Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User! Hello User!  Hello User!Hello User!  Hello User!  Hello User!  Hello User!  Hello User!"+ count++);
 //        webSocketService.broadcast("/queue/private", "user_id", "hello  there!");
 
-//        kafkaTemplate.send("topic-1" , "Hello from Kafka");
+//        orderProducer.sendExitOrder("Exit order for stock XYZ");
+//        orderProducer.sendEntryOrder("Entry order for stock ABC");
 
     }
 

@@ -62,12 +62,12 @@ public class kafkaConfiguration {
 
     @Bean
     public NewTopic topic1() {
-        return TopicBuilder.name("topic-1").partitions(1).build();
+        return TopicBuilder.name("entry-orders").partitions(1).build();
     }
 
     @Bean
     public NewTopic topic2() {
-        return TopicBuilder.name("topic-2").partitions(2).build();
+        return TopicBuilder.name("exit-orders").partitions(1).build();
     }
 
 }
