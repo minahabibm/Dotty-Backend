@@ -1,6 +1,6 @@
 package com.tradingbot.dotty.serviceImpls.handler;
 
-import com.tradingbot.dotty.service.algoTrading.TickerMarketTradeService;
+import com.tradingbot.dotty.service.handler.TickerMarketTradeService;
 import com.tradingbot.dotty.service.handler.OrderProcessingService;
 import com.tradingbot.dotty.utils.TickerUpdatesWebSocket;
 import org.springframework.beans.factory.annotation.Autowired;
