@@ -9,7 +9,6 @@ import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
 import com.tradingbot.dotty.utils.ExternalAPi.TickerUtil;
-import com.tradingbot.dotty.utils.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,16 +16,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
+import static com.tradingbot.dotty.utils.constants.Constants.*;
 
 
 @Slf4j
@@ -75,16 +70,21 @@ public class Utils {
     }
 
     public void technicalAnalysisPolling() {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        Runnable task = () -> tickersTechnicalAnalysis();
-        ScheduledFuture<?> schedulerHandle = executor.scheduleAtFixedRate(task, 0, Constants.TA_API_POLLING_RATE, TimeUnit.SECONDS);
-        Runnable canceller = () -> {
-            log.info(SCHEDULED_TASK_END, LocalDateTime.now());
-            schedulerHandle.cancel(false);
-            executor.shutdown(); // <---- Now the call is within the `canceller` Runnable.
-        };
-        long seconds = ChronoUnit.SECONDS.between(LocalTime.now(), LocalTime.of(Constants.TA_API_STOP_POLLING_HOUR, Constants.TA_API_STOP_POLLING_MINUTE));
-        executor.schedule(canceller, seconds, TimeUnit.SECONDS);
+        LocalTime localTime = LocalTime.now();
+        if(localTime.isAfter(LocalTime.of(TA_API_START_POLLING_HOUR, TA_API_START_POLLING_MINUTE))
+                && localTime.isBefore(LocalTime.of(TA_API_STOP_POLLING_HOUR, TA_API_STOP_POLLING_MINUTE))) {
+            tickersTechnicalAnalysis();
+        }
+//        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+//        Runnable task = () -> tickersTechnicalAnalysis();
+//        ScheduledFuture<?> schedulerHandle = executor.scheduleAtFixedRate(task, 0, Constants.TA_API_POLLING_RATE, TimeUnit.SECONDS);
+//        Runnable canceller = () -> {
+//            log.info(SCHEDULED_TASK_END, LocalDateTime.now());
+//            schedulerHandle.cancel(false);
+//            executor.shutdown(); // <---- Now the call is within the `canceller` Runnable.
+//        };
+//        long seconds = ChronoUnit.SECONDS.between(LocalTime.now(), LocalTime.of(Constants.TA_API_STOP_POLLING_HOUR, Constants.TA_API_STOP_POLLING_MINUTE));
+//        executor.schedule(canceller, seconds, TimeUnit.SECONDS);
     }
 
     public void tickersTechnicalAnalysis() {
@@ -92,7 +92,7 @@ public class Utils {
 
         // Get Ticker Trades Updates
         log.debug(TICKER_TECHNICAL_ANALYSIS_SORTED_TICKERS);
-        List<TickersTradeUpdatesDTO> tickersTradeUpdates = tickersTradeUpdatesService.getSortedTickersTradeUpdates(Constants.SCREENED_TICKERS_NUMBER_OF_SYMBOLS);
+        List<TickersTradeUpdatesDTO> tickersTradeUpdates = tickersTradeUpdatesService.getSortedTickersTradeUpdates(SCREENED_TICKERS_NUMBER_OF_SYMBOLS);
 
         // Concurrent distribution for each ticker with a separate thread
         LocalDateTime currDateTime = LocalDateTime.now();
@@ -107,9 +107,9 @@ public class Utils {
             else
                 log.warn("{}", technicalIndicatorResponse);
 
-            if(i==Constants.TA_API_MAX_REQUESTS_PER_MIN)
+            if(i == TA_API_MAX_REQUESTS_PER_MIN)
                 try {
-                    Thread.sleep(Constants.TA_API_MAX_REQUESTS_REACHED_WAIT_TIME);
+                    Thread.sleep(TA_API_MAX_REQUESTS_REACHED_WAIT_TIME);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -121,7 +121,7 @@ public class Utils {
     }
 
     public static double getMaximumPriceAction(float price) {
-        return price * calculatePercentToDecimal(Constants.MAXIMUM_PRICE_ACTION_EXIT);
+        return price * calculatePercentToDecimal(MAXIMUM_PRICE_ACTION_EXIT);
     }
 
 //    public void sortScreenedTickers(){
