@@ -7,15 +7,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderProducer {
 
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
-
-    public void sendEntryOrder(String message) {
-        kafkaTemplate.send("entry-orders", message);
-    }
-
-    public void sendExitOrder(String message) {
-        kafkaTemplate.send("exit-orders", message);
-    }
+//    @Autowired
+//    private KafkaTemplate<String, String> kafkaTemplate;
+//
+//    public void sendEntryOrder(String message) {
+//        kafkaTemplate.send("entry-orders", message);
+//    }
+//
+//    public void sendExitOrder(String message) {
+//        kafkaTemplate.send("exit-orders", message);
+//    }
 
 }
