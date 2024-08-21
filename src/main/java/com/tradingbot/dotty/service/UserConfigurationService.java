@@ -10,6 +10,7 @@ public interface UserConfigurationService {
 
     List<UserConfigurationDTO> getUsersConfiguration();
     Optional<UserConfigurationDTO> getUserConfiguration(Long id);
+    Optional<UserConfigurationDTO> getUserConfiguration(String loginUid);
     Long insertUserConfiguration(UserConfigurationDTO userConfigurationDTO);
     Long updateUserConfiguration(UserConfigurationDTO userConfigurationDTO);
     String updateUserTradingAccountAlpaca(UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest, String loginUid);

@@ -46,6 +46,14 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
     }
 
     @Override
+    public Optional<UserConfigurationDTO> getUserConfiguration(String loginUid) {
+        Optional userConfiguration =  userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid);
+        if(userConfiguration.isPresent())
+            return Optional.of(modelMapper.map(userConfiguration.get(), UserConfigurationDTO.class));
+        return userConfiguration;
+    }
+
+    @Override
     public Long insertUserConfiguration(UserConfigurationDTO userConfigurationDTO) {
         log.trace(ENTITY_CREATE_OPERATION, userConfigurationDTO, "User Configuration");
         UserConfiguration userConfiguration = userConfigurationRepository.save(modelMapper.map(userConfigurationDTO, UserConfiguration.class));
