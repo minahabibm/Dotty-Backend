@@ -35,27 +35,23 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public Optional<UsersDTO> getUser(Long id) {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, id, "Users");
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, id, "Users");
         Optional<Users> user = usersRepository.findById(id);
-        if (user.isPresent()) return Optional.of(modelMapper.map(user.get(), UsersDTO.class));
-        return Optional.empty();
+        return user.map(users -> modelMapper.map(users, UsersDTO.class));
     }
 
     @Override
     public Optional<UsersDTO> getUserByEmail(String email) {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, email, "Users");
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, email, "Users");
         Optional<Users> user = usersRepository.findByEmailAddress(email);
-        if (user.isPresent()) return Optional.of(modelMapper.map(user.get(), UsersDTO.class));
-        return Optional.empty();
+        return user.map(users -> modelMapper.map(users, UsersDTO.class));
     }
 
     @Override
     public Optional<UsersDTO> getUserByLoginUid(String loginUid) {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, loginUid, "Users");
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, loginUid, "Users");
         Optional<Users> user = usersRepository.findByLoginUid(loginUid);
-        if (user.isPresent())
-            return Optional.of(modelMapper.map(user.get(), UsersDTO.class));
-        return Optional.empty();
+        return user.map(users -> modelMapper.map(users, UsersDTO.class));
     }
 
     @Override
