@@ -5,7 +5,7 @@ public class LoggingConstants {
     public static final String ENTITIES_CREATE_OPERATION = "Inserting Bulk Records into Entity {}";
     public static final String ENTITY_READ_OPERATION = "Reading Record {} from Entity {}";
     public static final String ENTITIES_READ_OPERATION = "Reading Bulk Records from Entity {}";
-    public static final String ENTITIES_READ_WITH_FILERS_OPERATION = "Reading Records from Entity {} with Criteria {}";
+    public static final String ENTITIES_READ_WITH_FILTERS_OPERATION = "Reading Records from Entity {} with Criteria {}";
     public static final String ENTITY_UPDATE_OPERATION = "Updating Record {} into Entity {}";
     public static final String ENTITIES_UPDATE_OPERATION = "Updating Bulk Records into Entity {}";
     public static final String ENTITY_DELETE_OPERATION = "Deleting Record {} from Entity {}";
