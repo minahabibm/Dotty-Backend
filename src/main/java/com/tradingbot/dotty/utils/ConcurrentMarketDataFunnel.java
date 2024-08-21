@@ -3,7 +3,6 @@ package com.tradingbot.dotty.utils;
 import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.models.dto.websockets.TickersUpdateWSMessage;
 import com.tradingbot.dotty.service.algoTrading.TickerMarketDataService;
-import com.tradingbot.dotty.service.algoTrading.TickerMarketTradeService;
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.MARKET_DATA_FUNNEL;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +22,6 @@ public class ConcurrentMarketDataFunnel {
     @Autowired
     private TickerMarketDataService tickerMarketDataService;
 
-    @Autowired
-    private TickerMarketTradeService tickerMarketTradeService;
 
     @Async
     public void processTickerTechnicalAnalysisUpdates(TechnicalIndicatorResponse technicalIndicatorResponse){
@@ -46,7 +43,7 @@ public class ConcurrentMarketDataFunnel {
     public void processTickerMarketTradeUpdates(List<TickersUpdateWSMessage.TradeDetails> data) throws InterruptedException {
 //        return CompletableFuture.runAsync(()-> {
             log.info(MARKET_DATA_FUNNEL,"Market Trades Update");
-            tickerMarketTradeService.monitorTickerTradesUpdates(data);
+            tickerMarketDataService.monitorTickerTradesUpdates(data);
             data.forEach(x -> log.debug("{} {} {} {}", x.getS(), x.getP(), x.getV(), Instant.ofEpochMilli(x.getT()).atZone(ZoneId.systemDefault()).toLocalDateTime())); // ZoneId.of("America/New_York")
 
             //catch (InterruptedException e)

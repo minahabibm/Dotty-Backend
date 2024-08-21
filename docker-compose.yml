@@ -1,63 +1,78 @@
 # Connection url for connection in the DatabaseView:
 # jdbc:mysql://0.0.0.0:13306/DOCKERDB, login=root, password=root
 # App is available at: http://localhost:<local-port>/entitybus/post
-version: "3.8"
-#networks:
-#  test:
+#version: "3.8"
+
+networks:
+  test:
 
 services:
-#  java:
-#    platform: linux/x86_64
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    environment:
-#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/dotty
-#      - SPRING_DATASOURCE_USERNAME=admin
-#      - SPRING_DATASOURCE_PASSWORD=1234
-#      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      - db
-#    networks:
-#      - test
+    java:
+      platform: linux/x86_64
+      build:
+        context: ./
+        dockerfile: ./Dockerfile
+      environment:
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/dotty
+        - SPRING_DATASOURCE_USERNAME=admin
+        - SPRING_DATASOURCE_PASSWORD=1234
+        - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+        - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:19092
+      ports:
+        - "8080:8080"
+      depends_on:
+        db:
+          condition: service_healthy
+#        kafka:
+#          condition: service_healthy
+      networks:
+        - test
 
-#  db:
-#    platform: linux/x86_64
-#    image: postgres:14-alpine
-#    container_name: db
-#    ports:
-#      - "5432:5432"
-#    environment:
-#      - POSTGRES_USER=admin
-#      - POSTGRES_PASSWORD=1234
-#      - POSTGRES_DB=dotty
-##    command: [
-##      '--default-authentication-plugin=mysql_native_password',
-##      '--lower-case-table-names=1'
-##    ]
-##    volumes:
-##      - ./db-init-scripts:/docker-entrypoint-initdb.d
-##    restart: always
-##    healthcheck:
-##      test: ["CMD-SHELL", "pg_isready"]
-##      interval: 1s
-##      timeout: 3s
-##      retries: 30
-#    networks:
-#      - test
+    db:
+      platform: linux/x86_64
+      image: postgres:14-alpine
+      container_name: db
+      environment:
+        - POSTGRES_USER=admin
+        - POSTGRES_PASSWORD=1234
+        - POSTGRES_DB=dotty
+      volumes:
+        - ./db-init-scripts:/docker-entrypoint-initdb.d
+      ports:
+        - "5432:5432"
+      networks:
+        - test
+      healthcheck:
+        test: [ "CMD-SHELL", "pg_isready -U admin -d dotty" ]
+        interval: 30s
+        timeout: 10s
+        retries: 5
 
-  zookeeper:
-    image: zookeeper
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
-
-  kafka:
-    image: apache/kafka:latest
-    container_name: kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
+#    kafka:
+#      image: apache/kafka:latest
+#      container_name: kafka
+#      environment:
+#        KAFKA_NODE_ID: 1
+#        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+#        KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+#        KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+#        KAFKA_LISTENERS: 'CONTROLLER://:29093,PLAINTEXT_HOST://:9092,PLAINTEXT://:19092'
+#        KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT_HOST://127.0.0.1:9092,PLAINTEXT://kafka:19092'
+#        KAFKA_PROCESS_ROLES: 'broker,controller'
+#        KAFKA_CONTROLLER_QUORUM_VOTERS: '1@127.0.0.1:29093'
+#        CLUSTER_ID: '4L6g3nShT-eMCtK--X86sw'
+#        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#        KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+#        KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+#        KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+#        KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+#      ports:
+#        - "9092:9092"
+#      networks:
+#        - test
+#      healthcheck:
+#        test: [ "CMD", "nc", "-z", "localhost", "19092" ]
+#        interval: 30s
+#        timeout: 10s
+#        retries: 5
+#      restart: always

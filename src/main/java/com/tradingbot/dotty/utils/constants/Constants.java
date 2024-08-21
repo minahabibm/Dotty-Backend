@@ -2,8 +2,8 @@ package com.tradingbot.dotty.utils.constants;
 
 public class Constants {
 
-    public static final String STOCK_SCREENER_SCHEDULE = "0 56 20 * * MON,TUE,WED,THU,FRI,SAT,SUN";
-    public static final String TECHNICAL_ANALYSIS_SCHEDULE = "0 56 20 * * MON,TUE,WED,THU,FRI,SAT,SUN";
+    public static final String STOCK_SCREENER_SCHEDULE = "0 30 8 * * MON,TUE,WED,THU,FRI";
+    public static final String TECHNICAL_ANALYSIS_SCHEDULE = "0 */5 8-16 * * MON-FRI";                                  // "0 30 9 * * MON,TUE,WED,THU,FRI";
 
     public static final String SCREENING_TICKERS_QUERY_PARAMS_COUNTRY = "US";
     public static final Long SCREENING_TICKERS_QUERY_PARAMS_MARKET_CAP_MORE_THAN = 200000000000L;
@@ -15,9 +15,10 @@ public class Constants {
 
     public static final String TA_API_PARAMS_INTERVAL = "5min";
     public static final String TA_API_PARAMS_INCLUDE_OHLC = "true";
-    public static final Integer TA_API_MAX_REQUESTS_PER_MIN = 7;
+    public static final Integer TA_API_MAX_REQUESTS_PER_MIN = 7;                                                        // TA_API_POLLING_RATE = 300;
     public static final Integer TA_API_MAX_REQUESTS_REACHED_WAIT_TIME = 60000;
-    public static final Integer TA_API_POLLING_RATE = 300;
+    public static final Integer TA_API_START_POLLING_HOUR= 9;
+    public static final Integer TA_API_START_POLLING_MINUTE = 30;
     public static final Integer TA_API_STOP_POLLING_HOUR= 16;
     public static final Integer TA_API_STOP_POLLING_MINUTE = 0;
 

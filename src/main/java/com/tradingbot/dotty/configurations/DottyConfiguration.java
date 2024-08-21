@@ -69,18 +69,4 @@ public class DottyConfiguration {
         return new ConcurrentMapCacheManager("tokens");
     }
 
-//    @Bean
-//    public WebClient webClient() {
-//        return WebClient.builder()
-//                .filter((request, next) -> next.exchange(request)
-//                        .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
-//                                .filter(throwable -> throwable instanceof WebClientResponseException)))
-//                .build();
-//    }
-
-
-//    @Bean
-//    public WebClient webClient() {
-//        return WebClient.builder().baseUrl(baseUrl).build();
-//    }
 }
