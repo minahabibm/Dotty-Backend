@@ -1,11 +1,8 @@
 package com.tradingbot.dotty.serviceImpls;
 
 import com.tradingbot.dotty.models.UserHolding;
-import com.tradingbot.dotty.models.UserOrder;
 import com.tradingbot.dotty.models.dto.UserHoldingDTO;
-import com.tradingbot.dotty.models.dto.UserOrderDTO;
 import com.tradingbot.dotty.repositories.UserHoldingRepository;
-import com.tradingbot.dotty.repositories.UserOrdersRepository;
 import com.tradingbot.dotty.service.UserHoldingService;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;

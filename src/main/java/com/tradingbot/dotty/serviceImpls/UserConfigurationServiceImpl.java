@@ -31,14 +31,20 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
 
 
     @Override
-    public List<UserConfigurationDTO> getUsersConfiguration() {
+    public List<UserConfigurationDTO> getUsersConfigurations() {
         log.trace(ENTITIES_READ_OPERATION, "User Configuration");
         return userConfigurationRepository.findAll().stream().map(userConfiguration -> modelMapper.map(userConfiguration, UserConfigurationDTO.class)).collect(Collectors.toList());
     }
 
     @Override
+    public List<UserConfigurationDTO> getUsersConfigurationsWithActiveTradingAccounts() {
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "User Configuration", "active trading accounts");
+        return userConfigurationRepository.findUserConfigurationByIsActiveTradingAccountTrue().stream().map(userConfiguration -> modelMapper.map(userConfiguration, UserConfigurationDTO.class)).collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<UserConfigurationDTO> getUserConfiguration(Long id) {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "User Configuration", id);
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "User Configuration", id);
         Optional userConfiguration = userConfigurationRepository.findById(id);
         if(userConfiguration.isPresent())
             return Optional.of(modelMapper.map(userConfiguration.get(), UserConfigurationDTO.class));
