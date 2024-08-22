@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface UserOrdersService {
 
-    List<UserOrderDTO> getUserOrder();
-    Long insertOrder(UserOrderDTO userOrderDTO);
+    List<UserOrderDTO> getUsersOrders();
+    Long insertUserOrder(UserOrderDTO userOrderDTO);
     Long updateUserOrder(UserOrderDTO userOrderDTO);
     String deleteUserOrder();
 

@@ -28,13 +28,13 @@ public class UserOrdersServiceImpl implements UserOrdersService {
     private ModelMapper modelMapper;
 
     @Override
-    public List<UserOrderDTO> getUserOrder() {
+    public List<UserOrderDTO> getUsersOrders() {
         log.trace(ENTITIES_READ_OPERATION, "UserOrder");
         return userOrdersRepository.findAll().stream().map(userOrder -> modelMapper.map(userOrder, UserOrderDTO.class)).collect(Collectors.toList());
     }
 
     @Override
-    public Long insertOrder(UserOrderDTO userOrderDTO) {
+    public Long insertUserOrder(UserOrderDTO userOrderDTO) {
         log.trace(ENTITY_CREATE_OPERATION, userOrderDTO, "UserOrder");
         UserOrder userOrder = userOrdersRepository.save(modelMapper.map(userOrderDTO, UserOrder.class));
         return userOrder.getUserOrderId();
@@ -42,7 +42,7 @@ public class UserOrdersServiceImpl implements UserOrdersService {
 
     @Override
     public Long updateUserOrder(UserOrderDTO userOrderDTO) {
-        log.trace(ENTITY_UPDATE_OPERATION, userOrderDTO.getUserOrderId(), "UserOrder");
+        log.trace(ENTITY_CREATE_OPERATION, userOrderDTO, "UserOrder");
         if(userOrderDTO.getUserOrderId() == null)
             throw new RuntimeException();
         Optional<UserOrder> userOrder = userOrdersRepository.findById(userOrderDTO.getUserOrderId());

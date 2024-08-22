@@ -9,19 +9,19 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-public class UserOrder {
+public class UserHolding {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long userOrderId;
+    private Long userHoldingId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
     private Users users;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "orderId")
-    private Orders orders;
+    @JoinColumn(name = "holdingId")
+    private Holding holding;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
