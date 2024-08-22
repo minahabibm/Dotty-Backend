@@ -8,7 +8,8 @@ import java.util.Optional;
 
 public interface UserConfigurationService {
 
-    List<UserConfigurationDTO> getUsersConfiguration();
+    List<UserConfigurationDTO> getUsersConfigurations();
+    List<UserConfigurationDTO> getUsersConfigurationsWithActiveTradingAccounts();
     Optional<UserConfigurationDTO> getUserConfiguration(Long id);
     Optional<UserConfigurationDTO> getUserConfiguration(String loginUid);
     Long insertUserConfiguration(UserConfigurationDTO userConfigurationDTO);
