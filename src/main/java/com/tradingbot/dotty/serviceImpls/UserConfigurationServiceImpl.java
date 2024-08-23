@@ -78,7 +78,7 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
 
     @Override
     public String updateUserTradingAccountAlpaca(UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest, String loginUid) {
-        System.out.println(userTradingAccountAlpacaRequest.getKey() + " " + userTradingAccountAlpacaRequest.getSecret());
+        System.out.println(userTradingAccountAlpacaRequest.getKey() + " " + userTradingAccountAlpacaRequest.getSecret()  + " " + userTradingAccountAlpacaRequest.getPaperAccount());
 
         if (userTradingAccountAlpacaRequest.getKey() == null || userTradingAccountAlpacaRequest.getSecret() == null || userTradingAccountAlpacaRequest.getKey().isEmpty() || userTradingAccountAlpacaRequest.getSecret().isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -99,9 +99,7 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
     @Override
     public Boolean isUserTradingAccountActive(String loginUid) {
         Optional<UserConfiguration> userConfiguration =  userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid);
-        if(userConfiguration.isPresent())
-            return userConfiguration.get().getIsActiveTradingAccount() != null ? userConfiguration.get().getIsActiveTradingAccount() : false;
-        return false;
+        return userConfiguration.filter(configuration -> configuration.getIsActiveTradingAccount() != null ? configuration.getIsActiveTradingAccount() : false).isPresent();
     }
 
     @Override
