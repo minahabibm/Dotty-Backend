@@ -31,25 +31,25 @@ public class OrderResponse {
     private String replaces;
     private String asset_id;
     private String symbol;
-    private TradeConstants asset_class; // TODO: Transform this into an enum later
+    private TradeConstants asset_class;
     private String notional;
     private String qty;
     private String filled_qty;
     private String filled_avg_price;
-    private TradeConstants order_class; // TODO: Transform this into an enum later
-    private TradeConstants order_type; // TODO: Transform this into an enum later
-    private TradeConstants type; // TODO: Transform this into an enum later
-    private TradeConstants side; // TODO: Transform this into an enum later
-    private TradeConstants time_in_force; // TODO: Transform this into an enum later
+    private TradeConstants order_class;
+    private TradeConstants order_type;
+    private TradeConstants type;
+    private TradeConstants side;
+    private TradeConstants time_in_force;
     private String limit_price;
     private String stop_price;
-    private TradeConstants status; // TODO: Transform this into an enum later
+    private TradeConstants status;
     private boolean extended_hours;
     private List<OrderResponse> legs;
     private String trail_percent;
     private String trail_price;
     private String hwm;
-    private TradeConstants position_intent; // TODO: Transform this into an enum later
+    private TradeConstants position_intent;
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
