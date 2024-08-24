@@ -1,7 +1,7 @@
 package com.tradingbot.dotty.utils.ExternalAPi;
 
 import com.tradingbot.dotty.models.dto.UserConfigurationDTO;
-import com.tradingbot.dotty.models.dto.requests.Alpaca.AccountResponse;
+import com.tradingbot.dotty.models.dto.requests.Alpaca.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Map;
 
+// TODO handle errors
 @Slf4j
 @Service
 public class AlpacaUtil {
@@ -21,7 +22,7 @@ public class AlpacaUtil {
     private WebClient webClientAlpacaPaper;
 
 
-    private WebClient.RequestBodySpec getAlpacaWebClient(HttpMethod method, String pathVariable, Map<String, String> queryParams, String body, UserConfigurationDTO userConfigurationDTO) {
+    private WebClient.RequestBodySpec getAlpacaWebClient(HttpMethod method, String pathVariable, Map<String, String> queryParams, Object body, UserConfigurationDTO userConfigurationDTO) {
 
         WebClient webClient ;
         if(userConfigurationDTO.getIsActiveTradingAccount())
@@ -58,68 +59,62 @@ public class AlpacaUtil {
     }
 
 
-//    public AccountResponse isAssetTradable(UserConfigurationDTO userConfigurationDTO) {
-//        return getAlpacaWebClient(userConfigurationDTO.getAlpacaPaperAccount()).get()
-//
-//                .retrieve()
-//                .bodyToMono(AccountResponse.class)
-//                .block();
-//    }
-//
-//    public AccountResponse createOrder(UserConfigurationDTO userConfigurationDTO) {
-//        return getAlpacaWebClient(userConfigurationDTO.getAlpacaPaperAccount()).get()
-//
-//                .retrieve()
-//                .bodyToMono(AccountResponse.class)
-//                .block();
-//    }
-//
-//    public AccountResponse getAllOrders(UserConfigurationDTO userConfigurationDTO) {
-//        return getAlpacaWebClient(userConfigurationDTO.getAlpacaPaperAccount()).get()
-//
-//                .retrieve()
-//                .bodyToMono(AccountResponse.class)
-//                .block();
-//    }
-//
-//    public AccountResponse cancelAllOpenOrders(UserConfigurationDTO userConfigurationDTO) {
-//        return getAlpacaWebClient(userConfigurationDTO.getAlpacaPaperAccount()).get()
-//
-//                .retrieve()
-//                .bodyToMono(AccountResponse.class)
-//                .block();
-//    }
-//
-//    public AccountResponse getAllPositions(UserConfigurationDTO userConfigurationDTO) {
-//        return getAlpacaWebClient(userConfigurationDTO.getAlpacaPaperAccount()).get()
-//
-//                .retrieve()
-//                .bodyToMono(AccountResponse.class)
-//                .block();
-//    }
-//
-//    public AccountResponse closeOpenPositions(UserConfigurationDTO userConfigurationDTO) {
-//        return getAlpacaWebClient(userConfigurationDTO.getAlpacaPaperAccount()).get()
-//
-//                .retrieve()
-//                .bodyToMono(AccountResponse.class)
-//                .block();
-//    }
-//
-//    public AccountResponse getAnOpenPosition(UserConfigurationDTO userConfigurationDTO) {
-//        return getAlpacaWebClient(userConfigurationDTO.getAlpacaPaperAccount()).get()
-//
-//                .retrieve()
-//                .bodyToMono(AccountResponse.class)
-//                .block();
-//    }
-//
-//    public AccountResponse closePosition(UserConfigurationDTO userConfigurationDTO) {
-//        return getAlpacaWebClient(userConfigurationDTO.getAlpacaPaperAccount()).get()
-//
-//                .retrieve()
-//                .bodyToMono(AccountResponse.class)
-//                .block();
-//    }
+    public AssetResponse isAssetTradable(String assetSymbol, UserConfigurationDTO userConfigurationDTO) {
+        return getAlpacaWebClient(HttpMethod.GET, "assets/" + assetSymbol, null, null, userConfigurationDTO)
+                .retrieve()
+                .bodyToMono(AssetResponse.class)
+                .block();
+    }
+
+
+    public OrderResponse[] getAllOrders(Map<String, String> orderQueryParams, UserConfigurationDTO userConfigurationDTO) {
+        return getAlpacaWebClient(HttpMethod.GET, "orders", orderQueryParams, null, userConfigurationDTO)
+                .retrieve()
+                .bodyToMono(OrderResponse[].class)
+                .block();
+    }
+
+    public OrderResponse createOrder(OrderRequest orderRequestDTO, UserConfigurationDTO userConfigurationDTO) {
+        return getAlpacaWebClient(HttpMethod.POST, "orders", null, orderRequestDTO, userConfigurationDTO)
+                .retrieve()
+                .bodyToMono(OrderResponse.class)
+                .block();
+    }
+
+    public OrderResponse.OrderClosed[] cancelAllOpenOrders(UserConfigurationDTO userConfigurationDTO) {
+        return getAlpacaWebClient(HttpMethod.DELETE, "orders", null, null, userConfigurationDTO)
+                .retrieve()
+                .bodyToMono(OrderResponse.OrderClosed[].class)
+                .block();
+    }
+
+
+    public PositionResponse[] getAllPositions(UserConfigurationDTO userConfigurationDTO) {
+        return getAlpacaWebClient(HttpMethod.GET, "positions", null, null, userConfigurationDTO)
+                .retrieve()
+                .bodyToMono(PositionResponse[].class)
+                .block();
+    }
+
+    public PositionResponse getAnOpenPosition(String assetSymbol, UserConfigurationDTO userConfigurationDTO) {
+        return getAlpacaWebClient(HttpMethod.GET, "positions/" + assetSymbol, null, null, userConfigurationDTO)
+                .retrieve()
+                .bodyToMono(PositionResponse.class)
+                .block();
+    }
+
+    public OrderResponse closePosition(String assetSymbol, Map<String, String> positionQueryParams, UserConfigurationDTO userConfigurationDTO) {
+        return getAlpacaWebClient(HttpMethod.DELETE, "positions/" + assetSymbol, positionQueryParams, null, userConfigurationDTO)
+                .retrieve()
+                .bodyToMono(OrderResponse.class)
+                .block();
+    }
+
+    public PositionResponse.PositionClosed[]  closeAllPositions(Map<String, String> positionQueryParams, UserConfigurationDTO userConfigurationDTO) {
+        return getAlpacaWebClient(HttpMethod.DELETE, "positions", positionQueryParams, null, userConfigurationDTO)
+                .retrieve()
+                .bodyToMono(PositionResponse.PositionClosed[].class)
+                .block();
+    }
 
 }

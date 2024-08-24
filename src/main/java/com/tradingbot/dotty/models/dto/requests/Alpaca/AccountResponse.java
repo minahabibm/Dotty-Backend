@@ -1,6 +1,7 @@
 package com.tradingbot.dotty.models.dto.requests.Alpaca;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tradingbot.dotty.utils.constants.alpaca.AccountConstants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,10 +20,10 @@ public class AccountResponse {
     private Map<String, String> admin_configurations;
     private String user_configurations;
     private String account_number;
-    private String status;
+    private AccountConstants status;
     private String crypto_status;
-    private Integer options_approved_level;
-    private Integer options_trading_level;
+    private AccountConstants options_approved_level;
+    private AccountConstants options_trading_level;
     private String currency;
     private String buying_power;
     private String regt_buying_power;
