@@ -1,13 +1,7 @@
 package com.tradingbot.dotty.configurations;
 
-import com.tradingbot.dotty.models.Orders;
-import com.tradingbot.dotty.models.Position;
-import com.tradingbot.dotty.models.TickersTradeUpdates;
-import com.tradingbot.dotty.models.Users;
-import com.tradingbot.dotty.models.dto.OrdersDTO;
-import com.tradingbot.dotty.models.dto.PositionDTO;
-import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
-import com.tradingbot.dotty.models.dto.UsersDTO;
+import com.tradingbot.dotty.models.*;
+import com.tradingbot.dotty.models.dto.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -36,6 +30,14 @@ public class DottyConfiguration {
         modelMapper.typeMap(OrdersDTO.class, Orders.class).addMapping(OrdersDTO::getPositionTrackerDTO, Orders::setPositionTracker);
         modelMapper.typeMap(Users.class, UsersDTO.class).addMapping(Users::getUserConfiguration, UsersDTO::setUserConfigurationDTO);
         modelMapper.typeMap(UsersDTO.class, Users.class).addMapping(UsersDTO::getUserConfigurationDTO, Users::setUserConfiguration);
+        modelMapper.typeMap(UserOrder.class, UserOrderDTO.class).addMapping(UserOrder::getUsers, UserOrderDTO::setUsersDTO);
+        modelMapper.typeMap(UserOrderDTO.class, UserOrder.class).addMapping(UserOrderDTO::getUsersDTO, UserOrder::setUsers);
+        modelMapper.typeMap(UserOrder.class, UserOrderDTO.class).addMapping(UserOrder::getOrders, UserOrderDTO::setOrdersDTO);
+        modelMapper.typeMap(UserOrderDTO.class, UserOrder.class).addMapping(UserOrderDTO::getOrdersDTO, UserOrder::setOrders);
+        modelMapper.typeMap(UserHolding.class, UserHoldingDTO.class).addMapping(UserHolding::getUsers, UserHoldingDTO::setUsersDTO);
+        modelMapper.typeMap(UserHoldingDTO.class, UserHolding.class).addMapping(UserHoldingDTO::getUsersDTO, UserHolding::setUsers);
+        modelMapper.typeMap(UserHolding.class, UserHoldingDTO.class).addMapping(UserHolding::getHolding, UserHoldingDTO::setHoldingDTO);
+        modelMapper.typeMap(UserHoldingDTO.class, UserHolding.class).addMapping(UserHoldingDTO::getHoldingDTO, UserHolding::setHolding);
         return modelMapper;
     }
 
@@ -69,18 +71,4 @@ public class DottyConfiguration {
         return new ConcurrentMapCacheManager("tokens");
     }
 
-//    @Bean
-//    public WebClient webClient() {
-//        return WebClient.builder()
-//                .filter((request, next) -> next.exchange(request)
-//                        .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
-//                                .filter(throwable -> throwable instanceof WebClientResponseException)))
-//                .build();
-//    }
-
-
-//    @Bean
-//    public WebClient webClient() {
-//        return WebClient.builder().baseUrl(baseUrl).build();
-//    }
 }

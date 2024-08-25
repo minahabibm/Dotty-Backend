@@ -4,6 +4,7 @@ import com.tradingbot.dotty.exceptions.Auth0Exceptions;
 import com.tradingbot.dotty.models.dto.requests.AccessTokenAudAndJti;
 import com.tradingbot.dotty.models.dto.requests.AccessTokenResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
@@ -22,10 +23,11 @@ import static com.tradingbot.dotty.utils.constants.LoggingConstants.EXTERNAL_GET
 @Service
 public class Auth0Util {
 
-    @Value("${spring.security.oauth2.client.registration.auth0.client-id}")
-    private String clientId;
-    @Value("${spring.security.oauth2.client.registration.auth0.client-secret}")
-    private String clientSecret;
+    @Autowired
+    private WebClient webClientAuth0MGMApiAccessToken;
+
+    @Autowired
+    private WebClient webClientAuth0RevokedAccessTokens;
 
     @Value("${spring.security.oauth2.client.registration.auth0-mgm.client-id}")
     private String mgmClientId;
@@ -34,6 +36,10 @@ public class Auth0Util {
     @Value("${oauth2-info.auth0-mgm.audience}")
     private String mgmAudience;
 
+    @Value("${spring.security.oauth2.client.registration.auth0.client-id}")
+    private String clientId;
+    @Value("${spring.security.oauth2.client.registration.auth0.client-secret}")
+    private String clientSecret;
 
 
 
@@ -41,13 +47,12 @@ public class Auth0Util {
     public AccessTokenResponse getMGMApiAccessToken() {
         log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "get MGM Access Token");
 
-        WebClient webClient = WebClient.builder().baseUrl("https://dev-z383db7saml34grv.us.auth0.com/oauth/token").build();
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "client_credentials");
         formData.add("client_id", mgmClientId);
         formData.add("client_secret", mgmClientSecret);
         formData.add("audience", mgmAudience);
-        return webClient.post()
+        return webClientAuth0MGMApiAccessToken.post()
                 .header("content-type", "application/json")
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
@@ -60,8 +65,7 @@ public class Auth0Util {
     public AccessTokenAudAndJti[] getRevokedAccessTokens(String mgmAccessToken) {
         log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "get Revoked Access Token");
 
-        WebClient webClient = WebClient.builder().baseUrl("https://dev-z383db7saml34grv.us.auth0.com/api/v2/blacklists/tokens").build();
-        return webClient.get()
+        return webClientAuth0RevokedAccessTokens.get()
                 .header("Authorization", "Bearer " + mgmAccessToken)
                 .retrieve()
                 .bodyToMono(AccessTokenAudAndJti[].class)
@@ -71,11 +75,10 @@ public class Auth0Util {
     public String revokeAccessToken(String mgmAccessToken, String jti) {
         log.debug(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Auth0 API", "Revoke user Access token, jti " + jti);
 
-        WebClient webClient = WebClient.builder().baseUrl("https://dev-z383db7saml34grv.us.auth0.com/api/v2/blacklists/tokens").build();
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("aud", clientId);
         formData.add("jti", jti);
-        return webClient.post()
+        return webClientAuth0RevokedAccessTokens.post()
                 .header("content-type", "application/json")
                 .header("Authorization", "Bearer " + mgmAccessToken)
                 .body(BodyInserters.fromFormData(formData))

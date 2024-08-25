@@ -42,7 +42,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public List<PositionDTO> getSortedActiveTickerPositions(String symbol, Long positionTrackerID) {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "Position", "Symbol: "+ symbol +" Sorted and Active");
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "Position", "Symbol: "+ symbol +" Sorted and Active");
         return positionRepository.findBySymbolAndPositionTracker_PositionTrackerIdOrderByIntervalsDesc(symbol, positionTrackerID).stream().map(position -> modelMapper.map(position, PositionDTO.class)).collect(Collectors.toList());
     }
 
