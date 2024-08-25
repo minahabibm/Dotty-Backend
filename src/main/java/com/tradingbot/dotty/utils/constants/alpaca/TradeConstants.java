@@ -88,7 +88,9 @@ public enum TradeConstants {
     BUY_TO_OPEN("buy_to_open"),
     BUY_TO_CLOSE("buy_to_close"),
     SELL_TO_OPEN("sell_to_open"),
-    SELL_TO_CLOSE("sell_to_close");
+    SELL_TO_CLOSE("sell_to_close"),
+
+    NIL("");
 
     private final String value;
 
@@ -114,7 +116,9 @@ public enum TradeConstants {
                 return constant;
             }
         }
-        throw new IllegalArgumentException("Unknown constant value: " + value);
+        // Log the unknown value
+        System.err.println("Unknown constant value: " + value);
+        return NIL;
     }
 
 }
