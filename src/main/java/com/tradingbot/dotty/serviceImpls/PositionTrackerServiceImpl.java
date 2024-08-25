@@ -42,7 +42,7 @@ public class PositionTrackerServiceImpl implements PositionTrackerService {
 
     @Override
     public PositionTrackerDTO getTickerActivePositionTracker(String symbol) {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "PositionTracker", "Symbol: "+ symbol+" and Active");
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "PositionTracker", "Symbol: "+ symbol+" and Active");
         PositionTracker positionTracker = positionTrackerRepository.findBySymbolAndActiveTrue(symbol);
 
         PositionTrackerDTO positionTrackerDTO = null;

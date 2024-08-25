@@ -48,12 +48,12 @@ public class WebClientConfiguration {
 
     @Bean
     public WebClient webClientAlpaca(WebClient.Builder builder) {
-        return builder.baseUrl("https://api.alpaca.markets/v2/account").build();
+        return builder.baseUrl("https://api.alpaca.markets").build();
     }
 
     @Bean
     public WebClient webClientAlpacaPaper(WebClient.Builder builder) {
-        return builder.baseUrl("https://paper-api.alpaca.markets/v2/account").build();
+        return builder.baseUrl("https://paper-api.alpaca.markets").build();
     }
 
 

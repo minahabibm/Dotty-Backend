@@ -2,6 +2,7 @@ package com.tradingbot.dotty.controllers;
 
 import com.tradingbot.dotty.service.UserConfigurationService;
 import com.tradingbot.dotty.service.handler.AuthService;
+import com.tradingbot.dotty.utils.ExternalAPi.AlpacaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,9 @@ public class UserTradingAccountController {
     @Autowired
     private UserConfigurationService userConfigurationService;
 
+    @Autowired
+    private AlpacaUtil alpacaUtil;
+
 
     @GetMapping("/active")
     public ResponseEntity<?> isActiveTradingAccount() {
@@ -29,6 +33,14 @@ public class UserTradingAccountController {
         response.put("isActive", isActive);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/account")
+    public ResponseEntity<?> getActiveTradingAccounts() {
+        return ResponseEntity.ok(alpacaUtil.getAccountDetails(userConfigurationService.getUsersConfigurationsWithActiveTradingAccounts().get(0)));
+    }
+
+
+
 }
 
 /*

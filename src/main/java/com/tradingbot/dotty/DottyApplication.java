@@ -3,6 +3,7 @@ package com.tradingbot.dotty;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+// TODO add Logs
 // TODO Application restarts
 
 @SpringBootApplication()

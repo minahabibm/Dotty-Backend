@@ -31,15 +31,29 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
 
 
     @Override
-    public List<UserConfigurationDTO> getUsersConfiguration() {
+    public List<UserConfigurationDTO> getUsersConfigurations() {
         log.trace(ENTITIES_READ_OPERATION, "User Configuration");
         return userConfigurationRepository.findAll().stream().map(userConfiguration -> modelMapper.map(userConfiguration, UserConfigurationDTO.class)).collect(Collectors.toList());
     }
 
     @Override
+    public List<UserConfigurationDTO> getUsersConfigurationsWithActiveTradingAccounts() {
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "User Configuration", "active trading accounts");
+        return userConfigurationRepository.findUserConfigurationByIsActiveTradingAccountTrue().stream().map(userConfiguration -> modelMapper.map(userConfiguration, UserConfigurationDTO.class)).collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<UserConfigurationDTO> getUserConfiguration(Long id) {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "User Configuration", id);
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "User Configuration", id);
         Optional userConfiguration = userConfigurationRepository.findById(id);
+        if(userConfiguration.isPresent())
+            return Optional.of(modelMapper.map(userConfiguration.get(), UserConfigurationDTO.class));
+        return userConfiguration;
+    }
+
+    @Override
+    public Optional<UserConfigurationDTO> getUserConfiguration(String loginUid) {
+        Optional userConfiguration =  userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid);
         if(userConfiguration.isPresent())
             return Optional.of(modelMapper.map(userConfiguration.get(), UserConfigurationDTO.class));
         return userConfiguration;
@@ -64,7 +78,7 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
 
     @Override
     public String updateUserTradingAccountAlpaca(UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest, String loginUid) {
-        System.out.println(userTradingAccountAlpacaRequest.getKey() + " " + userTradingAccountAlpacaRequest.getSecret());
+        System.out.println(userTradingAccountAlpacaRequest.getKey() + " " + userTradingAccountAlpacaRequest.getSecret()  + " " + userTradingAccountAlpacaRequest.getPaperAccount());
 
         if (userTradingAccountAlpacaRequest.getKey() == null || userTradingAccountAlpacaRequest.getSecret() == null || userTradingAccountAlpacaRequest.getKey().isEmpty() || userTradingAccountAlpacaRequest.getSecret().isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -85,9 +99,7 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
     @Override
     public Boolean isUserTradingAccountActive(String loginUid) {
         Optional<UserConfiguration> userConfiguration =  userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid);
-        if(userConfiguration.isPresent())
-            return userConfiguration.get().getIsActiveTradingAccount() != null ? userConfiguration.get().getIsActiveTradingAccount() : false;
-        return false;
+        return userConfiguration.filter(configuration -> configuration.getIsActiveTradingAccount() != null ? configuration.getIsActiveTradingAccount() : false).isPresent();
     }
 
     @Override

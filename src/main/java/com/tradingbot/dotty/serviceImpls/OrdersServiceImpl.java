@@ -33,7 +33,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public List<OrdersDTO> getActiveTickerOrders() {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "Orders", "Active");
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "Orders", "Active");
         List<OrdersDTO> ordersDTOList = ordersRepository.findAllByActiveTrue().stream().map(order -> modelMapper.map(order, OrdersDTO.class)).collect(Collectors.toList());
         log.warn("Number of Ticker with Active Orders, {}.", ordersDTOList.size());
         return ordersDTOList;
@@ -41,13 +41,13 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public List<OrdersDTO> getOrdersByPositionTracker(Long positionTrackerId) {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "Orders", "position Tracker Id: "+ positionTrackerId);
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "Orders", "position Tracker Id: "+ positionTrackerId);
         return ordersRepository.findByPositionTracker_PositionTrackerIdOrderByCreatedAtAsc(positionTrackerId).stream().map(order -> modelMapper.map(order, OrdersDTO.class)).collect(Collectors.toList());
     }
 
     @Override
     public OrdersDTO getActiveTickerOrder(String symbol) {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "Orders", "Symbol: "+ symbol +" and Active");
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "Orders", "Symbol: "+ symbol +" and Active");
         Optional<Orders> order = ordersRepository.findBySymbolAndActiveTrue(symbol);
         OrdersDTO ordersDTO = null;
         if(order.isPresent())
