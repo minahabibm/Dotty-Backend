@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.utils;
+package com.tradingbot.dotty.utils.webSockets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tradingbot.dotty.models.dto.websockets.WebsocketMessageDTO;

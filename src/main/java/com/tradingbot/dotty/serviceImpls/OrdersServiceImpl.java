@@ -61,10 +61,10 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
-    public Long insertOrder(OrdersDTO ordersDTO) {
+    public OrdersDTO insertOrder(OrdersDTO ordersDTO) {
         log.trace(ENTITY_CREATE_OPERATION, ordersDTO, "Orders");
         Orders order = ordersRepository.save(modelMapper.map(ordersDTO, Orders.class));
-        return order.getOrderTickerId();
+        return modelMapper.map(order, OrdersDTO.class);
     }
 
     @Override

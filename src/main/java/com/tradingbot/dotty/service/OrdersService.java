@@ -11,7 +11,7 @@ public interface OrdersService {
     List<OrdersDTO> getOrdersByPositionTracker(Long positionTrackerId);
     OrdersDTO getActiveTickerOrder(String symbol);
     List<Long> insertOrders(List<OrdersDTO> ordersDTOList);
-    Long insertOrder(OrdersDTO ordersDTO);
+    OrdersDTO insertOrder(OrdersDTO ordersDTO);
     Long updateOrder(OrdersDTO ordersDTO);
     String deleteOrder();
 

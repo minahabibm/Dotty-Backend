@@ -15,6 +15,15 @@ public class UserOrder {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long userOrderId;
 
+    @Column(name="alpacaOrderId")
+    private String alpacaOrderId;
+
+    @Column(name="filledQty")
+    private String filledQty;
+
+    @Column(name="filledAvgPrice")
+    private String filledAvgPrice;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
     private Users users;

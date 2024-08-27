@@ -54,10 +54,10 @@ public class HoldingServiceImpl implements HoldingService {
     }
 
     @Override
-    public Long insertHolding(HoldingDTO holdingDTO) {
+    public HoldingDTO insertHolding(HoldingDTO holdingDTO) {
         log.trace(ENTITY_CREATE_OPERATION, holdingDTO, "Holding");
         Holding holding = holdingRepository.save(modelMapper.map(holdingDTO, Holding.class));
-        return holding.getHoldingTickerId();
+        return modelMapper.map(holding, HoldingDTO.class);
     }
 
     @Override
