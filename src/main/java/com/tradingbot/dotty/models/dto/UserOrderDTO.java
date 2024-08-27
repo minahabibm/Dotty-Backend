@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 public class UserOrderDTO {
 
     private Long userOrderId;
+    private String alpacaOrderId;
+    private String filledQty;
+    private String filledAvgPrice;
     private UsersDTO usersDTO;
     private OrdersDTO ordersDTO;
     private LocalDateTime createdAt;

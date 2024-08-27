@@ -7,6 +7,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+// TODO add order details
+
 @Data
 @Entity
 public class Holding {
@@ -20,8 +22,12 @@ public class Holding {
     @Column(name="typeOfTrade")
     private String typeOfTrade;
 
+    // Entry Order ID
+
     @Column(name="entryPrice")
     private Float entryPrice;
+
+    // Exit Order ID
 
     @Column(name="ExitPrice")
     private Float ExitPrice;

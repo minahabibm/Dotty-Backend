@@ -48,11 +48,12 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public Optional<UsersDTO> getUserByLoginUid(String loginUid) {
-        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, loginUid, "Users");
-        Optional<Users> user = usersRepository.findByLoginUid(loginUid);
+    public Optional<UsersDTO> getUserByUserConfigurationId(Long userConfigurationId) {
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, userConfigurationId, "Users");
+        Optional<Users> user = usersRepository.findByUserConfiguration_UserConfigurationId(userConfigurationId);
         return user.map(users -> modelMapper.map(users, UsersDTO.class));
     }
+
 
     @Override
     public Long insertUser(UsersDTO usersDTO) {
