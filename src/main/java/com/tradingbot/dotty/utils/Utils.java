@@ -117,11 +117,17 @@ public class Utils {
     }
 
     public static double calculatePercentToDecimal(double percentRate) {
+        if (percentRate == 0) return 0.0;
         return percentRate / 100;
     }
 
     public static double getMaximumPriceAction(float price) {
         return price * calculatePercentToDecimal(MAXIMUM_PRICE_ACTION_EXIT);
+    }
+
+    public static double getAveragePrice(double totalCost,  double totalQuantity) {
+        if (totalQuantity == 0) return 0.0;
+        return totalCost / totalQuantity;
     }
 
 //    public void sortScreenedTickers(){

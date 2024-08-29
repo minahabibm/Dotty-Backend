@@ -8,6 +8,7 @@ import com.tradingbot.dotty.service.*;
 import com.tradingbot.dotty.service.handler.TickerMarketTradeService;
 import com.tradingbot.dotty.service.handler.OrderProcessingService;
 import com.tradingbot.dotty.utils.ExternalAPi.AlpacaUtil;
+import com.tradingbot.dotty.utils.webSockets.AlpacaWebSocket;
 import com.tradingbot.dotty.utils.webSockets.TickerUpdatesWebSocket;
 import com.tradingbot.dotty.utils.constants.alpaca.TradeConstants;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,9 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
     @Autowired
     private AlpacaUtil alpacaUtil;
 
+    @Autowired
+    private AlpacaWebSocket alpacaWebSocket;
+
 
     @Override
     public Float getAvailableToTrade(UserConfigurationDTO userConfigurationDTO) {
@@ -66,27 +70,27 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
 
         userConfigurationService.getUsersConfigurationsWithActiveTradingAccounts().forEach(userConfigurationDTO -> {
             try {
-                Float availableToTrade = getAvailableToTrade(userConfigurationDTO);
-                OrderRequest orderRequest = OrderRequest.builder()
-                        .symbol(symbol)
-                        .notional(String.valueOf(availableToTrade * 0.1))
-                        .side(TradeConstants.fromValue(tickerMarketTradeService.getOrderType(true, ordersDTO.getPositionTrackerDTO().getTypeOfTrade())))
-                        .type(TradeConstants.MARKET)
-                        .time_in_force(TradeConstants.DAY)
-                        .build();
-                OrderResponse orderResponse = alpacaUtil.createOrder(orderRequest, userConfigurationDTO);
-
                 Optional<UsersDTO> usersDTO = usersService.getUserByUserConfigurationId(userConfigurationDTO.getUserConfigurationId());
                 if(usersDTO.isPresent()) {
+                    if(!alpacaWebSocket.isWebSessionActive(usersDTO.get().getLoginUid()))
+                        alpacaWebSocket.addAccountWebSocket(usersDTO.get().getLoginUid(), userConfigurationDTO);
+
+                    Float availableToTrade = getAvailableToTrade(userConfigurationDTO);
+                    OrderRequest orderRequest = OrderRequest.builder()
+                            .symbol(symbol)
+                            .notional(String.valueOf(availableToTrade * 0.1))
+                            .side(TradeConstants.fromValue(tickerMarketTradeService.getOrderType(true, ordersDTO.getPositionTrackerDTO().getTypeOfTrade())))
+                            .type(TradeConstants.MARKET)
+                            .time_in_force(TradeConstants.DAY)
+                            .build();
+                    OrderResponse orderResponse = alpacaUtil.createOrder(orderRequest, userConfigurationDTO);
+
                     UserOrderDTO userOrderDTO = new UserOrderDTO();
                     userOrderDTO.setAlpacaOrderId(orderResponse.getId());
                     userOrderDTO.setUsersDTO(usersDTO.get());
                     userOrderDTO.setOrdersDTO(ordersDTO);
                     userOrdersService.insertUserOrder(userOrderDTO);
                 }
-
-                System.out.println(orderResponse);
-                // subscribe \ update for alpaca MarketTrades.
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
@@ -106,7 +110,7 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
 
         userConfigurationService.getUsersConfigurationsWithActiveTradingAccounts().forEach(userConfigurationDTO -> {
             try {
-                // fetch user position for symbol if exists ->
+                // fetch user position for symbol if exists
                 PositionResponse positionResponse  = alpacaUtil.getAnOpenPosition(symbol, userConfigurationDTO);
                 if(positionResponse != null) {
                     OrderResponse orderResponse = alpacaUtil.closePosition(symbol, null, userConfigurationDTO);
@@ -127,8 +131,6 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
                         userHoldingDTO.setHoldingDTO(holdingDTO);
                         userHoldingService.insertUserHolding(userHoldingDTO);
                     }
-
-                    // unsubscribe \ update for alpaca MarketTrades.
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());

@@ -15,8 +15,9 @@ public class UserOrderDTO {
 
     private Long userOrderId;
     private String alpacaOrderId;
-    private String filledQty;
-    private String filledAvgPrice;
+    private String filled;
+    private Double filledQty;
+    private Double filledAvgPrice;
     private UsersDTO usersDTO;
     private OrdersDTO ordersDTO;
     private LocalDateTime createdAt;

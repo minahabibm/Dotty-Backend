@@ -2,8 +2,12 @@ package com.tradingbot.dotty.utils.webSockets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tradingbot.dotty.models.dto.UserConfigurationDTO;
+import com.tradingbot.dotty.models.dto.UserOrderDTO;
 import com.tradingbot.dotty.models.dto.websockets.AlpacaWebsocketMessageDTO;
+import com.tradingbot.dotty.service.UserOrdersService;
+import com.tradingbot.dotty.utils.ExternalAPi.AlpacaUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.*;
@@ -16,10 +20,13 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import static com.tradingbot.dotty.utils.Utils.getAveragePrice;
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.WEBSOCKET_CONNECTION_ENDED;
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.WEBSOCKET_CONNECTION_STARTED;
+import static com.tradingbot.dotty.utils.constants.alpaca.AlpacaConstants.*;
 
 @Slf4j
 @Service
@@ -29,6 +36,12 @@ public class AlpacaWebSocket {
     private String baseUrlAlpacaWS;
     @Value("${alpaca-api.websocket-paper-base-url}")
     private String baseUrlAlpacaPaperWS;
+
+    @Autowired
+    private UserOrdersService userOrdersService;
+
+    @Autowired
+    private AlpacaUtil alpacaUtil;
 
     private final Map<String, WebSocketSession> webSocketSessions;
     private final ObjectMapper objectMapper;
@@ -63,7 +76,7 @@ public class AlpacaWebSocket {
                 try {
                     String payload = extractPayload(message);
                     AlpacaWebsocketMessageDTO alpacaWebsocketMessageDTO = objectMapper.readValue(payload, AlpacaWebsocketMessageDTO.class);
-                    handleWebSocketMessage(session, alpacaWebsocketMessageDTO);
+                    handleWebSocketMessage(session, alpacaWebsocketMessageDTO, accountId, userConfigurationDTO);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
@@ -102,10 +115,10 @@ public class AlpacaWebSocket {
         return payload;
     }
 
-    private void handleWebSocketMessage(WebSocketSession session, AlpacaWebsocketMessageDTO alpacaWebsocketMessageDTO) throws IOException {
+    private void handleWebSocketMessage(WebSocketSession session, AlpacaWebsocketMessageDTO alpacaWebsocketMessageDTO, String accountId, UserConfigurationDTO userConfigurationDTO) throws IOException {
         if(alpacaWebsocketMessageDTO != null) {
-            if("authorization".equals(alpacaWebsocketMessageDTO.getStream())) {
-                if("authorized".equals(alpacaWebsocketMessageDTO.getData().getStatus())) {
+            if(ALPACA_AUTHORIZATION.equals(alpacaWebsocketMessageDTO.getStream())) {
+                if(ALPACA_AUTHORIZED.equals(alpacaWebsocketMessageDTO.getData().getStatus())) {
                     Map<String, Object> messageMap = Map.of(
                             "action", "listen",
                             "data", Map.of("streams", new String[]{"trade_updates"})
@@ -116,13 +129,55 @@ public class AlpacaWebSocket {
                 } else {
                     throw new RuntimeException("Unauthorized: Invalid key or secret. " + alpacaWebsocketMessageDTO.getData().getStatus());
                 }
-
-            } else if("trade_updates".equals(alpacaWebsocketMessageDTO.getStream())) {
+            } else if(ALPACA_TRADE_UPDATES.equals(alpacaWebsocketMessageDTO.getStream())) {
                 System.out.println("alpaca trade_updates " + alpacaWebsocketMessageDTO);
+                String event = alpacaWebsocketMessageDTO.getData().getEvent();
+                AlpacaWebsocketMessageDTO.TradeUpdatesData data = alpacaWebsocketMessageDTO.getData();
+                switch (event) {
+                    case ALPACA_NEW:
+                        System.out.println("New order routed: " + data);
+                        break;
+                    case ALPACA_FILL:
+                    case ALPACA_PARTIAL_FILL:
+                    case ALPACA_CANCELED:
+                    case ALPACA_EXPIRED:
+                    case ALPACA_DONE_FOR_DAY:
+                        handleOrderUpdates(accountId, userConfigurationDTO, data, event);
+                        break;
+                    case ALPACA_REPLACED:
+                        System.out.println("Order replaced: " + data);
+                        break;
+                    default:
+                        System.out.println("Unhandled event: " + event);
+                        break;
+                }
             } else {
                 System.out.println("alpaca WS " + alpacaWebsocketMessageDTO);
             }
         }
+    }
+
+    private void handleOrderUpdates(String accountId, UserConfigurationDTO userConfigurationDTO, AlpacaWebsocketMessageDTO.TradeUpdatesData data, String event) throws IOException {
+        System.out.println("Order " + event + ": " + data);
+
+        Optional<UserOrderDTO> userOrderDTO = userOrdersService.getUserOrder(data.getOrder().getId());
+        userOrderDTO.ifPresent(userOrderDto -> {
+            double price = Double.parseDouble(data.getPrice());
+            double position_qty = Double.parseDouble(data.getPosition_qty());
+            if(ALPACA_FILL.equals(event) || (position_qty <= 0 || price <= 0)) {
+                userOrderDto.setFilledAvgPrice(price);
+                userOrderDto.setFilledQty(Math.abs(position_qty));
+            } else  if(ALPACA_PARTIAL_FILL.equals(event)) {
+                double totalCost = (userOrderDto.getFilledQty() * userOrderDto.getFilledAvgPrice()) + (Math.abs(position_qty - userOrderDto.getFilledQty()) * price);
+                userOrderDto.setFilledAvgPrice(getAveragePrice(totalCost, position_qty));
+                userOrderDto.setFilledQty(Math.abs(position_qty));
+            }
+            userOrderDto.setFilled(event);
+            userOrdersService.updateUserOrder(userOrderDto);
+        });
+
+        if(alpacaUtil.getAllPositions(userConfigurationDTO).length == 0)
+            removeAccount(accountId);
     }
 
     public boolean isWebSessionActive(String accountId) {
@@ -132,8 +187,12 @@ public class AlpacaWebSocket {
     public void removeAccount(String accountId) throws IOException {
         WebSocketSession clientSession =  webSocketSessions.get(accountId);
         if (clientSession != null) {
-            clientSession.close();
-            webSocketSessions.remove(accountId);
+            try {
+                clientSession.close();
+                webSocketSessions.remove(accountId);
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
         }
     }
 }

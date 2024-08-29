@@ -34,6 +34,12 @@ public class UserOrdersServiceImpl implements UserOrdersService {
     }
 
     @Override
+    public Optional<UserOrderDTO> getUserOrder(String alpacaOrderId) {
+        log.trace(ENTITIES_READ_OPERATION, "UserOrder");
+        return userOrdersRepository.findByAlpacaOrderId(alpacaOrderId).map(userOrder -> modelMapper.map(userOrder, UserOrderDTO.class));
+    }
+
+    @Override
     public Long insertUserOrder(UserOrderDTO userOrderDTO) {
         log.trace(ENTITY_CREATE_OPERATION, userOrderDTO, "UserOrder");
         UserOrder userOrder = userOrdersRepository.save(modelMapper.map(userOrderDTO, UserOrder.class));
