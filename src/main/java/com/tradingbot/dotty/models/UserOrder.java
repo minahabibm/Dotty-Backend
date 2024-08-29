@@ -18,11 +18,14 @@ public class UserOrder {
     @Column(name="alpacaOrderId")
     private String alpacaOrderId;
 
+    @Column(name="filled")
+    private String filled;
+
     @Column(name="filledQty")
-    private String filledQty;
+    private Double filledQty;
 
     @Column(name="filledAvgPrice")
-    private String filledAvgPrice;
+    private Double filledAvgPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
