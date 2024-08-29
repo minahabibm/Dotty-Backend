@@ -95,51 +95,62 @@ public class TickerMarketTradeServiceImpl implements TickerMarketTradeService {
     }
 
     @Override
-    public void enterPosition(String symbol, Float entryPrice, String entryTime) {
+    public String getOrderType(boolean toOpen, String typeOfTrade) {
+        if(toOpen)
+            return TradeDetails.OVERSOLD.orderType.equals(typeOfTrade) ? TradeDetails.OVERSOLD.order : TradeDetails.OVERBOUGHT.order;
+        else
+            return TradeDetails.OVERSOLD.orderType.equals(typeOfTrade) ? TradeDetails.OVERBOUGHT.order : TradeDetails.OVERSOLD.order;
+    }
+
+    @Override
+    public OrdersDTO enterPosition(String symbol, Float entryPrice, String entryTime) {
         log.info(TICKER_MARKET_TRADE_OPEN_POSITION, symbol, entryPrice, entryTime);
         PositionTrackerDTO positionTrackerDTO =  positionTrackerService.getTickerActivePositionTracker(symbol);
+        OrdersDTO orderDTO = null;
         if(positionTrackerDTO != null && ordersService.getActiveTickerOrder(symbol) == null) {
             OrdersDTO ordersDTO = new OrdersDTO();
             ordersDTO.setSymbol(symbol);
-            ordersDTO.setTradeType(TradeDetails.OVERSOLD.orderType.equals(positionTrackerDTO.getTypeOfTrade()) ? TradeDetails.OVERSOLD.order : TradeDetails.OVERBOUGHT.order);
+            ordersDTO.setTradeType(getOrderType(true, positionTrackerDTO.getTypeOfTrade()));
             ordersDTO.setQuantity(10L);
             ordersDTO.setEntryPrice(entryPrice);
             ordersDTO.setEntryTime(LocalDateTime.parse(entryTime.replaceFirst(" ","T")));
             ordersDTO.setActive(true);
             ordersDTO.setPositionTrackerDTO(positionTrackerDTO);
-            ordersService.insertOrder(ordersDTO);
+            orderDTO = ordersService.insertOrder(ordersDTO);
         }
+        return orderDTO;
     }
 
     @Override
-    public void closePosition(String symbol, Float exitPrice, String exitTime) {
+    public OrdersDTO closePosition(String symbol, Float exitPrice, String exitTime) {
         log.info(TICKER_MARKET_TRADE_EXIT_POSITION, symbol, exitPrice, exitTime);
         PositionTrackerDTO positionTrackerDTO =  positionTrackerService.getTickerActivePositionTracker(symbol);
         OrdersDTO openOrderDTO = ordersService.getActiveTickerOrder(symbol);
+        OrdersDTO orderDTO = null;
         if(openOrderDTO != null){
             OrdersDTO ordersDTO = new OrdersDTO();
             ordersDTO.setSymbol(symbol);
-            ordersDTO.setTradeType(TradeDetails.OVERSOLD.orderType.equals(openOrderDTO.getTradeType()) ? TradeDetails.OVERBOUGHT.order : TradeDetails.OVERSOLD.order);
+            ordersDTO.setTradeType(getOrderType(false, positionTrackerDTO.getTypeOfTrade()));
             ordersDTO.setQuantity(10L);
             ordersDTO.setEntryPrice(exitPrice);
             ordersDTO.setEntryTime(LocalDateTime.parse(exitTime.replaceFirst(" ", "T")));
             ordersDTO.setActive(false);
             ordersDTO.setPositionTrackerDTO(positionTrackerDTO);
-            ordersService.insertOrder(ordersDTO);
+            orderDTO =  ordersService.insertOrder(ordersDTO);
 
             openOrderDTO.setActive(false);
             ordersService.updateOrder(openOrderDTO);
 
             positionTrackerDTO.setActive(false);
             positionTrackerService.updatePositionTracker(positionTrackerDTO);
-
-            addToHolding(positionTrackerDTO.getPositionTrackerId());
         }
+        return orderDTO;
     }
 
     @Override
-    public void addToHolding(Long positionTrackerId) {
+    public HoldingDTO addToHolding(Long positionTrackerId) {
         List<OrdersDTO> ordersDTOList = ordersService.getOrdersByPositionTracker(positionTrackerId);
+        HoldingDTO holdingsDTO = new HoldingDTO();
         if(ordersDTOList.size() == 2) {
             log.info(TICKER_MARKET_TRADE_ADD_TO_HOLDING, ordersDTOList.get(0).getSymbol());
             OrdersDTO openedOrder = ordersDTOList.get(0);
@@ -153,8 +164,9 @@ public class TickerMarketTradeServiceImpl implements TickerMarketTradeService {
             holdingDTO.setQuantity(closedOrder.getQuantity());
             holdingDTO.setStartAt(openedOrder.getEntryTime());
             holdingDTO.setEndAt(closedOrder.getEntryTime());
-            holdingService.insertHolding(holdingDTO);
+            holdingsDTO = holdingService.insertHolding(holdingDTO);
         }
+        return holdingsDTO;
     }
 
 }
