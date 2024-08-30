@@ -24,8 +24,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static com.tradingbot.dotty.utils.Utils.getAveragePrice;
-import static com.tradingbot.dotty.utils.constants.LoggingConstants.WEBSOCKET_CONNECTION_ENDED;
-import static com.tradingbot.dotty.utils.constants.LoggingConstants.WEBSOCKET_CONNECTION_STARTED;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 import static com.tradingbot.dotty.utils.constants.alpaca.AlpacaConstants.*;
 
 @Slf4j
@@ -58,7 +57,7 @@ public class AlpacaWebSocket {
         WebSocketHandler handler = new WebSocketHandler() {
             @Override
             public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-                log.debug(WEBSOCKET_CONNECTION_STARTED, session.getId());
+                log.debug(ALPACA_WEBSOCKET_CONNECTION_STARTED, session.getId());
 
                 Map<String, String> messageMap = Map.of(
                         "action", "auth",
@@ -67,6 +66,7 @@ public class AlpacaWebSocket {
                 );
                 String jsonMessage = objectMapper.writeValueAsString(messageMap);
                 session.sendMessage(new TextMessage(jsonMessage));
+                log.debug(ALPACA_WEBSOCKET_SENT_MESSAGE, session.getId(), jsonMessage);
 
                 webSocketSessions.put(accountId, session);
             }
@@ -74,22 +74,21 @@ public class AlpacaWebSocket {
             @Override
             public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
                 try {
-                    String payload = extractPayload(message);
+                    String payload = extractPayload(message, session.getId());
                     AlpacaWebsocketMessageDTO alpacaWebsocketMessageDTO = objectMapper.readValue(payload, AlpacaWebsocketMessageDTO.class);
                     handleWebSocketMessage(session, alpacaWebsocketMessageDTO, accountId, userConfigurationDTO);
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    log.warn(ALPACA_WEBSOCKET_MESSAGE_ERROR, session.getId(), e.getMessage());
                 }
             }
 
             @Override
             public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-
             }
 
             @Override
             public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-                log.debug(WEBSOCKET_CONNECTION_ENDED, session.getId());
+                log.debug(ALPACA_WEBSOCKET_CONNECTION_ENDED, session.getId());
             }
 
             @Override
@@ -98,17 +97,19 @@ public class AlpacaWebSocket {
             }
         };
 
-        // Initialize a session
+        log.info(ALPACA_WEBSOCKET_INITIALIZATION);
         client.execute(handler, alpacaWebSocketURI.toString()).get();
     }
 
-    private String extractPayload(WebSocketMessage<?> message) {
+    private String extractPayload(WebSocketMessage<?> message, String sessionId) {
         String payload;
         if (message instanceof TextMessage) {
             payload = ((TextMessage) message).getPayload();
+            log.debug(ALPACA_WEBSOCKET_TEXT_MESSAGE, sessionId, payload);
         } else if (message instanceof BinaryMessage) {
             ByteBuffer byteBuffer = ((BinaryMessage) message).getPayload();
             payload = new String(byteBuffer.array(), StandardCharsets.UTF_8);
+            log.debug(ALPACA_WEBSOCKET_BINARY_MESSAGE, sessionId, payload);
         } else {
             throw new UnsupportedOperationException("Received unknown message type");
         }
@@ -117,6 +118,7 @@ public class AlpacaWebSocket {
 
     private void handleWebSocketMessage(WebSocketSession session, AlpacaWebsocketMessageDTO alpacaWebsocketMessageDTO, String accountId, UserConfigurationDTO userConfigurationDTO) throws IOException {
         if(alpacaWebsocketMessageDTO != null) {
+            log.info(ALPACA_WEBSOCKET_RECEIVED_MESSAGE, alpacaWebsocketMessageDTO.getStream(), session.getId(), alpacaWebsocketMessageDTO);
             if(ALPACA_AUTHORIZATION.equals(alpacaWebsocketMessageDTO.getStream())) {
                 if(ALPACA_AUTHORIZED.equals(alpacaWebsocketMessageDTO.getData().getStatus())) {
                     Map<String, Object> messageMap = Map.of(
@@ -126,40 +128,38 @@ public class AlpacaWebSocket {
 
                     String jsonMessage = objectMapper.writeValueAsString(messageMap);
                     session.sendMessage(new TextMessage(jsonMessage));
+                    log.debug(ALPACA_WEBSOCKET_SENT_MESSAGE, session.getId(), jsonMessage);
                 } else {
                     throw new RuntimeException("Unauthorized: Invalid key or secret. " + alpacaWebsocketMessageDTO.getData().getStatus());
                 }
             } else if(ALPACA_TRADE_UPDATES.equals(alpacaWebsocketMessageDTO.getStream())) {
-                System.out.println("alpaca trade_updates " + alpacaWebsocketMessageDTO);
                 String event = alpacaWebsocketMessageDTO.getData().getEvent();
                 AlpacaWebsocketMessageDTO.TradeUpdatesData data = alpacaWebsocketMessageDTO.getData();
                 switch (event) {
                     case ALPACA_NEW:
-                        System.out.println("New order routed: " + data);
+                        log.trace(ALPACA_WEBSOCKET_RECEIVED_MESSAGE_EVENT, session.getId(), event, data);
                         break;
                     case ALPACA_FILL:
                     case ALPACA_PARTIAL_FILL:
                     case ALPACA_CANCELED:
                     case ALPACA_EXPIRED:
                     case ALPACA_DONE_FOR_DAY:
+                        log.trace(ALPACA_WEBSOCKET_RECEIVED_MESSAGE_EVENT, session.getId(), event, data);
                         handleOrderUpdates(accountId, userConfigurationDTO, data, event);
                         break;
                     case ALPACA_REPLACED:
-                        System.out.println("Order replaced: " + data);
+                        log.trace(ALPACA_WEBSOCKET_RECEIVED_MESSAGE_EVENT, session.getId(), event, data);
                         break;
                     default:
-                        System.out.println("Unhandled event: " + event);
+                        log.trace(ALPACA_WEBSOCKET_RECEIVED_MESSAGE_EVENT, session.getId(), "Unhandled event: " + event, data);
                         break;
                 }
-            } else {
-                System.out.println("alpaca WS " + alpacaWebsocketMessageDTO);
             }
         }
     }
 
     private void handleOrderUpdates(String accountId, UserConfigurationDTO userConfigurationDTO, AlpacaWebsocketMessageDTO.TradeUpdatesData data, String event) throws IOException {
-        System.out.println("Order " + event + ": " + data);
-
+        log.trace(ALPACA_WEBSOCKET_ORDER_UPDATED, accountId, event, data.getOrder().getId());
         Optional<UserOrderDTO> userOrderDTO = userOrdersService.getUserOrder(data.getOrder().getId());
         userOrderDTO.ifPresent(userOrderDto -> {
             double price = Double.parseDouble(data.getPrice());
@@ -181,16 +181,21 @@ public class AlpacaWebSocket {
     }
 
     public boolean isWebSessionActive(String accountId) {
-        return webSocketSessions.containsKey(accountId);
+        boolean isActive = webSocketSessions.containsKey(accountId);
+        log.debug(ALPACA_WEBSOCKET_ACTIVE_SESSION, accountId, isActive);
+        return isActive;
     }
 
     public void removeAccount(String accountId) throws IOException {
         WebSocketSession clientSession =  webSocketSessions.get(accountId);
         if (clientSession != null) {
             try {
+                log.debug(ALPACA_WEBSOCKET_SESSION_HALT, accountId);
                 clientSession.close();
                 webSocketSessions.remove(accountId);
+                log.trace(ALPACA_WEBSOCKET_SESSION_ACCOUNT_UPDATE, accountId);
             } catch (Exception e) {
+                log.error(ALPACA_WEBSOCKET_SESSION_HALT_ERROR, accountId, e);
                 throw new IOException(e);
             }
         }
