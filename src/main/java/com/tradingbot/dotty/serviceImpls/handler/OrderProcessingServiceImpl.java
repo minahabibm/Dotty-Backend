@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
+
 //  TODO add message error details
 
 @Slf4j
@@ -49,13 +51,13 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
 
 
     @Override
-    public Float getAvailableToTrade(UserConfigurationDTO userConfigurationDTO) {
-        return Float.valueOf(alpacaUtil.getAccountDetails(userConfigurationDTO).getBuying_power());
+    public Double getAvailableToTrade(UserConfigurationDTO userConfigurationDTO) {
+        return Double.valueOf(alpacaUtil.getAccountDetails(userConfigurationDTO).getBuying_power());
     }
 
     @Override
-    public Float getCurrentPrice() {
-        return 0f;
+    public Double getCurrentPrice() {
+        return 0.0;
     }
 
     @Override
@@ -65,6 +67,7 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
         String price = arr[2];
         String time = arr[3];
 
+        log.info(PROCESSING_ORDER_TO_ENTER, symbol);
         OrdersDTO ordersDTO = tickerMarketTradeService.enterPosition(symbol, Float.valueOf(price), time);
         tickerUpdatesWebSocket.subscribeToTickersTradesUpdate(symbol);
 
@@ -75,7 +78,7 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
                     if(!alpacaWebSocket.isWebSessionActive(usersDTO.get().getLoginUid()))
                         alpacaWebSocket.addAccountWebSocket(usersDTO.get().getLoginUid(), userConfigurationDTO);
 
-                    Float availableToTrade = getAvailableToTrade(userConfigurationDTO);
+                    Double availableToTrade = getAvailableToTrade(userConfigurationDTO);
                     OrderRequest orderRequest = OrderRequest.builder()
                             .symbol(symbol)
                             .notional(String.valueOf(availableToTrade * 0.1))
@@ -92,7 +95,7 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
                     userOrdersService.insertUserOrder(userOrderDTO);
                 }
             } catch (Exception e) {
-                log.error(e.getMessage());
+                log.error(PROCESSING_ORDER_ERROR,"to Open", userConfigurationDTO.getUserConfigurationId(), symbol, e.getMessage());
             }
         });
     }
@@ -104,6 +107,7 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
         String price = arr[2];
         String time = arr[3];
 
+        log.info(PROCESSING_ORDER_TO_EXIT, symbol);
         OrdersDTO ordersDTO = tickerMarketTradeService.closePosition(symbol, Float.valueOf(price), time);
         HoldingDTO holdingDTO = tickerMarketTradeService.addToHolding(ordersDTO.getPositionTrackerDTO().getPositionTrackerId());
         tickerUpdatesWebSocket.unsubscribeToTickersTradesUpdate(symbol);
@@ -133,7 +137,7 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
                     }
                 }
             } catch (Exception e) {
-                log.error(e.getMessage());
+                log.error(PROCESSING_ORDER_ERROR,"to Exit", userConfigurationDTO.getUserConfigurationId(), symbol, e.getMessage());
             }
         });
     }
