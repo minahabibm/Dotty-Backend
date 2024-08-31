@@ -61,11 +61,11 @@ public class AuthServiceImpl implements AuthService {
         if (authentication != null && authentication.isAuthenticated()) {
             if (authentication instanceof JwtAuthenticationToken jwtAuth) {
                 // Handle JWT-based authentication
-                System.out.println("JwtAuthenticationToken");                                                           //  JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
+                log.trace(USER_AUTHENTICATION_TYPE, "JwtAuthenticationToken");                                                           //  JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
                 return (T) jwtAuth;
             } else if (authentication instanceof OAuth2AuthenticationToken oauth2Auth) {
                 // Handle OAuth2 client-based authentication                                                            // DefaultOAuth2User user = (DefaultOAuth2User) oauth2Auth.getPrincipal(); /  DefaultOidcUser oidcUser
-                System.out.println("OAuth2AuthenticationToken");                                                        // Extract user attributes user.getAttribute("name"),  user.getAttribute("email");
+                log.trace(USER_AUTHENTICATION_TYPE, "OAuth2AuthenticationToken");                                                        // Extract user attributes user.getAttribute("name"),  user.getAttribute("email");
                 return (T) oauth2Auth;
             }  else {
                 throw new IllegalArgumentException("Unexpected authentication type: " + authentication.getClass());

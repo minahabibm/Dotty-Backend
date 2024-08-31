@@ -60,6 +60,7 @@ public class LoggingConstants {
     public static final String USER_AUTHENTICATION_LOGIN_ERROR = "User Login error ";
     public static final String USER_AUTHENTICATION_LOGOUT = "Authenticate User trying to logout.";
     public static final String USER_AUTHENTICATION_LOGOUT_TOKEN = "Revoking user Access token on logout.";
+    public static final String USER_AUTHENTICATION_TYPE = "Authentication service User type :: {}.";
     public static final String USER_AUTHENTICATION_DATA = "Authentication service handling user data.";
     public static final String USER_AUTHENTICATION_CREATE = "Authentication service adding a new user {}.";
     public static final String USER_AUTHENTICATION_UPDATE = "Authentication service updating user {}.";
