@@ -1,7 +1,6 @@
 package com.tradingbot.dotty.serviceImpls.handler;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
-import com.tradingbot.dotty.models.dto.requests.AccessTokenAudAndJti;
 import com.tradingbot.dotty.models.dto.UserConfigurationDTO;
 import com.tradingbot.dotty.models.dto.UsersDTO;
 import com.tradingbot.dotty.service.handler.AuthService;
@@ -21,7 +20,6 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -31,7 +29,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
@@ -53,8 +50,29 @@ public class AuthServiceImpl implements AuthService {
 
     private final OAuth2AuthorizedClientService authorizedClientService;
 
+
     public AuthServiceImpl(OAuth2AuthorizedClientService authorizedClientService) {
         this.authorizedClientService = authorizedClientService;
+    }
+
+    @Override
+    public <T> T getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication instanceof JwtAuthenticationToken jwtAuth) {
+                // Handle JWT-based authentication
+                System.out.println("JwtAuthenticationToken");                                                           //  JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
+                return (T) jwtAuth;
+            } else if (authentication instanceof OAuth2AuthenticationToken oauth2Auth) {
+                // Handle OAuth2 client-based authentication                                                            // DefaultOAuth2User user = (DefaultOAuth2User) oauth2Auth.getPrincipal(); /  DefaultOidcUser oidcUser
+                System.out.println("OAuth2AuthenticationToken");                                                        // Extract user attributes user.getAttribute("name"),  user.getAttribute("email");
+                return (T) oauth2Auth;
+            }  else {
+                throw new IllegalArgumentException("Unexpected authentication type: " + authentication.getClass());
+            }
+        } else {
+            throw new IllegalStateException("No authenticated user or authentication is not available.");
+        }
     }
 
     @Override
@@ -76,8 +94,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public URI getResponseRedirectUri(HttpServletRequest httpRequest, Authentication authentication) throws URISyntaxException {
-        String redirectUri = getRedirectUrl(httpRequest);                                                   // System.out.println(code + " " + state);
+    public URI getResponseRedirectUri(HttpServletRequest httpRequest) throws URISyntaxException {
+        Authentication authentication = getAuthenticatedUser();
+        String redirectUri = getRedirectUrl(httpRequest);                                                               // System.out.println(code + " " + state);
 
         OAuth2AuthenticationToken authenticationToken = (OAuth2AuthenticationToken) authentication;
         String clientRegistrationId = authenticationToken.getAuthorizedClientRegistrationId();
@@ -91,13 +110,49 @@ public class AuthServiceImpl implements AuthService {
             DefaultOidcUser oidcUser = (DefaultOidcUser) authentication.getPrincipal();
             OidcIdToken idToken = oidcUser.getIdToken();
             log.info(USER_AUTHENTICATION_LOGIN_USER_TO_API);
-            addOrUpdateAuthenticatedUser(authentication);
+            addOrUpdateAuthenticatedUser();
 
             return new URI(redirectUri+"?access_token="+accessToken.getTokenValue()+"&refresh_token="+refreshToken.getTokenValue()+"&id_token="+idToken.getTokenValue());
         } else {
             return null;
         }
     }
+
+    @Override
+    public void addOrUpdateAuthenticatedUser() {
+        log.trace(USER_AUTHENTICATION_DATA);
+        Authentication authentication = getAuthenticatedUser();
+        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();                                             // attributes.forEach((key, value) -> System.out.println(key + ": " + value));
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+        String email = (String) attributes.get("email");
+        Optional<UsersDTO> user = usersService.getUserByEmail(email);
+
+        if(user.isEmpty()) {
+            Long userConfigurationID = userConfigurationService.insertUserConfiguration(new UserConfigurationDTO());
+            UsersDTO usersDTO = new UsersDTO();
+            usersDTO.setFirstName(attributes.get("given_name").toString());
+            usersDTO.setLastName(attributes.get("family_name").toString());
+            usersDTO.setEmailAddress(attributes.get("email").toString());
+            usersDTO.setLoginUid(attributes.get("sub").toString());
+            usersDTO.setNickname(attributes.get("nickname").toString());
+            usersDTO.setPictureUrl(attributes.get("picture").toString());
+            usersDTO.setUserConfigurationDTO(userConfigurationService.getUserConfiguration(userConfigurationID).get());
+
+            log.debug(USER_AUTHENTICATION_CREATE, usersDTO);
+            usersService.insertUser(usersDTO);
+        } else {
+            UsersDTO usersDTO = user.get();
+            usersDTO.setFirstName(attributes.get("given_name").toString());
+            usersDTO.setLastName(attributes.get("family_name").toString());
+            usersDTO.setLoginUid(attributes.get("sub").toString());
+            usersDTO.setNickname(attributes.get("nickname").toString());
+            usersDTO.setPictureUrl(attributes.get("picture").toString());
+
+            log.debug(USER_AUTHENTICATION_UPDATE, usersDTO);
+            usersService.updateUser(usersDTO);
+        }
+    }
+
 
     @Override
     public Map<String, Object> getJwtPayloadDecoder(String token) {
@@ -141,8 +196,8 @@ public class AuthServiceImpl implements AuthService {
         log.trace(USER_AUTHENTICATION_TOKEN_REVOKE, token);
         Map<String, Object> tokenPayload = getJwtPayloadDecoder(token);
         String mgmAccesstoken = getMGMAccessToken();
-        auth0Util.revokeAccessToken(mgmAccesstoken, tokenPayload.get("jti").toString());
-        cacheManager.getCache("tokens").evictIfPresent("revokedTokens");
+        //  auth0Util.revokeAccessToken(mgmAccesstoken, tokenPayload.get("jti").toString());
+        //  cacheManager.getCache("tokens").evictIfPresent("revokedTokens");
     }
 
     @Override
@@ -154,107 +209,15 @@ public class AuthServiceImpl implements AuthService {
     private boolean isTokenBlacklisted(String token) {
         log.trace(USER_AUTHENTICATION_TOKEN_GETTING_REVOKED_LIST);
         String mgmAccesstoken = getMGMAccessToken();
-        AccessTokenAudAndJti[] revokedAccessTokens = auth0Util.getRevokedAccessTokens(mgmAccesstoken);
-
         String accessToken = getJwtPayloadDecoder(token).get("jti").toString();
-        Map<String, AccessTokenAudAndJti> tokens = Arrays.stream(revokedAccessTokens).collect(Collectors.toMap(AccessTokenAudAndJti::getJti, tokenAudAndJti -> tokenAudAndJti));
-        log.trace(USER_AUTHENTICATION_TOKEN_REVOKED_LIST, tokens);
-        return tokens.containsKey(accessToken);
+
+        //  AccessTokenAudAndJti[] revokedAccessTokens = auth0Util.getRevokedAccessTokens(mgmAccesstoken);
+        //  Map<String, AccessTokenAudAndJti> tokens = Arrays.stream(revokedAccessTokens).collect(Collectors.toMap(AccessTokenAudAndJti::getJti, tokenAudAndJti -> tokenAudAndJti));
+        //  log.trace(USER_AUTHENTICATION_TOKEN_REVOKED_LIST, tokens);
+        //  tokens.containsKey(accessToken);
+        return false;
     }
 
-    @Override
-    public void addOrUpdateAuthenticatedUser(Authentication authentication) {
-        log.trace(USER_AUTHENTICATION_DATA);
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();                                         // attributes.forEach((key, value) -> System.out.println(key + ": " + value));
-        Map<String, Object> attributes = oAuth2User.getAttributes();
-        String email = (String) attributes.get("email");
-        Optional<UsersDTO> user = usersService.getUserByEmail(email);
-
-        if(user.isEmpty()) {
-            Long userConfigurationID = userConfigurationService.insertUserConfiguration(new UserConfigurationDTO());
-            UsersDTO usersDTO = new UsersDTO();
-            usersDTO.setFirstName(attributes.get("given_name").toString());
-            usersDTO.setLastName(attributes.get("family_name").toString());
-            usersDTO.setEmailAddress(attributes.get("email").toString());
-            usersDTO.setLoginUid(attributes.get("sub").toString());
-            usersDTO.setNickname(attributes.get("nickname").toString());
-            usersDTO.setPictureUrl(attributes.get("picture").toString());
-            usersDTO.setUserConfigurationDTO(userConfigurationService.getUserConfiguration(userConfigurationID).get());
-
-            log.debug(USER_AUTHENTICATION_CREATE, usersDTO);
-            usersService.insertUser(usersDTO);
-        } else {
-            UsersDTO usersDTO = user.get();
-            usersDTO.setFirstName(attributes.get("given_name").toString());
-            usersDTO.setLastName(attributes.get("family_name").toString());
-            usersDTO.setLoginUid(attributes.get("sub").toString());
-            usersDTO.setNickname(attributes.get("nickname").toString());
-            usersDTO.setPictureUrl(attributes.get("picture").toString());
-
-            log.debug(USER_AUTHENTICATION_UPDATE, usersDTO);
-            usersService.updateUser(usersDTO);
-        }
-    }
-
-    @Override
-    public void getAuthorizationType() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
-            System.out.println("JwtAuthenticationToken");
-            // Handle JWT-based authentication
-            String token = jwtAuth.getToken().getTokenValue();
-        } else if (authentication instanceof OAuth2AuthenticationToken oauth2Auth) {
-            System.out.println("OAuth2AuthenticationToken");
-            // Handle OAuth2 client-based authentication
-            String principalName = oauth2Auth.getPrincipal().getName();
-        } else {
-            throw new IllegalArgumentException("Unexpected authentication type: " + authentication.getClass());
-        }
-    }
-
-    @Override
-    public DefaultOAuth2User getAuthenticOAuth2User() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.isAuthenticated()) {
-            if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
-                // If the authentication is OAuth2, retrieve user details
-                DefaultOAuth2User user = (DefaultOAuth2User) oauthToken.getPrincipal();
-
-                // Extract user attributes
-                String name = user.getAttribute("name");
-                String email = user.getAttribute("email");
-                System.out.println(authentication.getDetails().toString());
-                System.out.println(user.getAttributes());
-
-                System.out.println("Authenticated user: " + name + ", Email: " + email);
-                return user;
-            } else {
-                // Handle other types of authentication if needed
-                System.out.println("Authenticated user (non-OAuth2): " + authentication.getName());
-            }
-        } else {
-            System.out.println ("No authenticated user");
-        }
-        return (DefaultOAuth2User) authentication;
-    }
-
-    @Override
-    public JwtAuthenticationToken getAuthenticJwtUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            if (authentication instanceof JwtAuthenticationToken) {
-                JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
-//                System.out.println(jwtToken.getName());
-                return jwtToken;
-            } else {
-                System.out.println("Authenticated user (non-JWT): " + authentication.getName());
-            }
-        } else {
-            System.out.println ("No authenticated user");
-        }
-        return (JwtAuthenticationToken) authentication;
-    }
 
     @Override
     public void extractRequestDetails(HttpServletRequest request) {

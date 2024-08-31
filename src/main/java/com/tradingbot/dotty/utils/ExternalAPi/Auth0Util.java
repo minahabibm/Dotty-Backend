@@ -1,20 +1,15 @@
 package com.tradingbot.dotty.utils.ExternalAPi;
 
-import com.tradingbot.dotty.exceptions.Auth0Exceptions;
-import com.tradingbot.dotty.models.dto.requests.AccessTokenAudAndJti;
 import com.tradingbot.dotty.models.dto.requests.AccessTokenResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.EXTERNAL_GET_REQUEST_WITH_CRITERIA;
 
@@ -58,8 +53,11 @@ public class Auth0Util {
                 .retrieve()
                 .bodyToMono(AccessTokenResponse.class)
                 .block();
-
     }
+
+}
+
+/*  deprecated
 
     @Cacheable(value = "tokens", key = "'revokedTokens'")
     public AccessTokenAudAndJti[] getRevokedAccessTokens(String mgmAccessToken) {
@@ -100,8 +98,4 @@ public class Auth0Util {
                 .bodyToMono(String.class)
                 .block();
     }
-
-
-
-
-}
+ */
