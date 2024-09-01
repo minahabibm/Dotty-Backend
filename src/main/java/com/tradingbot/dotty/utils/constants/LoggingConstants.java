@@ -42,6 +42,7 @@ public class LoggingConstants {
     public static  final String TICKER_MARKET_DATA_NOT_TRACKED = "No active position tracker found";
     public static  final String TICKER_MARKET_DATA_TRACKING_POSITION = "Inserting {} Ticker's  position.";
 
+    public static  final String TICKER_MARKET_TRADE_TRADE_POSITION = "Validating Ticker {} for a Trade.";
     public static  final String TICKER_MARKET_TRADE_IN_POSITION = "Verify Ticker {} in a Trade." ;
     public static  final String TICKER_MARKET_TRADE_OPEN_POSITION = "Entering position for Ticker {} at price {} on {}." ;
     public static  final String TICKER_MARKET_TRADE_EXIT_POSITION = "Exiting position for Ticker {} at price {} on {}." ;
