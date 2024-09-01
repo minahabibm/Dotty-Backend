@@ -3,16 +3,16 @@ package com.tradingbot.dotty.service;
 import com.tradingbot.dotty.models.dto.OrdersDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OrdersService {
 
     List<OrdersDTO> getOrders();
     List<OrdersDTO> getActiveTickerOrders();
     List<OrdersDTO> getOrdersByPositionTracker(Long positionTrackerId);
-    OrdersDTO getActiveTickerOrder(String symbol);
-    List<Long> insertOrders(List<OrdersDTO> ordersDTOList);
-    OrdersDTO insertOrder(OrdersDTO ordersDTO);
-    Long updateOrder(OrdersDTO ordersDTO);
-    String deleteOrder();
+    Optional<OrdersDTO> getActiveTickerOrder(String symbol);
+    Optional<OrdersDTO> insertOrder(OrdersDTO ordersDTO);
+    Optional<OrdersDTO> updateOrder(OrdersDTO ordersDTO);
+    void deleteOrder();
 
 }

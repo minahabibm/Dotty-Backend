@@ -10,12 +10,12 @@ public interface UserConfigurationService {
 
     List<UserConfigurationDTO> getUsersConfigurations();
     List<UserConfigurationDTO> getUsersConfigurationsWithActiveTradingAccounts();
-    Optional<UserConfigurationDTO> getUserConfiguration(Long id);
+    Optional<UserConfigurationDTO> getUserConfiguration(Long userConfigurationId);
     Optional<UserConfigurationDTO> getUserConfiguration(String loginUid);
-    Long insertUserConfiguration(UserConfigurationDTO userConfigurationDTO);
-    Long updateUserConfiguration(UserConfigurationDTO userConfigurationDTO);
-    String updateUserTradingAccountAlpaca(UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest, String loginUid);
+    Optional<UserConfigurationDTO> insertUserConfiguration(UserConfigurationDTO userConfigurationDTO);
+    Optional<UserConfigurationDTO> updateUserConfiguration(UserConfigurationDTO userConfigurationDTO);
+    Optional<UserConfigurationDTO> updateUserTradingAccountAlpaca(UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest, String loginUid);
     Boolean isUserTradingAccountActive(String loginUid);
-    String deleteUserConfiguration();
+    void deleteUserConfiguration(Long userConfigurationId);
 
 }

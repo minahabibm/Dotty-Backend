@@ -14,8 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.tradingbot.dotty.utils.constants.LoggingConstants.ENTITIES_READ_OPERATION;
-import static com.tradingbot.dotty.utils.constants.LoggingConstants.ENTITY_CREATE_OPERATION;
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
 @Slf4j
 @Service
@@ -34,25 +33,29 @@ public class UserHoldingServiceImpl implements UserHoldingService {
     }
 
     @Override
-    public Long insertUserHolding(UserHoldingDTO userHoldingDTO) {
+    public Optional<UserHoldingDTO> insertUserHolding(UserHoldingDTO userHoldingDTO) {
         log.trace(ENTITY_CREATE_OPERATION, userHoldingDTO, "UserHolding");
         UserHolding userHolding = userHoldingRepository.save(modelMapper.map(userHoldingDTO, UserHolding.class));
-        return userHolding.getUserHoldingId();
+        return Optional.of(modelMapper.map(userHolding, UserHoldingDTO.class));
     }
 
     @Override
-    public Long updateUserHolding(UserHoldingDTO userHoldingDTO) {
+    public Optional<UserHoldingDTO> updateUserHolding(UserHoldingDTO userHoldingDTO) {
         log.trace(ENTITY_CREATE_OPERATION, userHoldingDTO, "UserHolding");
         if(userHoldingDTO.getUserHoldingId() == null)
             throw new RuntimeException();
-        Optional<UserHolding> userHolding = userHoldingRepository.findById(userHoldingDTO.getUserHoldingId());
-        userHolding.ifPresent(userHoldingDetails -> BeanUtils.copyProperties(userHoldingDTO, userHoldingDetails, "updatedAt"));
-        UserHolding updatedUserHolding = userHoldingRepository.save(userHolding.get());
-        return updatedUserHolding.getUserHoldingId();
+        return userHoldingRepository.findById(userHoldingDTO.getUserHoldingId())
+                .map(existingUserHolding -> {
+                    BeanUtils.copyProperties(userHoldingDTO, existingUserHolding, "updatedAt");
+                    UserHolding updatedUserHolding = userHoldingRepository.save(existingUserHolding);
+                    return modelMapper.map(updatedUserHolding, UserHoldingDTO.class);
+                });
     }
 
     @Override
-    public String deleteUserHolding() {
-        return null;
+    public void deleteUserHolding(Long userHoldingId) {
+        log.trace(ENTITY_DELETE_OPERATION, userHoldingId, "UserHolding");
+        UserHolding userHolding = userHoldingRepository.findById(userHoldingId).orElseThrow(() -> new IllegalArgumentException("User Holding not found"));
+        userHoldingRepository.delete(userHolding);
     }
 }

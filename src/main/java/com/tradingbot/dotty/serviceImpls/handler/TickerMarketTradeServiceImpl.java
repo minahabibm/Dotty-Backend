@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
@@ -37,46 +38,48 @@ public class TickerMarketTradeServiceImpl implements TickerMarketTradeService {
     @Override
     public void startOrUpdateTrackingForTrade(String symbol ,
                                               TechnicalIndicatorResponse.IndicatorDetails tIndicatorDetails,
-                                              TechnicalIndicatorResponse.ValuesDetails tiValuesDetails
-    ) {
+                                              TechnicalIndicatorResponse.ValuesDetails tiValuesDetails) {
 
-        Long positionTrackerId;
+        Optional<PositionTrackerDTO> positionTrackerDTO;
         if(isTickerTracked(symbol)){
             log.debug(TICKER_MARKET_DATA_TRACKING, symbol,  "Update");
-            positionTrackerId = positionTrackerService.getTickerActivePositionTracker(symbol).getPositionTrackerId();
+            positionTrackerDTO = positionTrackerService.getPositionTracker(symbol);
         } else {
             log.debug(TICKER_MARKET_DATA_TRACKING, symbol,  "Start");
-            positionTrackerId = positionTrackerService.insertPositionTracker(PositionTrackerDTO.builder()
+            PositionTrackerDTO newPositionTrackerDTO = PositionTrackerDTO.builder()
                     .symbol(symbol)
                     .typeOfTrade(Float.parseFloat(tiValuesDetails.getRsi()) < TradeDetails.OVERSOLD.value ?  TradeDetails.OVERSOLD.orderType : TradeDetails.OVERBOUGHT.orderType)
                     .active(true)
-                    .build()
-            );
+                    .build();
+            positionTrackerDTO = positionTrackerService.insertPositionTracker(newPositionTrackerDTO);
         }
 
-        log.trace(TICKER_MARKET_DATA_TRACKING_POSITION, symbol);
-        PositionDTO positionDTO =  new PositionDTO();
-        positionDTO.setSymbol(symbol);
-        positionDTO.setTai(tIndicatorDetails.getName());
-        positionDTO.setTaiValue(Float.valueOf(tiValuesDetails.getRsi()));
-        positionDTO.setIntervals(LocalDateTime.parse(tiValuesDetails.getDatetime().replaceFirst(" ", "T")));
-        positionDTO.setOpen(Float.valueOf(tiValuesDetails.getOpen()));
-        positionDTO.setHigh(Float.valueOf(tiValuesDetails.getHigh()));
-        positionDTO.setLow(Float.valueOf(tiValuesDetails.getLow()));
-        positionDTO.setClose(Float.valueOf(tiValuesDetails.getClose()));
-        positionDTO.setVolume(Long.valueOf(tiValuesDetails.getVolume()));
-        positionDTO.setPositionTrackerDTO(positionTrackerService.getPositionTracker(positionTrackerId));
-        positionService.insertPosition(positionDTO);
-
+        if(positionTrackerDTO.isPresent()){
+            log.trace(TICKER_MARKET_DATA_TRACKING_POSITION, symbol);
+            PositionDTO positionDTO =  new PositionDTO();
+            positionDTO.setSymbol(symbol);
+            positionDTO.setTai(tIndicatorDetails.getName());
+            positionDTO.setTaiValue(Float.valueOf(tiValuesDetails.getRsi()));
+            positionDTO.setIntervals(LocalDateTime.parse(tiValuesDetails.getDatetime().replaceFirst(" ", "T")));
+            positionDTO.setOpen(Float.valueOf(tiValuesDetails.getOpen()));
+            positionDTO.setHigh(Float.valueOf(tiValuesDetails.getHigh()));
+            positionDTO.setLow(Float.valueOf(tiValuesDetails.getLow()));
+            positionDTO.setClose(Float.valueOf(tiValuesDetails.getClose()));
+            positionDTO.setVolume(Long.valueOf(tiValuesDetails.getVolume()));
+            positionDTO.setPositionTrackerDTO(positionTrackerDTO.get());
+            positionService.insertPosition(positionDTO);
+        } else {
+            throw new RuntimeException("Failed to retrieve or create PositionTracker");
+        }
     }
 
     @Override
     public void stopTrackingForTrade(String symbol) {
         log.debug(TICKER_MARKET_DATA_TRACKING, symbol,  "Stop");
-        PositionTrackerDTO positionTrackerDTO = positionTrackerService.getTickerActivePositionTracker(symbol);
-        if(positionTrackerDTO != null) {
-            positionTrackerDTO.setActive(false);
-            positionTrackerService.updatePositionTracker(positionTrackerDTO);
+        Optional<PositionTrackerDTO> positionTrackerDTO = positionTrackerService.getPositionTracker(symbol);
+        if(positionTrackerDTO.isPresent()) {
+            positionTrackerDTO.get().setActive(false);
+            positionTrackerService.updatePositionTracker(positionTrackerDTO.get());
         } else {
             log.trace(TICKER_MARKET_DATA_NOT_TRACKED);
         }
@@ -85,13 +88,13 @@ public class TickerMarketTradeServiceImpl implements TickerMarketTradeService {
     @Override
     public boolean isTickerTracked(String symbol) {
         log.debug(TICKER_MARKET_DATA_TICKER_TRACKER, symbol);
-        return positionTrackerService.getTickerActivePositionTracker(symbol) != null;
+        return positionTrackerService.getPositionTracker(symbol).isPresent();
     }
 
     @Override
     public boolean isInTrade(String symbol) {
         log.debug(TICKER_MARKET_TRADE_IN_POSITION, symbol);
-        return ordersService.getActiveTickerOrder(symbol) != null;
+        return ordersService.getActiveTickerOrder(symbol).isPresent();
     }
 
     @Override
@@ -103,54 +106,54 @@ public class TickerMarketTradeServiceImpl implements TickerMarketTradeService {
     }
 
     @Override
-    public OrdersDTO enterPosition(String symbol, Float entryPrice, String entryTime) {
+    public Optional<OrdersDTO> enterPosition(String symbol, Float entryPrice, String entryTime) {
         log.info(TICKER_MARKET_TRADE_OPEN_POSITION, symbol, entryPrice, entryTime);
-        PositionTrackerDTO positionTrackerDTO =  positionTrackerService.getTickerActivePositionTracker(symbol);
-        OrdersDTO orderDTO = null;
-        if(positionTrackerDTO != null && ordersService.getActiveTickerOrder(symbol) == null) {
+        Optional<PositionTrackerDTO> positionTrackerDTO =  positionTrackerService.getPositionTracker(symbol);
+        Optional<OrdersDTO> orderDTO = Optional.empty();
+        if(positionTrackerDTO.isPresent() && ordersService.getActiveTickerOrder(symbol).isEmpty()) {
             OrdersDTO ordersDTO = new OrdersDTO();
             ordersDTO.setSymbol(symbol);
-            ordersDTO.setTradeType(getOrderType(true, positionTrackerDTO.getTypeOfTrade()));
+            ordersDTO.setTradeType(getOrderType(true, positionTrackerDTO.get().getTypeOfTrade()));
             ordersDTO.setQuantity(10L);
             ordersDTO.setEntryPrice(entryPrice);
             ordersDTO.setEntryTime(LocalDateTime.parse(entryTime.replaceFirst(" ","T")));
             ordersDTO.setActive(true);
-            ordersDTO.setPositionTrackerDTO(positionTrackerDTO);
+            ordersDTO.setPositionTrackerDTO(positionTrackerDTO.get());
             orderDTO = ordersService.insertOrder(ordersDTO);
         }
         return orderDTO;
     }
 
     @Override
-    public OrdersDTO closePosition(String symbol, Float exitPrice, String exitTime) {
+    public Optional<OrdersDTO> closePosition(String symbol, Float exitPrice, String exitTime) {
         log.info(TICKER_MARKET_TRADE_EXIT_POSITION, symbol, exitPrice, exitTime);
-        PositionTrackerDTO positionTrackerDTO =  positionTrackerService.getTickerActivePositionTracker(symbol);
-        OrdersDTO openOrderDTO = ordersService.getActiveTickerOrder(symbol);
-        OrdersDTO orderDTO = null;
-        if(openOrderDTO != null){
+        Optional<PositionTrackerDTO> positionTrackerDTO =  positionTrackerService.getPositionTracker(symbol);
+        Optional<OrdersDTO> openOrderDTO = ordersService.getActiveTickerOrder(symbol);
+        Optional<OrdersDTO> orderDTO = Optional.empty();
+        if(positionTrackerDTO.isPresent() && openOrderDTO.isPresent() ){
             OrdersDTO ordersDTO = new OrdersDTO();
             ordersDTO.setSymbol(symbol);
-            ordersDTO.setTradeType(getOrderType(false, positionTrackerDTO.getTypeOfTrade()));
+            ordersDTO.setTradeType(getOrderType(false, positionTrackerDTO.get().getTypeOfTrade()));
             ordersDTO.setQuantity(10L);
             ordersDTO.setEntryPrice(exitPrice);
             ordersDTO.setEntryTime(LocalDateTime.parse(exitTime.replaceFirst(" ", "T")));
             ordersDTO.setActive(false);
-            ordersDTO.setPositionTrackerDTO(positionTrackerDTO);
+            ordersDTO.setPositionTrackerDTO(positionTrackerDTO.get());
             orderDTO =  ordersService.insertOrder(ordersDTO);
 
-            openOrderDTO.setActive(false);
-            ordersService.updateOrder(openOrderDTO);
+            openOrderDTO.get().setActive(false);
+            ordersService.updateOrder(openOrderDTO.get());
 
-            positionTrackerDTO.setActive(false);
-            positionTrackerService.updatePositionTracker(positionTrackerDTO);
+            positionTrackerDTO.get().setActive(false);
+            positionTrackerService.updatePositionTracker(positionTrackerDTO.get());
         }
         return orderDTO;
     }
 
     @Override
-    public HoldingDTO addToHolding(Long positionTrackerId) {
+    public Optional<HoldingDTO> addToHolding(Long positionTrackerId) {
         List<OrdersDTO> ordersDTOList = ordersService.getOrdersByPositionTracker(positionTrackerId);
-        HoldingDTO holdingsDTO = new HoldingDTO();
+        Optional<HoldingDTO> holdingsDTO = Optional.empty();
         if(ordersDTOList.size() == 2) {
             log.info(TICKER_MARKET_TRADE_ADD_TO_HOLDING, ordersDTOList.get(0).getSymbol());
             OrdersDTO openedOrder = ordersDTOList.get(0);

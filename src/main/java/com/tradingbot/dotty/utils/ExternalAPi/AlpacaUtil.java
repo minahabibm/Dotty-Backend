@@ -15,6 +15,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
+
 @Slf4j
 @Service
 public class AlpacaUtil {
@@ -34,6 +36,7 @@ public class AlpacaUtil {
         else
             webClient = webClientAlpaca;
 
+        log.debug(ALPACA_REQUEST_DETAILS, method, pathVariable, queryParams);
         WebClient.RequestBodySpec requestSpec = webClient
                 .method(method)
                 .uri(uriBuilder -> {
@@ -60,6 +63,7 @@ public class AlpacaUtil {
     private Mono<Throwable> handleError(ClientResponse response) {
         return response.bodyToMono(String.class)
                 .flatMap(errorMessage -> {
+                    log.error(ALPACA_RESPONSE_ERROR, response.statusCode(), errorMessage);
                     if (response.statusCode().is4xxClientError()) {
                         if (response.statusCode() == HttpStatus.NOT_FOUND) {
                             return Mono.error(new AlpacaExceptions.NotFoundException(errorMessage));
@@ -82,15 +86,18 @@ public class AlpacaUtil {
                 });
     }
 
-
     public AccountResponse getAccountDetails(UserConfigurationDTO userConfigurationDTO) {
-        return getAlpacaWebClient(HttpMethod.GET, "account", null, null, userConfigurationDTO)
+        log.info(ALPACA_FETCH_REQUEST, "account details", userConfigurationDTO.getUserConfigurationId());
+        AccountResponse accountResponse = getAlpacaWebClient(HttpMethod.GET, "account", null, null, userConfigurationDTO)
                 .bodyToMono(AccountResponse.class)
                 .block();
+        log.debug(ALPACA_RESPONSE_DETAILS, "account", accountResponse);
+        return accountResponse;
     }
 
 
     public AssetResponse isAssetTradable(String assetSymbol, UserConfigurationDTO userConfigurationDTO) {
+        log.info(ALPACA_FETCH_REQUEST, "is asset " + assetSymbol + " tradable", userConfigurationDTO.getUserConfigurationId());
         return getAlpacaWebClient(HttpMethod.GET, "assets/" + assetSymbol, null, null, userConfigurationDTO)
                 .bodyToMono(AssetResponse.class)
                 .block();
@@ -98,18 +105,21 @@ public class AlpacaUtil {
 
 
     public OrderResponse[] getAllOrders(Map<String, String> orderQueryParams, UserConfigurationDTO userConfigurationDTO) {
+        log.info(ALPACA_FETCH_REQUEST, "orders", userConfigurationDTO.getUserConfigurationId());
         return getAlpacaWebClient(HttpMethod.GET, "orders", orderQueryParams, null, userConfigurationDTO)
                 .bodyToMono(OrderResponse[].class)
                 .block();
     }
 
     public OrderResponse createOrder(OrderRequest orderRequestDTO, UserConfigurationDTO userConfigurationDTO) {
+        log.info(ALPACA_CREATE_REQUEST, "an order for asset " + orderRequestDTO.getSymbol(), userConfigurationDTO.getUserConfigurationId());
         return getAlpacaWebClient(HttpMethod.POST, "orders", null, orderRequestDTO, userConfigurationDTO)
                 .bodyToMono(OrderResponse.class)
                 .block();
     }
 
     public OrderResponse.OrderClosed[] cancelAllOpenOrders(UserConfigurationDTO userConfigurationDTO) {
+        log.info(ALPACA_CANCEL_REQUEST, "orders", userConfigurationDTO.getUserConfigurationId());
         return getAlpacaWebClient(HttpMethod.DELETE, "orders", null, null, userConfigurationDTO)
                 .bodyToMono(OrderResponse.OrderClosed[].class)
                 .block();
@@ -117,24 +127,28 @@ public class AlpacaUtil {
 
 
     public PositionResponse[] getAllPositions(UserConfigurationDTO userConfigurationDTO) {
+        log.info(ALPACA_FETCH_REQUEST, "positions", userConfigurationDTO.getUserConfigurationId());
         return getAlpacaWebClient(HttpMethod.GET, "positions", null, null, userConfigurationDTO)
                 .bodyToMono(PositionResponse[].class)
                 .block();
     }
 
     public PositionResponse getAnOpenPosition(String assetSymbol, UserConfigurationDTO userConfigurationDTO) {
+        log.info(ALPACA_FETCH_REQUEST, "position for symbol " + assetSymbol, userConfigurationDTO.getUserConfigurationId());
         return getAlpacaWebClient(HttpMethod.GET, "positions/" + assetSymbol, null, null, userConfigurationDTO)
                 .bodyToMono(PositionResponse.class)
                 .block();
     }
 
     public OrderResponse closePosition(String assetSymbol, Map<String, String> positionQueryParams, UserConfigurationDTO userConfigurationDTO) {
+        log.info(ALPACA_CANCEL_REQUEST, "position for  asset " + assetSymbol, userConfigurationDTO.getUserConfigurationId());
         return getAlpacaWebClient(HttpMethod.DELETE, "positions/" + assetSymbol, positionQueryParams, null, userConfigurationDTO)
                 .bodyToMono(OrderResponse.class)
                 .block();
     }
 
     public PositionResponse.PositionClosed[]  closeAllPositions(Map<String, String> positionQueryParams, UserConfigurationDTO userConfigurationDTO) {
+        log.info(ALPACA_CANCEL_REQUEST, "positions", userConfigurationDTO.getUserConfigurationId());
         return getAlpacaWebClient(HttpMethod.DELETE, "positions", positionQueryParams, null, userConfigurationDTO)
                 .bodyToMono(PositionResponse.PositionClosed[].class)
                 .block();

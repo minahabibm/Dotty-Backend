@@ -34,46 +34,47 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public Optional<UsersDTO> getUser(Long id) {
-        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, id, "Users");
-        Optional<Users> user = usersRepository.findById(id);
-        return user.map(users -> modelMapper.map(users, UsersDTO.class));
+    public Optional<UsersDTO> getUser(Long userId) {
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, userId, "Users");
+        return usersRepository.findById(userId).map(users -> modelMapper.map(users, UsersDTO.class));
     }
 
     @Override
     public Optional<UsersDTO> getUserByEmail(String email) {
         log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, email, "Users");
-        Optional<Users> user = usersRepository.findByEmailAddress(email);
-        return user.map(users -> modelMapper.map(users, UsersDTO.class));
+        return usersRepository.findByEmailAddress(email).map(users -> modelMapper.map(users, UsersDTO.class));
     }
 
     @Override
     public Optional<UsersDTO> getUserByUserConfigurationId(Long userConfigurationId) {
         log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, userConfigurationId, "Users");
-        Optional<Users> user = usersRepository.findByUserConfiguration_UserConfigurationId(userConfigurationId);
-        return user.map(users -> modelMapper.map(users, UsersDTO.class));
+        return usersRepository.findByUserConfiguration_UserConfigurationId(userConfigurationId).map(users -> modelMapper.map(users, UsersDTO.class));
     }
 
 
     @Override
-    public Long insertUser(UsersDTO usersDTO) {
+    public Optional<UsersDTO> insertUser(UsersDTO usersDTO) {
         log.trace(ENTITY_CREATE_OPERATION, usersDTO, "Users");
         Users User = usersRepository.save(modelMapper.map(usersDTO, Users.class));
-        return User.getUserId();
+        return Optional.of(modelMapper.map(User, UsersDTO.class));
     }
 
     @Override
-    public Long updateUser(UsersDTO usersDTO) {
+    public Optional<UsersDTO> updateUser(UsersDTO usersDTO) {
         log.trace(ENTITY_UPDATE_OPERATION, usersDTO.getUserId(), "Users");
-        Optional<Users> user = usersRepository.findById(usersDTO.getUserId());
-        user.ifPresent(userDAO -> BeanUtils.copyProperties(usersDTO, userDAO, "updatedAt"));
-        Users users = usersRepository.save(user.get());
-        return users.getUserId();
+        return usersRepository.findById(usersDTO.getUserId())
+                .map(existingUser -> {
+                    BeanUtils.copyProperties(usersDTO, existingUser, "updatedAt");
+                    Users updatedUser = usersRepository.save(existingUser);
+                    return modelMapper.map(updatedUser, UsersDTO.class);
+                });
     }
 
     @Override
-    public String deleteUser(Long Id) {
-        return null;
+    public void deleteUser(Long userId) {
+        log.trace(ENTITY_DELETE_OPERATION, userId, "Users");
+        Users user = usersRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        usersRepository.delete(user);
     }
 
 }
