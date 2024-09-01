@@ -4,6 +4,8 @@ import com.tradingbot.dotty.models.dto.HoldingDTO;
 import com.tradingbot.dotty.models.dto.OrdersDTO;
 import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 
+import java.util.Optional;
+
 public interface TickerMarketTradeService {
 
     void startOrUpdateTrackingForTrade(String symbol , TechnicalIndicatorResponse.IndicatorDetails tIndicatorDetails, TechnicalIndicatorResponse.ValuesDetails tiValuesDetails);
@@ -11,8 +13,8 @@ public interface TickerMarketTradeService {
     boolean isTickerTracked(String symbol);
     boolean isInTrade(String symbol);
     String getOrderType(boolean toOpen, String typeOfTrade);
-    OrdersDTO enterPosition(String symbol, Float entryPrice, String entryTime);
-    OrdersDTO closePosition(String symbol, Float exitPrice, String exitTime);
-    HoldingDTO addToHolding(Long positionTrackerId);
+    Optional<OrdersDTO> enterPosition(String symbol, Float entryPrice, String entryTime);
+    Optional<OrdersDTO> closePosition(String symbol, Float exitPrice, String exitTime);
+    Optional<HoldingDTO> addToHolding(Long positionTrackerId);
 
 }
