@@ -8,19 +8,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderConsumer {
 
-    @Autowired
-    private OrderProcessingService orderProcessingService;
-
-    @KafkaListener(topics = "entry-orders", groupId = "order-consumer-group")
-    public void toEntryOrder(String order) {
-        System.out.println(order);
-        orderProcessingService.enterPosition(order);;
-    }
-
-    @KafkaListener(topics = "exit-orders", groupId = "order-consumer-group")
-    public void toExitOrder(String order) {
-        System.out.println(order);
-        orderProcessingService.exitPosition(order);
-    }
+//    @Autowired
+//    private OrderProcessingService orderProcessingService;
+//
+//    @KafkaListener(topics = "entry-orders", groupId = "order-consumer-group")
+//    public void toEntryOrder(String order) {
+//        System.out.println(order);
+//        orderProcessingService.enterPosition(order);;
+//    }
+//
+//    @KafkaListener(topics = "exit-orders", groupId = "order-consumer-group")
+//    public void toExitOrder(String order) {
+//        System.out.println(order);
+//        orderProcessingService.exitPosition(order);
+//    }
 
 }

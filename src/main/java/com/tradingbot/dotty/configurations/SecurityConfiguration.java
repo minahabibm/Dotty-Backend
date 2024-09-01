@@ -14,7 +14,6 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.filters.RequestFilter;
 import org.apache.juli.logging.Log;
@@ -36,7 +35,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.ForwardAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
@@ -94,8 +92,8 @@ public class SecurityConfiguration {
             .logout(getLogoutCustomizer())
             .headers(getHeadersConfigurerCustomizer())                                                                  // Allow frames from the same origin
             .cors(getCorsConfigurerCustomizer())                                                                        // provide cors
-            .csrf(AbstractHttpConfigurer::disable)                                                                      // provide a csrf token
-            .addFilterBefore(tokenValidator(), BearerTokenAuthenticationFilter.class);
+            .csrf(AbstractHttpConfigurer::disable);                                                                      // provide a csrf token
+//            .addFilterBefore(tokenValidator(), BearerTokenAuthenticationFilter.class);
         return http.build();
     }
 
@@ -126,12 +124,12 @@ public class SecurityConfiguration {
                 log.debug(USER_AUTHORIZATION_TOKEN_STATUS, isAuthorizationHeader);
                 if (isAuthorizationHeader) {
                     String token = authorizationHeader.split(" ")[1];
-                    if (!authService.validateToken(token)) {
-                        servletResponse.setContentType("application/json");
-                        ((HttpServletResponse) servletResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        servletResponse.getWriter().write("Invalid or expired token");
-                        return;
-                    }
+//                    if (!authService.validateToken(token)) {
+//                        servletResponse.setContentType("application/json");
+//                        ((HttpServletResponse) servletResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//                        servletResponse.getWriter().write("Invalid or expired token");
+//                        return;
+//                    }
                 }
                 filterChain.doFilter(servletRequest, servletResponse);
             }
@@ -146,10 +144,8 @@ public class SecurityConfiguration {
 
     private Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> getAuthorizationManagerRequestMatcherRegistryCustomizer() {
 //        RequestMatcher userTradingAccountAuth = new AntPathRequestMatcher(tradingAccountRedirectUrlPath);
-        return authorizeRequests -> authorizeRequests
-//                .requestMatchers(userTradingAccountAuth).permitAll()
-                .anyRequest().authenticated();
-                                                                                                                        // .anyRequest().permitAll();
+        return authorizeRequests -> authorizeRequests                                                                   // .requestMatchers(userTradingAccountAuth).permitAll()
+                .anyRequest().authenticated();                                                                          // .anyRequest().permitAll();
     }
 
     private Customizer<OAuth2LoginConfigurer<HttpSecurity>> getoAuth2LoginConfigurerCustomizer() {
@@ -205,8 +201,8 @@ public class SecurityConfiguration {
             log.debug(USER_AUTHENTICATION_LOGOUT_TOKEN);
             if(queryString != null) {
                 String[] queryParams = request.getQueryString().split("=");
-                if(queryParams.length >= 2)
-                    authService.revokeToken(queryParams[1]);
+//                if(queryParams.length >= 2)
+//                    authService.revokeToken(queryParams[1]);
             }
 
             OidcClientInitiatedLogoutSuccessHandler oidcClientInitiatedLogoutSuccessHandler = new OidcClientInitiatedLogoutSuccessHandler(this.clientRegistrationRepository);

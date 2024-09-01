@@ -1,9 +1,10 @@
-package com.tradingbot.dotty.utils;
+package com.tradingbot.dotty.utils.webSockets;
 
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tradingbot.dotty.models.dto.websockets.TickersUpdateWSMessage;
+import com.tradingbot.dotty.utils.ConcurrentMarketDataFunnel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

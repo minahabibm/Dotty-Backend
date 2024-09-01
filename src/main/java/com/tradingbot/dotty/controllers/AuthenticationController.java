@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -44,7 +45,7 @@ public class AuthenticationController {
     @GetMapping("/oauth2/auth0/login")
     public ResponseEntity<?> doOauth2UserDetailsAndTokensAndRedirectFLowForAuth0(HttpServletRequest httpRequest, HttpServletResponse httpResponse, @RequestParam String code, @RequestParam String state, Authentication authentication) throws URISyntaxException { //AuthRequest
         log.debug(USER_AUTHENTICATION_LOGIN);
-        URI redirectUrl = authService.getResponseRedirectUri(httpRequest, authentication);
+        URI redirectUrl = authService.getResponseRedirectUri(httpRequest);
         if(redirectUrl != null) {
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.setLocation(redirectUrl);
@@ -79,7 +80,7 @@ public class AuthenticationController {
             System.out.println("No refresh token available");
         }
 
-        authService.getAuthorizationType();
+        authService.getAuthenticatedUser();
 
 
         HashMap<String, String> jsonResponse = new HashMap<>();
@@ -90,7 +91,8 @@ public class AuthenticationController {
 
     @PostMapping("/userTradingAccount/alpaca")
     public ResponseEntity<?> saveUserAlpacaKeyAndSecret(@RequestBody UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest) {
-        userConfigurationService.updateUserTradingAccountAlpaca(userTradingAccountAlpacaRequest, authService.getAuthenticJwtUser().getName());
+        JwtAuthenticationToken authenticatedUserJwtToken = authService.getAuthenticatedUser();
+        userConfigurationService.updateUserTradingAccountAlpaca(userTradingAccountAlpacaRequest, authenticatedUserJwtToken.getName());
         return ResponseEntity.ok().build();
     }
 

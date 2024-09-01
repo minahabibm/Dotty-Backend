@@ -54,25 +54,28 @@ public class HoldingServiceImpl implements HoldingService {
     }
 
     @Override
-    public Long insertHolding(HoldingDTO holdingDTO) {
+    public Optional<HoldingDTO> insertHolding(HoldingDTO holdingDTO) {
         log.trace(ENTITY_CREATE_OPERATION, holdingDTO, "Holding");
         Holding holding = holdingRepository.save(modelMapper.map(holdingDTO, Holding.class));
-        return holding.getHoldingTickerId();
+        return Optional.of(modelMapper.map(holding, HoldingDTO.class));
     }
 
     @Override
-    public Long updateHolding(HoldingDTO holdingDTO) {
+    public Optional<HoldingDTO> updateHolding(HoldingDTO holdingDTO) {
         log.trace(ENTITY_UPDATE_OPERATION, holdingDTO.getSymbol(), "Holding");
         if(holdingDTO.getHoldingTickerId() == null)
             throw new RuntimeException();
-        Optional<Holding> holding = holdingRepository.findById(holdingDTO.getHoldingTickerId());
-        holding.ifPresent(holdingUpdate -> BeanUtils.copyProperties(holdingDTO, holdingUpdate, "Holding"));
-        Holding holdingUpdated = holdingRepository.save(holding.get());
-        return holdingUpdated.getHoldingTickerId();
+        return holdingRepository.findById(holdingDTO.getHoldingTickerId())
+                .map(existingHolding -> {
+                    BeanUtils.copyProperties(holdingDTO, existingHolding, "updatedAt");
+                    Holding updatedHolding = holdingRepository.save(existingHolding);
+                    return modelMapper.map(updatedHolding, HoldingDTO.class);
+                });
     }
 
     @Override
-    public String deleteHolding() {
-        return null;
+    public void deleteHolding() {
+
     }
+
 }

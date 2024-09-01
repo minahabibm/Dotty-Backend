@@ -43,6 +43,7 @@ public class Utils {
     @Autowired
     private ModelMapper modelMapper;
 
+
     public void stockScreenerUpdate() {
         log.debug(SCREENING_TICKERS);
         ScreenedTickersResponse[] screenedTickersResponse = tickerUtil.stockScreenerUpdateRetrieve();
@@ -95,13 +96,8 @@ public class Utils {
         List<TickersTradeUpdatesDTO> tickersTradeUpdates = tickersTradeUpdatesService.getSortedTickersTradeUpdates(SCREENED_TICKERS_NUMBER_OF_SYMBOLS);
 
         // Concurrent distribution for each ticker with a separate thread
-        LocalDateTime currDateTime = LocalDateTime.now();
-        int currentMinutes = currDateTime.getMinute();
-        int tIMinutes = ((currentMinutes / 5) * 5) - 5;
-        LocalDateTime localDateTime = LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), tIMinutes,0);
-
         for(int i=0; i<tickersTradeUpdates.size(); i++){
-            TechnicalIndicatorResponse technicalIndicatorResponse = tickerUtil.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), localDateTime);
+            TechnicalIndicatorResponse technicalIndicatorResponse = tickerUtil.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), getRoundedDateTimeTo5MinInterval());
             if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty())
                 marketDataFunnel.processTickerTechnicalAnalysisUpdates(technicalIndicatorResponse);
             else
@@ -116,12 +112,30 @@ public class Utils {
         }
     }
 
+    public static LocalDateTime getRoundedDateTimeTo5MinInterval() {
+        LocalDateTime currDateTime = LocalDateTime.now();
+        int currentMinutes = currDateTime.getMinute();
+        int tIMinutes = ((currentMinutes / 5) * 5) - 5;
+
+        if (tIMinutes < 0) {                                                                                            // Adjust tIMinutes to prevent negative values
+            tIMinutes = 55;                                                                                             // previous hour's last 5-minute mark
+            currDateTime = currDateTime.minusHours(1);
+        }
+        return LocalDateTime.of(currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDayOfMonth(), currDateTime.getHour(), tIMinutes,0);
+    }
+
     public static double calculatePercentToDecimal(double percentRate) {
+        if (percentRate == 0) return 0.0;
         return percentRate / 100;
     }
 
     public static double getMaximumPriceAction(float price) {
         return price * calculatePercentToDecimal(MAXIMUM_PRICE_ACTION_EXIT);
+    }
+
+    public static double getAveragePrice(double totalCost,  double totalQuantity) {
+        if (totalQuantity == 0) return 0.0;
+        return totalCost / totalQuantity;
     }
 
 //    public void sortScreenedTickers(){
