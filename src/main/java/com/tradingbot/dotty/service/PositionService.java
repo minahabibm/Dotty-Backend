@@ -4,15 +4,16 @@ import com.tradingbot.dotty.models.dto.PositionDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface PositionService {
 
     List<PositionDTO> getPositions();
-    PositionDTO getPositionBySymbolAndIntervals(String symbol, LocalDateTime interval);
     List<PositionDTO> getSortedActiveTickerPositions(String symbol, Long positionTrackerID);
-    List<Long> insertPositions(List<PositionDTO> positionDTOList);
-    Long insertPosition(PositionDTO positionDTO);
-    Long updatePosition(PositionDTO positionDTO);
-    String deletePosition();
+    Optional<PositionDTO> getPositionBySymbolAndIntervals(String symbol, LocalDateTime interval);
+    List<PositionDTO> insertPositions(List<PositionDTO> positionDTOList);
+    Optional<PositionDTO> insertPosition(PositionDTO positionDTO);
+    Optional<PositionDTO>  updatePosition(PositionDTO positionDTO);
+    void deletePosition();
 
 }

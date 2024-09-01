@@ -78,19 +78,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String getRedirectUrl(HttpServletRequest httpRequest) {
         log.trace(USER_AUTHENTICATION_GETTING_REDIRECT_URL_TYPE);
-        String redirectUrl = null;
         try {
             String userAgent = httpRequest.getHeader("User-Agent");
             boolean isMobile = userAgent != null && userAgent.toLowerCase().contains("mobile");
-            if (isMobile)
-                redirectUrl = "mobileRedirectUrl";
-            else
-                redirectUrl = "webRedirectUrl";
+
+            log.trace(USER_AUTHENTICATION_REDIRECT_URL_TYPE, isMobile ? "mobileRedirectUrl" : "webRedirectUrl");
+            return isMobile ? "com.anonymous.dotty-app://localhost:8081" : "http://localhost:8081";
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException(e.getMessage());
         }
-        log.trace(USER_AUTHENTICATION_REDIRECT_URL_TYPE, redirectUrl);
-        return redirectUrl.equals("webRedirectUrl") ? "http://localhost:8081" :  "com.anonymous.dotty-app://localhost:8081";
     }
 
     @Override
@@ -127,20 +123,7 @@ public class AuthServiceImpl implements AuthService {
         String email = (String) attributes.get("email");
         Optional<UsersDTO> user = usersService.getUserByEmail(email);
 
-        if(user.isEmpty()) {
-            Long userConfigurationID = userConfigurationService.insertUserConfiguration(new UserConfigurationDTO());
-            UsersDTO usersDTO = new UsersDTO();
-            usersDTO.setFirstName(attributes.get("given_name").toString());
-            usersDTO.setLastName(attributes.get("family_name").toString());
-            usersDTO.setEmailAddress(attributes.get("email").toString());
-            usersDTO.setLoginUid(attributes.get("sub").toString());
-            usersDTO.setNickname(attributes.get("nickname").toString());
-            usersDTO.setPictureUrl(attributes.get("picture").toString());
-            usersDTO.setUserConfigurationDTO(userConfigurationService.getUserConfiguration(userConfigurationID).get());
-
-            log.debug(USER_AUTHENTICATION_CREATE, usersDTO);
-            usersService.insertUser(usersDTO);
-        } else {
+        if(user.isPresent()) {
             UsersDTO usersDTO = user.get();
             usersDTO.setFirstName(attributes.get("given_name").toString());
             usersDTO.setLastName(attributes.get("family_name").toString());
@@ -150,6 +133,20 @@ public class AuthServiceImpl implements AuthService {
 
             log.debug(USER_AUTHENTICATION_UPDATE, usersDTO);
             usersService.updateUser(usersDTO);
+        } else {
+            Optional<UserConfigurationDTO> userConfigurationDTO = userConfigurationService.insertUserConfiguration(new UserConfigurationDTO());
+            if(userConfigurationDTO.isPresent()) {
+                UsersDTO usersDTO = new UsersDTO();
+                usersDTO.setFirstName(attributes.get("given_name").toString());
+                usersDTO.setLastName(attributes.get("family_name").toString());
+                usersDTO.setEmailAddress(attributes.get("email").toString());
+                usersDTO.setLoginUid(attributes.get("sub").toString());
+                usersDTO.setNickname(attributes.get("nickname").toString());
+                usersDTO.setPictureUrl(attributes.get("picture").toString());
+                usersDTO.setUserConfigurationDTO(userConfigurationDTO.get());
+                log.debug(USER_AUTHENTICATION_CREATE, usersDTO);
+                usersService.insertUser(usersDTO);
+            }
         }
     }
 

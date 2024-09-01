@@ -68,38 +68,42 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
         String time = arr[3];
 
         log.info(PROCESSING_ORDER_TO_ENTER, symbol);
-        OrdersDTO ordersDTO = tickerMarketTradeService.enterPosition(symbol, Float.valueOf(price), time);
+        Optional<OrdersDTO> ordersDTO = tickerMarketTradeService.enterPosition(symbol, Float.valueOf(price), time);
         tickerUpdatesWebSocket.subscribeToTickersTradesUpdate(symbol);
 
-        userConfigurationService.getUsersConfigurationsWithActiveTradingAccounts().forEach(userConfigurationDTO -> {
-            try {
-                Optional<UsersDTO> usersDTO = usersService.getUserByUserConfigurationId(userConfigurationDTO.getUserConfigurationId());
-                if(usersDTO.isPresent()) {
-                    if(!alpacaWebSocket.isWebSessionActive(usersDTO.get().getLoginUid()))
-                        alpacaWebSocket.addAccountWebSocket(usersDTO.get().getLoginUid(), userConfigurationDTO);
+        if(ordersDTO.isPresent()) {
+            userConfigurationService.getUsersConfigurationsWithActiveTradingAccounts().forEach(userConfigurationDTO -> {
+                try {
+                    Optional<UsersDTO> usersDTO = usersService.getUserByUserConfigurationId(userConfigurationDTO.getUserConfigurationId());
+                    if(usersDTO.isPresent()) {
+                        if(!alpacaWebSocket.isWebSessionActive(usersDTO.get().getLoginUid()))
+                            alpacaWebSocket.addAccountWebSocket(usersDTO.get().getLoginUid(), userConfigurationDTO);
 
-                    Double availableToTrade = getAvailableToTrade(userConfigurationDTO);
-                    OrderRequest orderRequest = OrderRequest.builder()
-                            .symbol(symbol)
-                            .notional(String.valueOf(availableToTrade * 0.1))
-                            .side(TradeConstants.fromValue(tickerMarketTradeService.getOrderType(true, ordersDTO.getPositionTrackerDTO().getTypeOfTrade())))
-                            .type(TradeConstants.MARKET)
-                            .time_in_force(TradeConstants.DAY)
-                            .build();
-                    OrderResponse orderResponse = alpacaUtil.createOrder(orderRequest, userConfigurationDTO);
+                        Double availableToTrade = getAvailableToTrade(userConfigurationDTO);
+                        OrderRequest orderRequest = OrderRequest.builder()
+                                .symbol(symbol)
+                                .notional(String.valueOf(availableToTrade * 0.1))
+                                .side(TradeConstants.fromValue(tickerMarketTradeService.getOrderType(true, ordersDTO.get().getPositionTrackerDTO().getTypeOfTrade())))
+                                .type(TradeConstants.MARKET)
+                                .time_in_force(TradeConstants.DAY)
+                                .build();
+                        OrderResponse orderResponse = alpacaUtil.createOrder(orderRequest, userConfigurationDTO);
 
-                    UserOrderDTO userOrderDTO = new UserOrderDTO();
-                    userOrderDTO.setAlpacaOrderId(orderResponse.getId());
-                    userOrderDTO.setUsersDTO(usersDTO.get());
-                    userOrderDTO.setOrdersDTO(ordersDTO);
-                    userOrdersService.insertUserOrder(userOrderDTO);
+                        UserOrderDTO userOrderDTO = new UserOrderDTO();
+                        userOrderDTO.setAlpacaOrderId(orderResponse.getId());
+                        userOrderDTO.setUsersDTO(usersDTO.get());
+                        userOrderDTO.setOrdersDTO(ordersDTO.get());
+                        userOrdersService.insertUserOrder(userOrderDTO);
+                    }
+                } catch (Exception e) {
+                    log.error(PROCESSING_ORDER_ERROR,"to Open", userConfigurationDTO.getUserConfigurationId(), symbol, e.getMessage());
                 }
-            } catch (Exception e) {
-                log.error(PROCESSING_ORDER_ERROR,"to Open", userConfigurationDTO.getUserConfigurationId(), symbol, e.getMessage());
-            }
-        });
+            });
+        }
+
     }
 
+    // TODO Closed Order confirmation
     @Override
     public void exitPosition(String order) {
         String[] arr =  order.split(", ");
@@ -108,37 +112,40 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
         String time = arr[3];
 
         log.info(PROCESSING_ORDER_TO_EXIT, symbol);
-        OrdersDTO ordersDTO = tickerMarketTradeService.closePosition(symbol, Float.valueOf(price), time);
-        HoldingDTO holdingDTO = tickerMarketTradeService.addToHolding(ordersDTO.getPositionTrackerDTO().getPositionTrackerId());
+
+        Optional<OrdersDTO> ordersDTO = tickerMarketTradeService.closePosition(symbol, Float.valueOf(price), time);
+        Optional<HoldingDTO> holdingDTO = tickerMarketTradeService.addToHolding(ordersDTO.get().getPositionTrackerDTO().getPositionTrackerId());
         tickerUpdatesWebSocket.unsubscribeToTickersTradesUpdate(symbol);
 
-        userConfigurationService.getUsersConfigurationsWithActiveTradingAccounts().forEach(userConfigurationDTO -> {
-            try {
-                // fetch user position for symbol if exists
-                PositionResponse positionResponse  = alpacaUtil.getAnOpenPosition(symbol, userConfigurationDTO);
-                if(positionResponse != null) {
-                    OrderResponse orderResponse = alpacaUtil.closePosition(symbol, null, userConfigurationDTO);
-                    System.out.println(orderResponse);
+        if(holdingDTO.isPresent())  {
+            userConfigurationService.getUsersConfigurationsWithActiveTradingAccounts().forEach(userConfigurationDTO -> {
+                try {
+                    // fetch user position for symbol if exists
+                    PositionResponse positionResponse  = alpacaUtil.getAnOpenPosition(symbol, userConfigurationDTO);
+                    if(positionResponse != null) {
+                        OrderResponse orderResponse = alpacaUtil.closePosition(symbol, null, userConfigurationDTO);
+                        System.out.println(orderResponse);
 
-                    // Add to user Orders
-                    Optional<UsersDTO> usersDTO = usersService.getUserByUserConfigurationId(userConfigurationDTO.getUserConfigurationId());
-                    if(usersDTO.isPresent()) {
-                        UserOrderDTO userOrderDTO = new UserOrderDTO();
-                        userOrderDTO.setAlpacaOrderId(orderResponse.getId());
-                        userOrderDTO.setUsersDTO(usersDTO.get());
-                        userOrderDTO.setOrdersDTO(ordersDTO);
-                        userOrdersService.insertUserOrder(userOrderDTO);
+                        // Add to user Orders
+                        Optional<UsersDTO> usersDTO = usersService.getUserByUserConfigurationId(userConfigurationDTO.getUserConfigurationId());
+                        if(usersDTO.isPresent()) {
+                            UserOrderDTO userOrderDTO = new UserOrderDTO();
+                            userOrderDTO.setAlpacaOrderId(orderResponse.getId());
+                            userOrderDTO.setUsersDTO(usersDTO.get());
+                            userOrderDTO.setOrdersDTO(ordersDTO.get());
+                            userOrdersService.insertUserOrder(userOrderDTO);
 
-                        // add to user holding
-                        UserHoldingDTO userHoldingDTO = new UserHoldingDTO();
-                        userHoldingDTO.setUsersDTO(usersDTO.get());
-                        userHoldingDTO.setHoldingDTO(holdingDTO);
-                        userHoldingService.insertUserHolding(userHoldingDTO);
+                            // add to user holding
+                            UserHoldingDTO userHoldingDTO = new UserHoldingDTO();
+                            userHoldingDTO.setUsersDTO(usersDTO.get());
+                            userHoldingDTO.setHoldingDTO(holdingDTO.get());
+                            userHoldingService.insertUserHolding(userHoldingDTO);
+                        }
                     }
+                } catch (Exception e) {
+                    log.error(PROCESSING_ORDER_ERROR,"to Exit", userConfigurationDTO.getUserConfigurationId(), symbol, e.getMessage());
                 }
-            } catch (Exception e) {
-                log.error(PROCESSING_ORDER_ERROR,"to Exit", userConfigurationDTO.getUserConfigurationId(), symbol, e.getMessage());
-            }
-        });
+            });
+        }
     }
 }

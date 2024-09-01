@@ -1,19 +1,17 @@
 package com.tradingbot.dotty.service;
 
-import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.TickersTradeUpdates;
-import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TickersTradeUpdatesService {
     List<TickersTradeUpdatesDTO> getTickersTradeUpdates();
-
     List<TickersTradeUpdatesDTO> getSortedTickersTradeUpdates(int numberOfTickers);
-    String insertTickersTradeUpdates(List<TickersTradeUpdates> tickersTradeUpdates);
-    String insertTickerTradeUpdates(TickersTradeUpdatesDTO tickersTradeUpdatesDTO);
-    String updateTickersTradeUpdates(TickersTradeUpdates tickersTradeUpdates);
-    String deleteTickersTradeUpdates(TickersTradeUpdatesDTO tickersTradeUpdatesDTO);
-    String deleteTickersTradeUpdates();
+    List<TickersTradeUpdatesDTO> insertTickersTradeUpdates(List<TickersTradeUpdates> tickersTradeUpdates);
+    Optional<TickersTradeUpdatesDTO> insertTickerTradeUpdates(TickersTradeUpdatesDTO tickersTradeUpdatesDTO);
+    Optional<TickersTradeUpdatesDTO> updateTickersTradeUpdates(TickersTradeUpdates tickersTradeUpdates);
+    void deleteTickerTradeUpdates(TickersTradeUpdatesDTO tickersTradeUpdatesDTO);
+    void deleteTickersTradeUpdates();
 }

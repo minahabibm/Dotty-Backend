@@ -40,25 +40,29 @@ public class UserOrdersServiceImpl implements UserOrdersService {
     }
 
     @Override
-    public Long insertUserOrder(UserOrderDTO userOrderDTO) {
+    public Optional<UserOrderDTO> insertUserOrder(UserOrderDTO userOrderDTO) {
         log.trace(ENTITY_CREATE_OPERATION, userOrderDTO, "UserOrder");
         UserOrder userOrder = userOrdersRepository.save(modelMapper.map(userOrderDTO, UserOrder.class));
-        return userOrder.getUserOrderId();
+        return Optional.of(modelMapper.map(userOrder, UserOrderDTO.class));
     }
 
     @Override
-    public Long updateUserOrder(UserOrderDTO userOrderDTO) {
+    public Optional<UserOrderDTO> updateUserOrder(UserOrderDTO userOrderDTO) {
         log.trace(ENTITY_CREATE_OPERATION, userOrderDTO, "UserOrder");
         if(userOrderDTO.getUserOrderId() == null)
             throw new RuntimeException();
-        Optional<UserOrder> userOrder = userOrdersRepository.findById(userOrderDTO.getUserOrderId());
-        userOrder.ifPresent(userOrderDetails -> BeanUtils.copyProperties(userOrderDTO, userOrderDetails, "updatedAt"));
-        UserOrder updatedUserOrder = userOrdersRepository.save(userOrder.get());
-        return updatedUserOrder.getUserOrderId();
+        return userOrdersRepository.findById(userOrderDTO.getUserOrderId())
+                .map(existingUserOrder -> {
+                    BeanUtils.copyProperties(userOrderDTO, existingUserOrder, "updatedAt");
+                    UserOrder updatedUserOrder = userOrdersRepository.save(existingUserOrder);
+                    return modelMapper.map(updatedUserOrder, UserOrderDTO.class);
+                });
     }
 
     @Override
-    public String deleteUserOrder() {
-        return null;
+    public void deleteUserOrder(Long userOrderId) {
+        log.trace(ENTITY_DELETE_OPERATION, userOrderId, "UserOrder");
+        UserOrder userOrder = userOrdersRepository.findById(userOrderId).orElseThrow(() -> new IllegalArgumentException("User order not found"));
+        userOrdersRepository.delete(userOrder);
     }
 }

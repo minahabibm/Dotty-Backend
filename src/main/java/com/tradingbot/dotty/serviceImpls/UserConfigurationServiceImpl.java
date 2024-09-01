@@ -45,66 +45,62 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
     @Override
     public Optional<UserConfigurationDTO> getUserConfiguration(Long id) {
         log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "User Configuration", id);
-        Optional userConfiguration = userConfigurationRepository.findById(id);
-        if(userConfiguration.isPresent())
-            return Optional.of(modelMapper.map(userConfiguration.get(), UserConfigurationDTO.class));
-        return userConfiguration;
+        return userConfigurationRepository.findById(id).map(userConfiguration -> modelMapper.map(userConfiguration, UserConfigurationDTO.class));
     }
 
     @Override
     public Optional<UserConfigurationDTO> getUserConfiguration(String loginUid) {
-        Optional userConfiguration =  userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid);
-        if(userConfiguration.isPresent())
-            return Optional.of(modelMapper.map(userConfiguration.get(), UserConfigurationDTO.class));
-        return userConfiguration;
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "User Configuration", loginUid);
+        return userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid).map(userConfiguration -> modelMapper.map(userConfiguration, UserConfigurationDTO.class));
     }
 
     @Override
-    public Long insertUserConfiguration(UserConfigurationDTO userConfigurationDTO) {
+    public Optional<UserConfigurationDTO> insertUserConfiguration(UserConfigurationDTO userConfigurationDTO) {
         log.trace(ENTITY_CREATE_OPERATION, userConfigurationDTO, "User Configuration");
         UserConfiguration userConfiguration = userConfigurationRepository.save(modelMapper.map(userConfigurationDTO, UserConfiguration.class));
-        return userConfiguration.getUserConfigurationId();
+        return Optional.of(modelMapper.map(userConfiguration, UserConfigurationDTO.class));
     }
 
     @Override
-    public Long updateUserConfiguration(UserConfigurationDTO userConfigurationDTO) {
+    public Optional<UserConfigurationDTO> updateUserConfiguration(UserConfigurationDTO userConfigurationDTO) {
         log.trace(ENTITY_UPDATE_OPERATION, userConfigurationDTO.getUserConfigurationId(), "User Configuration");
-        Optional<UserConfiguration> userConfiguration = userConfigurationRepository.findById(userConfigurationDTO.getUserConfigurationId());
-        userConfiguration.ifPresent(userConfigurationDAO -> BeanUtils.copyProperties(userConfigurationDTO, userConfigurationDAO, "updatedAt"));
-        UserConfiguration userConfigurationUpdated = userConfigurationRepository.save(userConfiguration.get());
-        return userConfigurationUpdated.getUserConfigurationId();
+        return userConfigurationRepository.findById(userConfigurationDTO.getUserConfigurationId())
+                .map(existingUserConfiguration -> {
+                    BeanUtils.copyProperties(userConfigurationDTO, existingUserConfiguration, "updatedAt");
+                    UserConfiguration updatedUserConfiguration = userConfigurationRepository.save(existingUserConfiguration);
+                    return modelMapper.map(updatedUserConfiguration, UserConfigurationDTO.class);
+                });
     }
 
 
     @Override
-    public String updateUserTradingAccountAlpaca(UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest, String loginUid) {
-        System.out.println(userTradingAccountAlpacaRequest.getKey() + " " + userTradingAccountAlpacaRequest.getSecret()  + " " + userTradingAccountAlpacaRequest.getPaperAccount());
-
+    public Optional<UserConfigurationDTO> updateUserTradingAccountAlpaca(UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest, String loginUid) {
+        log.trace(ENTITY_UPDATE_OPERATION, loginUid, "User Configuration");
         if (userTradingAccountAlpacaRequest.getKey() == null || userTradingAccountAlpacaRequest.getSecret() == null || userTradingAccountAlpacaRequest.getKey().isEmpty() || userTradingAccountAlpacaRequest.getSecret().isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-        userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid).ifPresentOrElse(userConfiguration -> {
-            userConfiguration.setAlpacaApiKey(userTradingAccountAlpacaRequest.getKey());
-            userConfiguration.setAlpacaSecretKey(userTradingAccountAlpacaRequest.getSecret());
-            userConfiguration.setAlpacaPaperAccount(userTradingAccountAlpacaRequest.getPaperAccount());
-            userConfiguration.setIsActiveTradingAccount(true);
-            updateUserConfiguration(modelMapper.map(userConfiguration, UserConfigurationDTO.class));
-        }, () -> {
-            System.out.println("User configuration is not present");
-            throw new RuntimeException("User configuration not found");
-        });
-        return "user configuration updated";
+        return userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid)
+                .map(existingUserConfiguration -> {
+                    existingUserConfiguration.setAlpacaApiKey(userTradingAccountAlpacaRequest.getKey());
+                    existingUserConfiguration.setAlpacaSecretKey(userTradingAccountAlpacaRequest.getSecret());
+                    existingUserConfiguration.setAlpacaPaperAccount(userTradingAccountAlpacaRequest.getPaperAccount());
+                    existingUserConfiguration.setIsActiveTradingAccount(true);
+                    return updateUserConfiguration(modelMapper.map(existingUserConfiguration, UserConfigurationDTO.class));
+                }).orElseThrow(() -> new RuntimeException("User configuration not found"));
     }
 
     @Override
     public Boolean isUserTradingAccountActive(String loginUid) {
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "User Configuration", loginUid);
         Optional<UserConfiguration> userConfiguration =  userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid);
         return userConfiguration.filter(configuration -> configuration.getIsActiveTradingAccount() != null ? configuration.getIsActiveTradingAccount() : false).isPresent();
     }
 
     @Override
-    public String deleteUserConfiguration() {
-        return null;
+    public void deleteUserConfiguration(Long userConfigurationId) {
+        log.trace(ENTITY_DELETE_OPERATION, userConfigurationId, "User Configuration");
+        UserConfiguration userConfiguration = userConfigurationRepository.findById(userConfigurationId).orElseThrow(() -> new IllegalArgumentException("User Configuration not found"));
+        userConfigurationRepository.delete(userConfiguration);
     }
 
 }

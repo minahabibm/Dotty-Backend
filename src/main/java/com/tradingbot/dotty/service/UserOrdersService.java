@@ -9,8 +9,8 @@ public interface UserOrdersService {
 
     List<UserOrderDTO> getUsersOrders();
     Optional<UserOrderDTO> getUserOrder(String alpacaOrderId);
-    Long insertUserOrder(UserOrderDTO userOrderDTO);
-    Long updateUserOrder(UserOrderDTO userOrderDTO);
-    String deleteUserOrder();
+    Optional<UserOrderDTO> insertUserOrder(UserOrderDTO userOrderDTO);
+    Optional<UserOrderDTO> updateUserOrder(UserOrderDTO userOrderDTO);
+    void deleteUserOrder(Long userOrderId);
 
 }
