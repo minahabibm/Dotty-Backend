@@ -1,11 +1,13 @@
 package com.tradingbot.dotty.utils.ExternalAPi;
 
+import com.tradingbot.dotty.models.dto.requests.MarketHoursResponse;
 import com.tradingbot.dotty.models.dto.requests.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.utils.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -27,11 +29,18 @@ public class TickerUtil {
     @Autowired
     private WebClient webClientTickerTechnicalIndicatorRetrieve;
 
+    @Autowired
+    private WebClient webClientMarketHours;
+
     @Value("${stock-screener-api.APIkey}")
     private String apiKeyStockScreenerAPI;
 
     @Value("${technical-indicators-api.APIkey}")
     private String APIkeyTechnicalIndicatorAPI;
+
+    @Value("${tickers-trades-api.APIkey}")
+    private String APIkeyTickersTradesAPI;
+
 
 
     public ScreenedTickersResponse[] stockScreenerUpdateRetrieve() {
@@ -56,6 +65,7 @@ public class TickerUtil {
         log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Technical Indicator", "ticker " + symbol + " and start time " + localDateTime);
         return webClientTickerTechnicalIndicatorRetrieve.get()
                 .uri(uriBuilder -> uriBuilder
+                        .path("/rsi")
                         .queryParam("symbol", symbol)
                         .queryParam("interval", Constants.TA_API_PARAMS_INTERVAL)
                         .queryParam("include_ohlc", Constants.TA_API_PARAMS_INCLUDE_OHLC)
@@ -64,6 +74,20 @@ public class TickerUtil {
                         .build())
                 .retrieve()
                 .bodyToMono(TechnicalIndicatorResponse.class)
+                .block();
+    }
+
+    @Cacheable(value = "market", key = "'marketHolidays'")
+    public MarketHoursResponse marketHoursResponse() {
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Market Hours", "Holidays");
+        return webClientMarketHours.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/v1/stock/market-holiday")
+                        .queryParam("exchange", "US")
+                        .queryParam("token", APIkeyTickersTradesAPI)
+                        .build())
+                .retrieve()
+                .bodyToMono(MarketHoursResponse.class)
                 .block();
     }
 

@@ -60,7 +60,7 @@ public class DottyConfiguration {
 
     @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("tokens");
+        return new ConcurrentMapCacheManager("tokens", "market");
     }
 
 }

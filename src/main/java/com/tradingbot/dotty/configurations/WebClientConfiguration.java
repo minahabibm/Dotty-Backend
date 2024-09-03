@@ -16,6 +16,15 @@ public class WebClientConfiguration {
     @Value("${technical-indicators-api.base-url}")
     private String baseUrlTechnicalIndicatorAPI;
 
+    @Value("${tickers-trades-api.base-url}")
+    private String baseUrlTickersTradesAPI;
+
+    @Value("${alpaca-api.base-url}")
+    private String baseUrlAlpacaAPI;
+
+    @Value("${alpaca-api.paper-base-url}")
+    private String baseUrlAlpacaPaperAPI;
+
 
     @Bean
     public WebClient webClientTickerStockScreener(WebClient.Builder builder) {
@@ -26,9 +35,14 @@ public class WebClientConfiguration {
     public WebClient webClientTickerTechnicalIndicatorRetrieve(WebClient.Builder builder) {
         ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(1000 * 1024)).build();
         return builder
-                .baseUrl(baseUrlTechnicalIndicatorAPI+"rsi")
+                .baseUrl(baseUrlTechnicalIndicatorAPI)
                 .exchangeStrategies(exchangeStrategies)
                 .build();
+    }
+
+    @Bean
+    public WebClient webClientMarketHours(WebClient.Builder builder) {
+        return builder.baseUrl(baseUrlTickersTradesAPI).build();
     }
 
     @Bean
@@ -48,12 +62,12 @@ public class WebClientConfiguration {
 
     @Bean
     public WebClient webClientAlpaca(WebClient.Builder builder) {
-        return builder.baseUrl("https://api.alpaca.markets").build();
+        return builder.baseUrl(baseUrlAlpacaAPI).build();
     }
 
     @Bean
     public WebClient webClientAlpacaPaper(WebClient.Builder builder) {
-        return builder.baseUrl("https://paper-api.alpaca.markets").build();
+        return builder.baseUrl(baseUrlAlpacaPaperAPI).build();
     }
 
 
