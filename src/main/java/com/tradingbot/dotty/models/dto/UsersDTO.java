@@ -14,7 +14,7 @@ public class UsersDTO {
     private String lastName;
     private String emailAddress;
     private String nickname;
-    private String LoginUid;
+    private String loginUid;
     private String pictureUrl;
     private UserConfigurationDTO userConfigurationDTO;
     private LocalDateTime createdAt;
