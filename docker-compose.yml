@@ -27,6 +27,7 @@ services:
 #          condition: service_healthy
       networks:
         - test
+      restart: always
 
     db:
       platform: linux/x86_64

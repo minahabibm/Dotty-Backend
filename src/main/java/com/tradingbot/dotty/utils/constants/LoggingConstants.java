@@ -32,6 +32,9 @@ public class LoggingConstants {
     public static final String SCREENED_TICKERS_PROCESSING = "processing Screened Tickers For market trades.";
     public static final String SCREENED_TICKERS_FILTERING = "Filter Screened Tickers for Sectors";
     public static final String SCREENED_TICKERS_TO_MARKET_TRADE = "Inserting Screened Tickers to market trade updates.";
+
+    public static final String MARKET_CLOSED_FOR_HOLIDAY = "Market closed for {} Holiday.";
+
     public static final String TICKER_TECHNICAL_ANALYSIS = "TICKERS Technical Analysis at {}";
     public static final String TICKER_TECHNICAL_ANALYSIS_SORTED_TICKERS = "Getting Sorted Tickers for Trade Updates.";
 
@@ -42,7 +45,7 @@ public class LoggingConstants {
     public static  final String TICKER_MARKET_DATA_NOT_TRACKED = "No active position tracker found";
     public static  final String TICKER_MARKET_DATA_TRACKING_POSITION = "Inserting {} Ticker's  position.";
 
-    public static  final String TICKER_MARKET_TRADE_TRADE_POSITION = "Validating Ticker {} for a Trade.";
+    public static  final String TICKER_MARKET_TRADE_POSITION = "Validating Ticker {} for a Trade.";
     public static  final String TICKER_MARKET_TRADE_IN_POSITION = "Verify Ticker {} in a Trade." ;
     public static  final String TICKER_MARKET_TRADE_OPEN_POSITION = "Entering position for Ticker {} at price {} on {}." ;
     public static  final String TICKER_MARKET_TRADE_EXIT_POSITION = "Exiting position for Ticker {} at price {} on {}." ;

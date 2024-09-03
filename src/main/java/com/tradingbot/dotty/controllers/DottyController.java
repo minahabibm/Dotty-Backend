@@ -20,4 +20,9 @@ public class DottyController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/marketHoliday")
+    public ResponseEntity<?> getMarketHoliday(){
+        return ResponseEntity.ok(utils.getMarketHolidays());
+    }
+
 }

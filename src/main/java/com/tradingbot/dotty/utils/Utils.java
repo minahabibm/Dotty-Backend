@@ -3,6 +3,7 @@ package com.tradingbot.dotty.utils;
 import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.TickersTradeUpdates;
 import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
+import com.tradingbot.dotty.models.dto.requests.MarketHoursResponse;
 import com.tradingbot.dotty.models.dto.requests.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
@@ -12,12 +13,15 @@ import com.tradingbot.dotty.utils.ExternalAPi.TickerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
@@ -39,6 +43,9 @@ public class Utils {
 
     @Autowired
     private ConcurrentMarketDataFunnel marketDataFunnel;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -72,10 +79,27 @@ public class Utils {
 
     public void technicalAnalysisPolling() {
         LocalTime localTime = LocalTime.now();
-        if(localTime.isAfter(LocalTime.of(TA_API_START_POLLING_HOUR, TA_API_START_POLLING_MINUTE))
-                && localTime.isBefore(LocalTime.of(TA_API_STOP_POLLING_HOUR, TA_API_STOP_POLLING_MINUTE))) {
-            tickersTechnicalAnalysis();
+        Optional<MarketHoursResponse.EventData> todayMarketStatus = getMarketHolidays();
+        if (todayMarketStatus.isPresent()) {
+            String[] tradingHours = todayMarketStatus.get().getTradingHour().split("-");
+            if(tradingHours.length == 0) {
+                log.warn(MARKET_CLOSED_FOR_HOLIDAY, todayMarketStatus.get().getEventName());
+            } else {
+                String[] startPolling = tradingHours[0].split(":");
+                String[] endPolling = tradingHours[1].split(":");
+                int startHour = Integer.parseInt(startPolling[0]);
+                int startMinute = Integer.parseInt(startPolling[1]);
+                int endHour = Integer.parseInt(endPolling[0]);
+                int endMinute = Integer.parseInt(endPolling[1]);
+
+                if(localTime.isAfter(LocalTime.of(startHour, startMinute)) && localTime.isBefore(LocalTime.of(endHour, endMinute)))
+                    tickersTechnicalAnalysis();
+            }
+        } else {
+            if(localTime.isAfter(LocalTime.of(TA_API_START_POLLING_HOUR, TA_API_START_POLLING_MINUTE)) && localTime.isBefore(LocalTime.of(TA_API_STOP_POLLING_HOUR, TA_API_STOP_POLLING_MINUTE)))
+                tickersTechnicalAnalysis();
         }
+
 //        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 //        Runnable task = () -> tickersTechnicalAnalysis();
 //        ScheduledFuture<?> schedulerHandle = executor.scheduleAtFixedRate(task, 0, Constants.TA_API_POLLING_RATE, TimeUnit.SECONDS);
@@ -110,6 +134,18 @@ public class Utils {
                     throw new RuntimeException(e);
                 }
         }
+    }
+
+
+    public Optional<MarketHoursResponse.EventData> getMarketHolidays() {
+        MarketHoursResponse marketHoursResponse = tickerUtil.marketHoursResponse();
+        LocalDate date = LocalDate.parse(marketHoursResponse.getData()[0].getAtDate());
+        LocalDate localDate = LocalDate.now();
+        if(localDate.getYear() > date.getYear()) {
+            cacheManager.getCache("market").evictIfPresent("marketHolidays");
+            marketHoursResponse = tickerUtil.marketHoursResponse();
+        }
+        return Arrays.stream(marketHoursResponse.getData()).filter(eventData -> LocalDate.parse(eventData.getAtDate()).isEqual(localDate)).findFirst();
     }
 
     public static LocalDateTime getRoundedDateTimeTo5MinInterval() {

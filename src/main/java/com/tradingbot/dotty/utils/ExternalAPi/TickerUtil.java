@@ -7,6 +7,7 @@ import com.tradingbot.dotty.utils.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -76,6 +77,7 @@ public class TickerUtil {
                 .block();
     }
 
+    @Cacheable(value = "market", key = "'marketHolidays'")
     public MarketHoursResponse marketHoursResponse() {
         log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Market Hours", "Holidays");
         return webClientMarketHours.get()
