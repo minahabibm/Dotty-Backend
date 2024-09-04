@@ -31,7 +31,7 @@ public class PositionResponse {
     private String currentPrice;
     private String lastdayPrice;
     private String changeToday;
-    private boolean assetMarginable;
+    private Boolean assetMarginable;
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)

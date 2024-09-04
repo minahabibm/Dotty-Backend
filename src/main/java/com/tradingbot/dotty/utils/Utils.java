@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -167,6 +169,12 @@ public class Utils {
     public static double calculatePercentToDecimal(double percentRate) {
         if (percentRate == 0) return 0.0;
         return percentRate / 100;
+    }
+
+    public static double calculateRounded2DecimalPlaces(Double availableToTrade) {
+        BigDecimal bigDecimal = new BigDecimal(availableToTrade *  0.1);
+        bigDecimal = bigDecimal.setScale(2, RoundingMode.HALF_UP);
+        return bigDecimal.doubleValue();
     }
 
     public static double getMaximumPriceAction(float price) {
