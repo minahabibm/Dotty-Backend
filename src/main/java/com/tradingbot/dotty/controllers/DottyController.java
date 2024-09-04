@@ -3,9 +3,7 @@ package com.tradingbot.dotty.controllers;
 import com.tradingbot.dotty.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/dotty")
@@ -14,7 +12,7 @@ public class DottyController {
     @Autowired
     private Utils utils;
 
-    @GetMapping("/stockScreener")
+    @PostMapping("/stockScreener")
     public ResponseEntity<?> doStockScreening(){
         utils.stockScreenerUpdate();
         return ResponseEntity.ok().build();
@@ -24,5 +22,11 @@ public class DottyController {
     public ResponseEntity<?> getMarketHoliday(){
         return ResponseEntity.ok(utils.getMarketHolidays());
     }
+
+    @GetMapping("/quote/{symbol}")
+    public ResponseEntity<?> getTickerQuote(@PathVariable String symbol){
+        return ResponseEntity.ok(utils.getTickerCurrentQuote(symbol));
+    }
+
 
 }

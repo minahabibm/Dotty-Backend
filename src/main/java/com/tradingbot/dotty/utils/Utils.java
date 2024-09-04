@@ -3,19 +3,22 @@ package com.tradingbot.dotty.utils;
 import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.TickersTradeUpdates;
 import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
+import com.tradingbot.dotty.models.dto.requests.FMP.QuoteOrder;
 import com.tradingbot.dotty.models.dto.requests.MarketHoursResponse;
-import com.tradingbot.dotty.models.dto.requests.ScreenedTickersResponse;
+import com.tradingbot.dotty.models.dto.requests.FMP.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
-import com.tradingbot.dotty.utils.ExternalAPi.TickerUtil;
+import com.tradingbot.dotty.utils.ExternalApi.TickerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -136,14 +139,17 @@ public class Utils {
         }
     }
 
+    public QuoteOrder[] getTickerCurrentQuote(String ticker) {
+        return tickerUtil.tickerQuoteRetrieve(ticker);
+    }
 
     public Optional<MarketHoursResponse.EventData> getMarketHolidays() {
-        MarketHoursResponse marketHoursResponse = tickerUtil.marketHoursResponse();
+        MarketHoursResponse marketHoursResponse = tickerUtil.marketHoursResponseRetrieve();
         LocalDate date = LocalDate.parse(marketHoursResponse.getData()[0].getAtDate());
         LocalDate localDate = LocalDate.now();
         if(localDate.getYear() > date.getYear()) {
             cacheManager.getCache("market").evictIfPresent("marketHolidays");
-            marketHoursResponse = tickerUtil.marketHoursResponse();
+            marketHoursResponse = tickerUtil.marketHoursResponseRetrieve();
         }
         return Arrays.stream(marketHoursResponse.getData()).filter(eventData -> LocalDate.parse(eventData.getAtDate()).isEqual(localDate)).findFirst();
     }
@@ -163,6 +169,12 @@ public class Utils {
     public static double calculatePercentToDecimal(double percentRate) {
         if (percentRate == 0) return 0.0;
         return percentRate / 100;
+    }
+
+    public static double calculateRounded2DecimalPlaces(Double availableToTrade) {
+        BigDecimal bigDecimal = new BigDecimal(availableToTrade *  0.1);
+        bigDecimal = bigDecimal.setScale(2, RoundingMode.HALF_UP);
+        return bigDecimal.doubleValue();
     }
 
     public static double getMaximumPriceAction(float price) {

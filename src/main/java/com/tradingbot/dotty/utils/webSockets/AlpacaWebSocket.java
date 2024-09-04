@@ -5,7 +5,7 @@ import com.tradingbot.dotty.models.dto.UserConfigurationDTO;
 import com.tradingbot.dotty.models.dto.UserOrderDTO;
 import com.tradingbot.dotty.models.dto.websockets.AlpacaWebsocketMessageDTO;
 import com.tradingbot.dotty.service.UserOrdersService;
-import com.tradingbot.dotty.utils.ExternalAPi.AlpacaUtil;
+import com.tradingbot.dotty.utils.ExternalApi.AlpacaUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

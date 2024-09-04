@@ -6,7 +6,7 @@ import com.tradingbot.dotty.models.dto.UsersDTO;
 import com.tradingbot.dotty.service.handler.AuthService;
 import com.tradingbot.dotty.service.UserConfigurationService;
 import com.tradingbot.dotty.service.UsersService;
-import com.tradingbot.dotty.utils.ExternalAPi.Auth0Util;
+import com.tradingbot.dotty.utils.ExternalApi.Auth0Util;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

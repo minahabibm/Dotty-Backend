@@ -1,4 +1,4 @@
-package com.tradingbot.dotty.utils.ExternalAPi;
+package com.tradingbot.dotty.utils.ExternalApi;
 
 import com.tradingbot.dotty.exceptions.AlpacaExceptions;
 import com.tradingbot.dotty.models.dto.UserConfigurationDTO;

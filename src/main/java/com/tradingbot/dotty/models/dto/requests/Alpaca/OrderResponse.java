@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,14 +18,14 @@ public class OrderResponse {
 
     private String id;
     private String client_order_id;
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
-    private LocalDateTime submitted_at;
-    private LocalDateTime filled_at;
-    private LocalDateTime expired_at;
-    private LocalDateTime canceled_at;
-    private LocalDateTime failed_at;
-    private LocalDateTime replaced_at;
+    private String created_at;
+    private String updated_at;
+    private String submitted_at;
+    private String filled_at;
+    private String expired_at;
+    private String canceled_at;
+    private String failed_at;
+    private String replaced_at;
     private String replaced_by;
     private String replaces;
     private String asset_id;

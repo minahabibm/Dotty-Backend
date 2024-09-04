@@ -1,7 +1,8 @@
-package com.tradingbot.dotty.utils.ExternalAPi;
+package com.tradingbot.dotty.utils.ExternalApi;
 
+import com.tradingbot.dotty.models.dto.requests.FMP.QuoteOrder;
 import com.tradingbot.dotty.models.dto.requests.MarketHoursResponse;
-import com.tradingbot.dotty.models.dto.requests.ScreenedTickersResponse;
+import com.tradingbot.dotty.models.dto.requests.FMP.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.utils.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ import static com.tradingbot.dotty.utils.constants.LoggingConstants.EXTERNAL_GET
 public class TickerUtil {
 
     @Autowired
-    private WebClient webClientTickerStockScreener;
+    private WebClient webClientTickerMarketDetails;
 
     @Autowired
     private WebClient webClientTickerTechnicalIndicatorRetrieve;
@@ -45,8 +46,9 @@ public class TickerUtil {
 
     public ScreenedTickersResponse[] stockScreenerUpdateRetrieve() {
         log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA,  "Stock Screening", "country: " + SCREENING_TICKERS_QUERY_PARAMS_COUNTRY + ", market cap more than: " + SCREENING_TICKERS_QUERY_PARAMS_MARKET_CAP_MORE_THAN + ", exchange: " + Arrays.toString(SCREENING_TICKERS_QUERY_PARAMS_EXCHANGE) + ", beta more than " + SCREENING_TICKERS_QUERY_PARAMS_BETA_MORE_THAN + ", and is actively trading.");
-        return webClientTickerStockScreener.get()
+        return webClientTickerMarketDetails.get()
                 .uri(uriBuilder -> uriBuilder
+                        .path("/api/v3/stock-screener")
                         .queryParam("country", SCREENING_TICKERS_QUERY_PARAMS_COUNTRY)
                         .queryParam("marketCapMoreThan", SCREENING_TICKERS_QUERY_PARAMS_MARKET_CAP_MORE_THAN)
                         .queryParam("exchange", SCREENING_TICKERS_QUERY_PARAMS_EXCHANGE[0])
@@ -78,7 +80,7 @@ public class TickerUtil {
     }
 
     @Cacheable(value = "market", key = "'marketHolidays'")
-    public MarketHoursResponse marketHoursResponse() {
+    public MarketHoursResponse marketHoursResponseRetrieve() {
         log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Market Hours", "Holidays");
         return webClientMarketHours.get()
                 .uri(uriBuilder -> uriBuilder
@@ -88,6 +90,20 @@ public class TickerUtil {
                         .build())
                 .retrieve()
                 .bodyToMono(MarketHoursResponse.class)
+                .block();
+    }
+
+    public QuoteOrder[] tickerQuoteRetrieve(String Symbol) {
+        log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA,  "Ticker Quote", "Symbol: " + Symbol);
+        return webClientTickerMarketDetails.get()
+                .uri(uriBuilder ->  {
+                    uriBuilder
+                            .path("/api/v3/quote-order/{symbol}")
+                            .queryParam("apikey", apiKeyStockScreenerAPI);
+                    return uriBuilder.build(Symbol);
+                })
+                .retrieve()
+                .bodyToMono(QuoteOrder[].class)
                 .block();
     }
 
