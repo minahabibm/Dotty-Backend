@@ -2,7 +2,7 @@ package com.tradingbot.dotty.controllers;
 
 import com.tradingbot.dotty.service.UserConfigurationService;
 import com.tradingbot.dotty.service.handler.AuthService;
-import com.tradingbot.dotty.utils.ExternalAPi.AlpacaUtil;
+import com.tradingbot.dotty.utils.ExternalApi.AlpacaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;

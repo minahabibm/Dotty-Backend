@@ -27,7 +27,7 @@ public class WebClientConfiguration {
 
 
     @Bean
-    public WebClient webClientTickerStockScreener(WebClient.Builder builder) {
+    public WebClient webClientTickerMarketDetails(WebClient.Builder builder) {
         return builder.baseUrl(baseUrlStockScreenerAPI).build();
     }
 

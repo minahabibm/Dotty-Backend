@@ -7,7 +7,7 @@ import com.tradingbot.dotty.models.dto.requests.Alpaca.PositionResponse;
 import com.tradingbot.dotty.service.*;
 import com.tradingbot.dotty.service.handler.TickerMarketTradeService;
 import com.tradingbot.dotty.service.handler.OrderProcessingService;
-import com.tradingbot.dotty.utils.ExternalAPi.AlpacaUtil;
+import com.tradingbot.dotty.utils.ExternalApi.AlpacaUtil;
 import com.tradingbot.dotty.utils.webSockets.AlpacaWebSocket;
 import com.tradingbot.dotty.utils.webSockets.TickerUpdatesWebSocket;
 import com.tradingbot.dotty.utils.constants.alpaca.TradeConstants;
@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
@@ -52,12 +54,18 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
 
     @Override
     public Double getAvailableToTrade(UserConfigurationDTO userConfigurationDTO) {
-        return Double.valueOf(alpacaUtil.getAccountDetails(userConfigurationDTO).getBuying_power());
+        Double availableToTrade  = Double.valueOf(alpacaUtil.getAccountDetails(userConfigurationDTO).getBuying_power());
+
+        BigDecimal bigDecimal = new BigDecimal(availableToTrade *  0.1);
+        bigDecimal = bigDecimal.setScale(2, RoundingMode.HALF_UP);
+        return bigDecimal.doubleValue();
     }
 
     @Override
-    public Double getCurrentPrice() {
-        return 0.0;
+    public Integer getNumberOfShares(String Symbol, Double availableToTrade) {
+        Double symbolCurrentQuote = 1.0;
+        Integer numberOfShares = (int) (availableToTrade / symbolCurrentQuote);
+        return numberOfShares;
     }
 
     @Override
@@ -79,14 +87,28 @@ public class OrderProcessingServiceImpl implements OrderProcessingService {
                         if(!alpacaWebSocket.isWebSessionActive(usersDTO.get().getLoginUid()))
                             alpacaWebSocket.addAccountWebSocket(usersDTO.get().getLoginUid(), userConfigurationDTO);
 
+
                         Double availableToTrade = getAvailableToTrade(userConfigurationDTO);
-                        OrderRequest orderRequest = OrderRequest.builder()
-                                .symbol(symbol)
-                                .notional(String.valueOf(availableToTrade * 0.1))
-                                .side(TradeConstants.fromValue(tickerMarketTradeService.getOrderType(true, ordersDTO.get().getPositionTrackerDTO().getTypeOfTrade())))
-                                .type(TradeConstants.MARKET)
-                                .time_in_force(TradeConstants.DAY)
-                                .build();
+                        Integer numberOfShares = getNumberOfShares(symbol, availableToTrade);
+                        TradeConstants side = TradeConstants.fromValue(tickerMarketTradeService.getOrderType(true, ordersDTO.get().getPositionTrackerDTO().getTypeOfTrade()));
+                        OrderRequest orderRequest;
+                        if(side.equals(TradeConstants.BUY)){
+                            orderRequest = OrderRequest.builder()
+                                    .symbol(symbol)
+                                    .notional(String.valueOf(availableToTrade))
+                                    .side(side)
+                                    .type(TradeConstants.MARKET)
+                                    .time_in_force(TradeConstants.DAY)
+                                    .build();
+                        } else {
+                            orderRequest = OrderRequest.builder()
+                                    .symbol(symbol)
+                                    .qty(String.valueOf(numberOfShares))
+                                    .side(side)
+                                    .type(TradeConstants.MARKET)
+                                    .time_in_force(TradeConstants.DAY)
+                                    .build();
+                        }
                         OrderResponse orderResponse = alpacaUtil.createOrder(orderRequest, userConfigurationDTO);
 
                         UserOrderDTO userOrderDTO = new UserOrderDTO();

@@ -3,13 +3,14 @@ package com.tradingbot.dotty.utils;
 import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.TickersTradeUpdates;
 import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
+import com.tradingbot.dotty.models.dto.requests.FMP.QuoteOrder;
 import com.tradingbot.dotty.models.dto.requests.MarketHoursResponse;
-import com.tradingbot.dotty.models.dto.requests.ScreenedTickersResponse;
+import com.tradingbot.dotty.models.dto.requests.FMP.ScreenedTickersResponse;
 import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import com.tradingbot.dotty.service.ScreenedTickersService;
 import com.tradingbot.dotty.service.TickersTradeUpdatesService;
-import com.tradingbot.dotty.utils.ExternalAPi.TickerUtil;
+import com.tradingbot.dotty.utils.ExternalApi.TickerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,14 +137,17 @@ public class Utils {
         }
     }
 
+    public QuoteOrder[] getTickerCurrentQuote(String ticker) {
+        return tickerUtil.tickerQuoteRetrieve(ticker);
+    }
 
     public Optional<MarketHoursResponse.EventData> getMarketHolidays() {
-        MarketHoursResponse marketHoursResponse = tickerUtil.marketHoursResponse();
+        MarketHoursResponse marketHoursResponse = tickerUtil.marketHoursResponseRetrieve();
         LocalDate date = LocalDate.parse(marketHoursResponse.getData()[0].getAtDate());
         LocalDate localDate = LocalDate.now();
         if(localDate.getYear() > date.getYear()) {
             cacheManager.getCache("market").evictIfPresent("marketHolidays");
-            marketHoursResponse = tickerUtil.marketHoursResponse();
+            marketHoursResponse = tickerUtil.marketHoursResponseRetrieve();
         }
         return Arrays.stream(marketHoursResponse.getData()).filter(eventData -> LocalDate.parse(eventData.getAtDate()).isEqual(localDate)).findFirst();
     }

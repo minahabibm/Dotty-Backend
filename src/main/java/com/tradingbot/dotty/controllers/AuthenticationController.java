@@ -4,7 +4,7 @@ import com.tradingbot.dotty.models.dto.requests.AuthUserTradingAccountAccessToke
 import com.tradingbot.dotty.models.dto.requests.UserTradingAccountAlpacaRequest;
 import com.tradingbot.dotty.service.UserConfigurationService;
 import com.tradingbot.dotty.service.handler.AuthService;
-import com.tradingbot.dotty.utils.ExternalAPi.SchwabUtil;
+import com.tradingbot.dotty.utils.ExternalApi.SchwabUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
