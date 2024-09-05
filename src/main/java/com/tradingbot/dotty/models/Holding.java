@@ -12,8 +12,10 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 public class Holding {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "holding_ticker_id_seq")
+    @SequenceGenerator(name = "holding_ticker_id_seq", sequenceName = "holding_ticker_id_seq", allocationSize = 1)
     private Long holdingTickerId;
 
     @Column(name="symbol")

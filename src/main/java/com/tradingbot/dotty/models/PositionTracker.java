@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 public class PositionTracker {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "position_tracker_id_seq")
+    @SequenceGenerator(name = "position_tracker_id_seq", sequenceName = "position_tracker_id_seq", allocationSize = 1)
     private Long positionTrackerId;
 
     @Column(name="symbol")
