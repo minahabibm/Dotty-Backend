@@ -29,7 +29,7 @@ public class ScreenedTicker {
     private String exchangeShortName;
 
     @Column(name="beta")
-    private float beta;
+    private Float beta;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

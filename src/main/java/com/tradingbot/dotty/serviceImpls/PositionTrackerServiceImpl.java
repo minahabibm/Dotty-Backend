@@ -35,7 +35,6 @@ public class PositionTrackerServiceImpl implements PositionTrackerService {
     public Optional<PositionTrackerDTO> getPositionTracker(Long id) {
         log.trace(ENTITY_READ_OPERATION, id, "PositionTracker");
         return positionTrackerRepository.findById(id).map(positionTracker -> modelMapper.map(positionTracker, PositionTrackerDTO.class));
-
     }
 
     @Override
