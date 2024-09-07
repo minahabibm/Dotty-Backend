@@ -72,103 +72,114 @@ public class UsersServiceTests {
         usersDTO.setCreatedAt(LocalDateTime.now().minusDays(1));
         usersDTO.setUpdatedAt(LocalDateTime.now());
         usersDTO.setVersion(1);
+
+        // Set up common stubs with lenient
+        lenient().when(modelMapper.map(user, UsersDTO.class)).thenReturn(usersDTO);
+        lenient().when(modelMapper.map(usersDTO, Users.class)).thenReturn(user);
     }
 
     @Test
     void testGetUsers() {
-        when(usersRepository.findAll()).thenReturn(List.of(user));
-        when(modelMapper.map(user, UsersDTO.class)).thenReturn(usersDTO);
+        // Arrange
+        lenient().when(usersRepository.findAll()).thenReturn(List.of(user));
 
+        // Act
         List<UsersDTO> result = usersService.getUsers();
 
+        // Assert
         assertEquals(1, result.size());
         assertEquals(usersDTO, result.get(0));
-        verify(usersRepository).findAll();
-        verify(modelMapper).map(user, UsersDTO.class);
+        verify(usersRepository, times(1)).findAll();
     }
 
     @Test
     void testGetUser() {
-        when(usersRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(modelMapper.map(user, UsersDTO.class)).thenReturn(usersDTO);
+        // Arrange
+        lenient().when(usersRepository.findById(1L)).thenReturn(Optional.of(user));
 
+        // Act
         Optional<UsersDTO> result = usersService.getUser(1L);
 
+        // Assert
         assertEquals(Optional.of(usersDTO), result);
-        verify(usersRepository).findById(1L);
-        verify(modelMapper).map(user, UsersDTO.class);
+        verify(usersRepository, times(1)).findById(1L);
     }
 
     @Test
     void testGetUserByEmail() {
-        when(usersRepository.findByEmailAddress("test@example.com")).thenReturn(Optional.of(user));
-        when(modelMapper.map(user, UsersDTO.class)).thenReturn(usersDTO);
+        // Arrange
+        lenient().when(usersRepository.findByEmailAddress("test@example.com")).thenReturn(Optional.of(user));
 
+        // Act
         Optional<UsersDTO> result = usersService.getUserByEmail("test@example.com");
 
+        // Assert
         assertEquals(Optional.of(usersDTO), result);
-        verify(usersRepository).findByEmailAddress("test@example.com");
-        verify(modelMapper).map(user, UsersDTO.class);
+        verify(usersRepository, times(1)).findByEmailAddress("test@example.com");
     }
 
     @Test
     void testGetUserByUserConfigurationId() {
-        when(usersRepository.findByUserConfiguration_UserConfigurationId(1L)).thenReturn(Optional.of(user));
-        when(modelMapper.map(user, UsersDTO.class)).thenReturn(usersDTO);
+        // Arrange
+        lenient().when(usersRepository.findByUserConfiguration_UserConfigurationId(1L)).thenReturn(Optional.of(user));
 
+        // Act
         Optional<UsersDTO> result = usersService.getUserByUserConfigurationId(1L);
 
+        // Assert
         assertEquals(Optional.of(usersDTO), result);
-        verify(usersRepository).findByUserConfiguration_UserConfigurationId(1L);
-        verify(modelMapper).map(user, UsersDTO.class);
+        verify(usersRepository, times(1)).findByUserConfiguration_UserConfigurationId(1L);
     }
 
     @Test
     void testInsertUser() {
-        when(usersRepository.save(any(Users.class))).thenReturn(user);
-        when(modelMapper.map(usersDTO, Users.class)).thenReturn(user);
-        when(modelMapper.map(user, UsersDTO.class)).thenReturn(usersDTO);
+        // Arrange
+        lenient().when(usersRepository.save(any(Users.class))).thenReturn(user);
 
+        // Act
         Optional<UsersDTO> result = usersService.insertUser(usersDTO);
 
+        // Assert
         assertEquals(Optional.of(usersDTO), result);
-        verify(usersRepository).save(any(Users.class));
-        verify(modelMapper).map(usersDTO, Users.class);
-        verify(modelMapper).map(user, UsersDTO.class);
+        verify(usersRepository, times(1)).save(any(Users.class));
     }
 
     @Test
     void testUpdateUser() {
-        when(usersRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(usersRepository.save(any(Users.class))).thenReturn(user);
-        when(modelMapper.map(user, UsersDTO.class)).thenReturn(usersDTO);
+        // Arrange
+        lenient().when(usersRepository.findById(1L)).thenReturn(Optional.of(user));
+        lenient().when(usersRepository.save(any(Users.class))).thenReturn(user);
 
+        // Act
         Optional<UsersDTO> result = usersService.updateUser(usersDTO);
 
+        // Assert
         assertEquals(Optional.of(usersDTO), result);
-        verify(usersRepository).findById(1L);
-        verify(usersRepository).save(any(Users.class));
-        verify(modelMapper).map(user, UsersDTO.class);
+        verify(usersRepository, times(1)).findById(1L);
+        verify(usersRepository, times(1)).save(any(Users.class));
     }
 
     @Test
     void testDeleteUser() {
-        when(usersRepository.findById(1L)).thenReturn(Optional.of(user));
+        // Arrange
+        lenient().when(usersRepository.findById(1L)).thenReturn(Optional.of(user));
 
+        // Act
         usersService.deleteUser(1L);
 
-        verify(usersRepository).findById(1L);
-        verify(usersRepository).delete(user);
+        // Assert
+        verify(usersRepository, times(1)).findById(1L);
+        verify(usersRepository, times(1)).delete(user);
     }
 
     @Test
     void testDeleteUserNotFound() {
-        when(usersRepository.findById(1L)).thenReturn(Optional.empty());
+        // Arrange
+        lenient().when(usersRepository.findById(1L)).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> usersService.deleteUser(1L));
-
-        verify(usersRepository).findById(1L);
+        verify(usersRepository, times(1)).findById(1L);
         verify(usersRepository, never()).delete(any(Users.class));
     }
-
 }

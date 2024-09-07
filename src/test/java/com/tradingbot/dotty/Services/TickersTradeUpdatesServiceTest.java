@@ -5,9 +5,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.tradingbot.dotty.models.ScreenedTicker;
 import com.tradingbot.dotty.models.TickersTradeUpdates;
+import com.tradingbot.dotty.models.dto.ScreenedTickerDTO;
 import com.tradingbot.dotty.models.dto.TickersTradeUpdatesDTO;
 import com.tradingbot.dotty.repositories.TickersTradeUpdatesRepository;
 import com.tradingbot.dotty.serviceImpls.TickersTradeUpdatesServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,15 +30,45 @@ public class TickersTradeUpdatesServiceTest {
     @InjectMocks
     private TickersTradeUpdatesServiceImpl tickersTradeUpdatesService;
 
+    private TickersTradeUpdates tradeUpdate1;
+    private TickersTradeUpdates tradeUpdate2;
+    private TickersTradeUpdatesDTO tradeUpdateDTO1;
+    private TickersTradeUpdatesDTO tradeUpdateDTO2;
+
+    @BeforeEach
+    void setUp() {
+        // Initialize TickersTradeUpdates and DTO objects with some values
+        tradeUpdate1 = new TickersTradeUpdates();
+        tradeUpdate1.setScreenedTicker(new ScreenedTicker());
+        tradeUpdate1.getScreenedTicker().setSymbol("XYZ");
+        tradeUpdate1.getScreenedTicker().setBeta(1.0f);
+        tradeUpdate1.getScreenedTicker().setExchangeShortName("NYSE");
+
+        tradeUpdate2 = new TickersTradeUpdates();
+        tradeUpdate2.setScreenedTicker(new ScreenedTicker());
+        tradeUpdate2.getScreenedTicker().setSymbol("ABC");
+        tradeUpdate2.getScreenedTicker().setBeta(0.9f);
+        tradeUpdate2.getScreenedTicker().setExchangeShortName("NASDAQ");
+
+        tradeUpdateDTO1 = new TickersTradeUpdatesDTO();
+        tradeUpdateDTO1.setScreenedTickerDTO(new ScreenedTickerDTO());
+        tradeUpdateDTO1.getScreenedTickerDTO().setSymbol("XYZ");
+
+        tradeUpdateDTO2 = new TickersTradeUpdatesDTO();
+        tradeUpdateDTO2.setScreenedTickerDTO(new ScreenedTickerDTO());
+        tradeUpdateDTO2.getScreenedTickerDTO().setSymbol("ABC");
+
+        // Lenient stubbing for modelMapper
+        lenient().when(modelMapper.map(tradeUpdate1, TickersTradeUpdatesDTO.class)).thenReturn(tradeUpdateDTO1);
+        lenient().when(modelMapper.map(tradeUpdate2, TickersTradeUpdatesDTO.class)).thenReturn(tradeUpdateDTO2);
+        lenient().when(modelMapper.map(tradeUpdateDTO1, TickersTradeUpdates.class)).thenReturn(tradeUpdate1);
+        lenient().when(modelMapper.map(tradeUpdateDTO2, TickersTradeUpdates.class)).thenReturn(tradeUpdate2);
+    }
 
     @Test
-    public void testGetTickersTradeUpdates() {
+    void testGetTickersTradeUpdates() {
         // Arrange
-        TickersTradeUpdates tradeUpdate = new TickersTradeUpdates();
-        TickersTradeUpdatesDTO tradeUpdateDTO = new TickersTradeUpdatesDTO();
-
-        when(tickersTradeUpdatesRepository.findAll()).thenReturn(Collections.singletonList(tradeUpdate));
-        when(modelMapper.map(tradeUpdate, TickersTradeUpdatesDTO.class)).thenReturn(tradeUpdateDTO);
+        when(tickersTradeUpdatesRepository.findAll()).thenReturn(Collections.singletonList(tradeUpdate1));
 
         // Act
         List<TickersTradeUpdatesDTO> result = tickersTradeUpdatesService.getTickersTradeUpdates();
@@ -44,32 +76,13 @@ public class TickersTradeUpdatesServiceTest {
         // Assert
         assertEquals(1, result.size());
         verify(tickersTradeUpdatesRepository, times(1)).findAll();
-        verify(modelMapper, times(1)).map(tradeUpdate, TickersTradeUpdatesDTO.class);
+        verify(modelMapper, times(1)).map(tradeUpdate1, TickersTradeUpdatesDTO.class);
     }
 
     @Test
-    public void testGetSortedTickersTradeUpdates() {
+    void testGetSortedTickersTradeUpdates() {
         // Arrange
-        TickersTradeUpdates tradeUpdate1 = new TickersTradeUpdates();
-        ScreenedTicker screenedTicker1 = new ScreenedTicker();
-        screenedTicker1.setSymbol("XYZ");
-        screenedTicker1.setBeta(1.0f);
-        screenedTicker1.setExchangeShortName("NYSE");
-        tradeUpdate1.setScreenedTicker(screenedTicker1);
-
-        TickersTradeUpdates tradeUpdate2 = new TickersTradeUpdates();
-        ScreenedTicker screenedTicker2 = new ScreenedTicker();
-        screenedTicker2.setSymbol("ABC");
-        screenedTicker2.setBeta(0.9f);
-        screenedTicker2.setExchangeShortName("NASDAQ");
-        tradeUpdate2.setScreenedTicker(screenedTicker2);
-
-        TickersTradeUpdatesDTO tradeUpdateDTO1 = new TickersTradeUpdatesDTO();
-        TickersTradeUpdatesDTO tradeUpdateDTO2 = new TickersTradeUpdatesDTO();
-
         when(tickersTradeUpdatesRepository.findAll()).thenReturn(Arrays.asList(tradeUpdate1, tradeUpdate2));
-        when(modelMapper.map(tradeUpdate1, TickersTradeUpdatesDTO.class)).thenReturn(tradeUpdateDTO1);
-        when(modelMapper.map(tradeUpdate2, TickersTradeUpdatesDTO.class)).thenReturn(tradeUpdateDTO2);
 
         // Act
         List<TickersTradeUpdatesDTO> result = tickersTradeUpdatesService.getSortedTickersTradeUpdates(2);
@@ -80,7 +93,7 @@ public class TickersTradeUpdatesServiceTest {
     }
 
     @Test
-    public void testInsertTickersTradeUpdates() {
+    void testInsertTickersTradeUpdates() {
         // Arrange
         TickersTradeUpdates newTicker = new TickersTradeUpdates();
         newTicker.setSymbol("XYZ");
@@ -99,5 +112,4 @@ public class TickersTradeUpdatesServiceTest {
         verify(tickersTradeUpdatesRepository, times(1)).saveAll(anyList());
         verify(modelMapper, times(1)).map(savedTicker, TickersTradeUpdatesDTO.class);
     }
-
 }

@@ -39,93 +39,106 @@ public class UserOrdersServiceTests {
         userOrder.setUserOrderId(1L);
         userOrderDTO = new UserOrderDTO();
         userOrderDTO.setUserOrderId(1L);
+
+        // Set up common stubs
+        lenient().when(modelMapper.map(userOrder, UserOrderDTO.class)).thenReturn(userOrderDTO);
+        lenient().when(modelMapper.map(userOrderDTO, UserOrder.class)).thenReturn(userOrder);
     }
 
     @Test
     void testGetUsersOrders() {
+        // Arrange
         when(userOrdersRepository.findAll()).thenReturn(Collections.singletonList(userOrder));
-        when(modelMapper.map(userOrder, UserOrderDTO.class)).thenReturn(userOrderDTO);
 
+        // Act
         var result = userOrdersService.getUsersOrders();
 
+        // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(userOrderDTO.getUserOrderId(), result.get(0).getUserOrderId());
-        verify(userOrdersRepository).findAll();
+        verify(userOrdersRepository, times(1)).findAll();
     }
 
     @Test
     void testGetUserOrder() {
+        // Arrange
         when(userOrdersRepository.findByAlpacaOrderId("123")).thenReturn(Optional.of(userOrder));
-        when(modelMapper.map(userOrder, UserOrderDTO.class)).thenReturn(userOrderDTO);
 
+        // Act
         var result = userOrdersService.getUserOrder("123");
 
+        // Assert
         assertTrue(result.isPresent());
         assertEquals(userOrderDTO.getUserOrderId(), result.get().getUserOrderId());
-        verify(userOrdersRepository).findByAlpacaOrderId("123");
+        verify(userOrdersRepository, times(1)).findByAlpacaOrderId("123");
     }
 
     @Test
     void testInsertUserOrder() {
-        when(modelMapper.map(userOrderDTO, UserOrder.class)).thenReturn(userOrder);
+        // Arrange
         when(userOrdersRepository.save(userOrder)).thenReturn(userOrder);
-        when(modelMapper.map(userOrder, UserOrderDTO.class)).thenReturn(userOrderDTO);
 
+        // Act
         var result = userOrdersService.insertUserOrder(userOrderDTO);
 
+        // Assert
         assertTrue(result.isPresent());
         assertEquals(userOrderDTO.getUserOrderId(), result.get().getUserOrderId());
-        verify(userOrdersRepository).save(userOrder);
+        verify(userOrdersRepository, times(1)).save(userOrder);
     }
 
     @Test
     void testUpdateUserOrder() {
-        UserOrderDTO userOrderDTO = new UserOrderDTO();
-        userOrderDTO.setUserOrderId(1L);
+        // Arrange
+        UserOrderDTO updatedUserOrderDTO = new UserOrderDTO();
+        updatedUserOrderDTO.setUserOrderId(1L);
         UserOrder existingUserOrder = new UserOrder();
         existingUserOrder.setUserOrderId(1L);
 
-        // Setting up mocks
         when(userOrdersRepository.findById(1L)).thenReturn(Optional.of(existingUserOrder));
-        when(userOrdersRepository.save(any(UserOrder.class))).thenReturn(existingUserOrder);
-        when(modelMapper.map(existingUserOrder, UserOrderDTO.class)).thenReturn(userOrderDTO);
+        when(userOrdersRepository.save(existingUserOrder)).thenReturn(existingUserOrder);
 
-        // Call the service method
-        var result = userOrdersService.updateUserOrder(userOrderDTO);
+        // Act
+        var result = userOrdersService.updateUserOrder(updatedUserOrderDTO);
 
-        // Verify results
+        // Assert
         assertTrue(result.isPresent());
-        assertEquals(userOrderDTO.getUserOrderId(), result.get().getUserOrderId());
-
-        // Verify interactions
-        verify(userOrdersRepository).findById(1L);
-        verify(userOrdersRepository).save(existingUserOrder);
-        verify(modelMapper).map(existingUserOrder, UserOrderDTO.class);
-
+        assertEquals(updatedUserOrderDTO.getUserOrderId(), result.get().getUserOrderId());
+        verify(userOrdersRepository, times(1)).findById(1L);
+        verify(userOrdersRepository, times(1)).save(existingUserOrder);
     }
 
     @Test
     void testUpdateUserOrderThrowsExceptionWhenIdIsNull() {
+        // Arrange
         userOrderDTO.setUserOrderId(null);
 
+        // Act & Assert
         assertThrows(RuntimeException.class, () -> userOrdersService.updateUserOrder(userOrderDTO));
+        verify(userOrdersRepository, times(0)).findById(anyLong());
     }
 
     @Test
     void testDeleteUserOrder() {
+        // Arrange
         when(userOrdersRepository.findById(1L)).thenReturn(Optional.of(userOrder));
 
+        // Act
         userOrdersService.deleteUserOrder(1L);
 
-        verify(userOrdersRepository).delete(userOrder);
+        // Assert
+        verify(userOrdersRepository, times(1)).delete(userOrder);
     }
 
     @Test
     void testDeleteUserOrderThrowsExceptionWhenNotFound() {
+        // Arrange
         when(userOrdersRepository.findById(1L)).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> userOrdersService.deleteUserOrder(1L));
+        verify(userOrdersRepository, times(1)).findById(1L);
+        verify(userOrdersRepository, times(0)).delete(any(UserOrder.class));
     }
-
 }

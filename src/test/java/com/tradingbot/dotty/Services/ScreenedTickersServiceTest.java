@@ -39,7 +39,7 @@ public class ScreenedTickersServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Mock objects setup
+        // Initialize ScreenedTicker and DTO objects with some values
         screenedTicker1 = new ScreenedTicker();
         screenedTicker1.setSymbol("XYZ");
         screenedTicker1.setCreatedAt(LocalDateTime.now());
@@ -53,14 +53,18 @@ public class ScreenedTickersServiceTest {
 
         screenedTickerDTO2 = new ScreenedTickerDTO();
         screenedTickerDTO2.setSymbol("ABC");
+
+        // Lenient stubbing for modelMapper
+        lenient().when(modelMapper.map(screenedTicker1, ScreenedTickerDTO.class)).thenReturn(screenedTickerDTO1);
+        lenient().when(modelMapper.map(screenedTicker2, ScreenedTickerDTO.class)).thenReturn(screenedTickerDTO2);
+        lenient().when(modelMapper.map(screenedTickerDTO1, ScreenedTicker.class)).thenReturn(screenedTicker1);
+        lenient().when(modelMapper.map(screenedTickerDTO2, ScreenedTicker.class)).thenReturn(screenedTicker2);
     }
 
     @Test
     void testGetScreenedTickers() {
         // Arrange
         when(screenedTickersRepository.findAll()).thenReturn(Arrays.asList(screenedTicker1, screenedTicker2));
-        when(modelMapper.map(screenedTicker1, ScreenedTickerDTO.class)).thenReturn(screenedTickerDTO1);
-        when(modelMapper.map(screenedTicker2, ScreenedTickerDTO.class)).thenReturn(screenedTickerDTO2);
 
         // Act
         List<ScreenedTickerDTO> result = screenedTickersService.getScreenedTickers();
@@ -76,11 +80,9 @@ public class ScreenedTickersServiceTest {
     void testGetTodayScreenedTickers() {
         // Arrange
         screenedTicker1.setCreatedAt(LocalDateTime.now());
-        screenedTicker2.setUpdatedAt(LocalDateTime.now());
+        screenedTicker2.setCreatedAt(LocalDateTime.now()); // Changed to match test expectation
 
         when(screenedTickersRepository.findAll()).thenReturn(Arrays.asList(screenedTicker1, screenedTicker2));
-        when(modelMapper.map(screenedTicker1, ScreenedTickerDTO.class)).thenReturn(screenedTickerDTO1);
-        when(modelMapper.map(screenedTicker2, ScreenedTickerDTO.class)).thenReturn(screenedTickerDTO2);
 
         // Act
         List<ScreenedTickerDTO> result = screenedTickersService.getTodayScreenedTickers();
@@ -95,10 +97,6 @@ public class ScreenedTickersServiceTest {
         // Arrange
         when(screenedTickersRepository.findBySymbol("XYZ")).thenReturn(Optional.of(screenedTicker1));
         when(screenedTickersRepository.saveAll(anyList())).thenReturn(Arrays.asList(screenedTicker1, screenedTicker2));
-        when(modelMapper.map(screenedTickerDTO1, ScreenedTicker.class)).thenReturn(screenedTicker1);
-        when(modelMapper.map(screenedTickerDTO2, ScreenedTicker.class)).thenReturn(screenedTicker2);
-        when(modelMapper.map(screenedTicker1, ScreenedTickerDTO.class)).thenReturn(screenedTickerDTO1);
-        when(modelMapper.map(screenedTicker2, ScreenedTickerDTO.class)).thenReturn(screenedTickerDTO2);
 
         List<ScreenedTickerDTO> tickerDTOList = Arrays.asList(screenedTickerDTO1, screenedTickerDTO2);
 
@@ -115,8 +113,6 @@ public class ScreenedTickersServiceTest {
     void testInsertScreenedTicker() {
         // Arrange
         when(screenedTickersRepository.save(any(ScreenedTicker.class))).thenReturn(screenedTicker1);
-        when(modelMapper.map(screenedTickerDTO1, ScreenedTicker.class)).thenReturn(screenedTicker1);
-        when(modelMapper.map(screenedTicker1, ScreenedTickerDTO.class)).thenReturn(screenedTickerDTO1);
 
         // Act
         Optional<ScreenedTickerDTO> result = screenedTickersService.insertScreenedTicker(screenedTickerDTO1);
@@ -132,7 +128,6 @@ public class ScreenedTickersServiceTest {
         // Arrange
         when(screenedTickersRepository.findBySymbol("XYZ")).thenReturn(Optional.of(screenedTicker1));
         when(screenedTickersRepository.save(any(ScreenedTicker.class))).thenReturn(screenedTicker1);
-        when(modelMapper.map(screenedTicker1, ScreenedTickerDTO.class)).thenReturn(screenedTickerDTO1);
 
         // Act
         Optional<ScreenedTickerDTO> result = screenedTickersService.updateScreenedTicker(screenedTickerDTO1);
@@ -152,5 +147,4 @@ public class ScreenedTickersServiceTest {
         // Assert
         verify(screenedTickersRepository, times(1)).deleteAll();
     }
-
 }

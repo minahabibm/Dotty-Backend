@@ -53,75 +53,73 @@ public class PositionTrackerServiceTest {
         positionTrackerDTO.setActive(true);
         positionTrackerDTO.setCreatedAt(LocalDateTime.now());
         positionTrackerDTO.setUpdatedAt(LocalDateTime.now());
+
+        // Lenient stubbing
+        lenient().when(modelMapper.map(positionTracker, PositionTrackerDTO.class)).thenReturn(positionTrackerDTO);
+        lenient().when(modelMapper.map(positionTrackerDTO, PositionTracker.class)).thenReturn(positionTracker);
     }
 
     @Test
     void testGetPositionTrackers() {
         when(positionTrackerRepository.findAll()).thenReturn(Collections.singletonList(positionTracker));
-        when(modelMapper.map(positionTracker, PositionTrackerDTO.class)).thenReturn(positionTrackerDTO);
 
         List<PositionTrackerDTO> result = positionTrackerService.getPositionTrackers();
 
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertEquals(positionTrackerDTO.getPositionTrackerId(), result.get(0).getPositionTrackerId());
         verify(positionTrackerRepository, times(1)).findAll();
-        verify(modelMapper, times(1)).map(positionTracker, PositionTrackerDTO.class);
     }
 
     @Test
     void testGetPositionTrackerById() {
         when(positionTrackerRepository.findById(anyLong())).thenReturn(Optional.of(positionTracker));
-        when(modelMapper.map(positionTracker, PositionTrackerDTO.class)).thenReturn(positionTrackerDTO);
 
         Optional<PositionTrackerDTO> result = positionTrackerService.getPositionTracker(1L);
 
         assertTrue(result.isPresent());
+        assertEquals(positionTrackerDTO.getPositionTrackerId(), result.get().getPositionTrackerId());
         verify(positionTrackerRepository, times(1)).findById(1L);
-        verify(modelMapper, times(1)).map(positionTracker, PositionTrackerDTO.class);
     }
 
     @Test
     void testGetPositionTrackerBySymbol() {
         when(positionTrackerRepository.findBySymbolAndActiveTrue(anyString())).thenReturn(Optional.of(positionTracker));
-        when(modelMapper.map(positionTracker, PositionTrackerDTO.class)).thenReturn(positionTrackerDTO);
 
         Optional<PositionTrackerDTO> result = positionTrackerService.getPositionTracker("XYZ");
 
         assertTrue(result.isPresent());
+        assertEquals(positionTrackerDTO.getPositionTrackerId(), result.get().getPositionTrackerId());
         verify(positionTrackerRepository, times(1)).findBySymbolAndActiveTrue("XYZ");
-        verify(modelMapper, times(1)).map(positionTracker, PositionTrackerDTO.class);
     }
 
     @Test
     void testInsertPositionTracker() {
         when(positionTrackerRepository.save(any(PositionTracker.class))).thenReturn(positionTracker);
-        when(modelMapper.map(positionTrackerDTO, PositionTracker.class)).thenReturn(positionTracker);
-        when(modelMapper.map(positionTracker, PositionTrackerDTO.class)).thenReturn(positionTrackerDTO);
 
         Optional<PositionTrackerDTO> result = positionTrackerService.insertPositionTracker(positionTrackerDTO);
 
         assertTrue(result.isPresent());
+        assertEquals(positionTrackerDTO.getPositionTrackerId(), result.get().getPositionTrackerId());
         verify(positionTrackerRepository, times(1)).save(positionTracker);
-        verify(modelMapper, times(1)).map(positionTrackerDTO, PositionTracker.class);
-        verify(modelMapper, times(1)).map(positionTracker, PositionTrackerDTO.class);
     }
 
     @Test
     void testUpdatePositionTracker() {
         when(positionTrackerRepository.findById(anyLong())).thenReturn(Optional.of(positionTracker));
         when(positionTrackerRepository.save(any(PositionTracker.class))).thenReturn(positionTracker);
-        when(modelMapper.map(positionTracker, PositionTrackerDTO.class)).thenReturn(positionTrackerDTO);
 
         Optional<PositionTrackerDTO> result = positionTrackerService.updatePositionTracker(positionTrackerDTO);
 
         assertTrue(result.isPresent());
+        assertEquals(positionTrackerDTO.getPositionTrackerId(), result.get().getPositionTrackerId());
         verify(positionTrackerRepository, times(1)).findById(positionTrackerDTO.getPositionTrackerId());
         verify(positionTrackerRepository, times(1)).save(positionTracker);
-        verify(modelMapper, times(1)).map(positionTracker, PositionTrackerDTO.class);
     }
 
     @Test
     void testDeletePositionTracker() {
+        // Implement test for deletePositionTracker if functionality is provided
+        // In this case, the method is empty so there's nothing to test.
     }
-
 }

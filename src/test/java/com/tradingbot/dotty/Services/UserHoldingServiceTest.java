@@ -5,6 +5,7 @@ import com.tradingbot.dotty.models.UserHolding;
 import com.tradingbot.dotty.models.dto.UserHoldingDTO;
 import com.tradingbot.dotty.repositories.UserHoldingRepository;
 import com.tradingbot.dotty.serviceImpls.UserHoldingServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,16 +32,32 @@ public class UserHoldingServiceTest {
     @Mock
     private ModelMapper modelMapper;
 
+    private UserHolding userHolding;
+    private UserHoldingDTO userHoldingDTO;
+    private UserHolding existingUserHolding;
+    private UserHolding updatedUserHolding;
+
+    @BeforeEach
+    void setUp() {
+        userHolding = new UserHolding();
+        userHoldingDTO = new UserHoldingDTO();
+
+        existingUserHolding = new UserHolding();
+        updatedUserHolding = new UserHolding();
+
+        // Lenient stubbing for modelMapper
+        lenient().when(modelMapper.map(userHolding, UserHoldingDTO.class)).thenReturn(userHoldingDTO);
+        lenient().when(modelMapper.map(userHoldingDTO, UserHolding.class)).thenReturn(userHolding);
+        lenient().when(modelMapper.map(updatedUserHolding, UserHoldingDTO.class)).thenReturn(userHoldingDTO);
+    }
+
     @Test
     void testGetUsersHoldings() {
         // Arrange
-        UserHolding userHolding = new UserHolding();
-        UserHoldingDTO userHoldingDTO = new UserHoldingDTO();
         List<UserHolding> userHoldings = Arrays.asList(userHolding);
         List<UserHoldingDTO> userHoldingDTOs = Arrays.asList(userHoldingDTO);
 
         when(userHoldingRepository.findAll()).thenReturn(userHoldings);
-        when(modelMapper.map(userHolding, UserHoldingDTO.class)).thenReturn(userHoldingDTO);
 
         // Act
         List<UserHoldingDTO> result = userHoldingService.getUsersHoldings();
@@ -54,11 +71,7 @@ public class UserHoldingServiceTest {
     @Test
     void testInsertUserHolding() {
         // Arrange
-        UserHoldingDTO userHoldingDTO = new UserHoldingDTO();
-        UserHolding userHolding = new UserHolding();
-        when(modelMapper.map(userHoldingDTO, UserHolding.class)).thenReturn(userHolding);
         when(userHoldingRepository.save(userHolding)).thenReturn(userHolding);
-        when(modelMapper.map(userHolding, UserHoldingDTO.class)).thenReturn(userHoldingDTO);
 
         // Act
         Optional<UserHoldingDTO> result = userHoldingService.insertUserHolding(userHoldingDTO);
@@ -74,13 +87,9 @@ public class UserHoldingServiceTest {
     @Test
     void testUpdateUserHolding() {
         // Arrange
-        UserHoldingDTO userHoldingDTO = new UserHoldingDTO();
-        UserHolding existingUserHolding = new UserHolding();
-        UserHolding updatedUserHolding = new UserHolding();
         userHoldingDTO.setUserHoldingId(1L);
         when(userHoldingRepository.findById(1L)).thenReturn(Optional.of(existingUserHolding));
         when(userHoldingRepository.save(existingUserHolding)).thenReturn(updatedUserHolding);
-        when(modelMapper.map(updatedUserHolding, UserHoldingDTO.class)).thenReturn(userHoldingDTO);
 
         // Act
         Optional<UserHoldingDTO> result = userHoldingService.updateUserHolding(userHoldingDTO);
@@ -107,7 +116,6 @@ public class UserHoldingServiceTest {
     void testDeleteUserHolding() {
         // Arrange
         Long userHoldingId = 1L;
-        UserHolding userHolding = new UserHolding();
         when(userHoldingRepository.findById(userHoldingId)).thenReturn(Optional.of(userHolding));
 
         // Act
@@ -129,5 +137,4 @@ public class UserHoldingServiceTest {
         verify(userHoldingRepository, times(1)).findById(userHoldingId);
         verify(userHoldingRepository, times(0)).delete(any(UserHolding.class));
     }
-
 }
