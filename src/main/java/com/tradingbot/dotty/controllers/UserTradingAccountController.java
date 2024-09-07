@@ -2,8 +2,10 @@ package com.tradingbot.dotty.controllers;
 
 import com.tradingbot.dotty.service.UserConfigurationService;
 import com.tradingbot.dotty.service.handler.AuthService;
+import com.tradingbot.dotty.utils.ExternalApi.AlpacaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,14 +23,26 @@ public class UserTradingAccountController {
     @Autowired
     private UserConfigurationService userConfigurationService;
 
+    @Autowired
+    private AlpacaUtil alpacaUtil;
+
 
     @GetMapping("/active")
     public ResponseEntity<?> isActiveTradingAccount() {
-        boolean isActive = userConfigurationService.isUserTradingAccountActive(authService.getAuthenticJwtUser().getName());
+        JwtAuthenticationToken authenticatedUserJwtToken = authService.getAuthenticatedUser();
+        boolean isActive = userConfigurationService.isUserTradingAccountActive(authenticatedUserJwtToken.getName());
         Map<String, Boolean> response = new HashMap<>();
         response.put("isActive", isActive);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/account")
+    public ResponseEntity<?> getActiveTradingAccounts() {
+        return ResponseEntity.ok(alpacaUtil.getAccountDetails(userConfigurationService.getUsersConfigurationsWithActiveTradingAccounts().get(0)));
+    }
+
+
+
 }
 
 /*

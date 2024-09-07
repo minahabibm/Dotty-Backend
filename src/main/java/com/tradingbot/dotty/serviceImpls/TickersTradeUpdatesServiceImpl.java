@@ -35,16 +35,15 @@ public class TickersTradeUpdatesServiceImpl implements TickersTradeUpdatesServic
     @Override
     public List<TickersTradeUpdatesDTO> getSortedTickersTradeUpdates(int numberOfTickers) {
         log.trace(ENTITIES_READ_OPERATION, "TickersTradeUpdates");
-        List<TickersTradeUpdates> tickersTradeUpdates = tickersTradeUpdatesRepository.findAll();
 
         log.info("Sorting Screened Tickers for Sectors and getting the first {}.", numberOfTickers);
         Comparator<TickersTradeUpdates> byExchangeAndBeta = (TickersTradeUpdates tkr1, TickersTradeUpdates tkr2) -> {
             if(Float.valueOf(tkr1.getScreenedTicker().getBeta()).equals(tkr2.getScreenedTicker().getBeta())) {
                 return tkr1.getScreenedTicker().getExchangeShortName().compareTo(tkr2.getScreenedTicker().getExchangeShortName());
             } else
-                return Float.valueOf(tkr2.getScreenedTicker().getBeta()).compareTo(tkr1.getScreenedTicker().getBeta());
+                return Float.compare(tkr2.getScreenedTicker().getBeta(), tkr1.getScreenedTicker().getBeta());
         };
-        List<TickersTradeUpdatesDTO> sortedTickersTrades = tickersTradeUpdates.stream()
+        List<TickersTradeUpdatesDTO> sortedTickersTrades = tickersTradeUpdatesRepository.findAll().stream()
                 .sorted(byExchangeAndBeta)
                 .limit(numberOfTickers)
 //                .peek(tickersTradeUpdatesDAO -> log.warn(String.valueOf(tickersTradeUpdatesDAO.getScreenedTicker())))
@@ -56,8 +55,9 @@ public class TickersTradeUpdatesServiceImpl implements TickersTradeUpdatesServic
     }
 
     @Override
-    public String insertTickersTradeUpdates(List<TickersTradeUpdates> tickersTradeUpdates) {
+    public List<TickersTradeUpdatesDTO> insertTickersTradeUpdates(List<TickersTradeUpdates> tickersTradeUpdates) {
         log.trace(ENTITIES_CREATE_OPERATION, "TickersTradeUpdates");
+
         List<TickersTradeUpdates> tickersTradeUpdatesList = tickersTradeUpdates.stream()
                 .map(tickersTradeUpdate -> {
                     Optional<TickersTradeUpdates> ticker = tickersTradeUpdatesRepository.findBySymbol(tickersTradeUpdate.getSymbol());
@@ -68,27 +68,25 @@ public class TickersTradeUpdatesServiceImpl implements TickersTradeUpdatesServic
                     return tickersTradeUpdate;
                 })
                 .collect(Collectors.toList());
-        List<TickersTradeUpdates> screenedTickersList = tickersTradeUpdatesRepository.saveAll(tickersTradeUpdatesList);
-        return String.valueOf(screenedTickersList.size());
+
+        return tickersTradeUpdatesRepository.saveAll(tickersTradeUpdatesList).stream()
+                .map(tickerTradeUpdates -> modelMapper.map(tickerTradeUpdates, TickersTradeUpdatesDTO.class))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public String insertTickerTradeUpdates(TickersTradeUpdatesDTO tickersTradeUpdatesDTO) {
-        return null;
+    public Optional<TickersTradeUpdatesDTO> insertTickerTradeUpdates(TickersTradeUpdatesDTO tickersTradeUpdatesDTO) {
+        return Optional.empty();
     }
 
     @Override
-    public String updateTickersTradeUpdates(TickersTradeUpdates tickersTradeUpdates) {
-        return null;
+    public Optional<TickersTradeUpdatesDTO> updateTickersTradeUpdates(TickersTradeUpdates tickersTradeUpdates) {
+        return Optional.empty();
     }
 
     @Override
-    public String deleteTickersTradeUpdates(TickersTradeUpdatesDTO tickersTradeUpdatesDTO) {
-        return null;
-    }
+    public void deleteTickerTradeUpdates(TickersTradeUpdatesDTO tickersTradeUpdatesDTO) {}
 
     @Override
-    public String deleteTickersTradeUpdates() {
-        return null;
-    }
+    public void deleteTickersTradeUpdates() {}
 }

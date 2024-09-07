@@ -1,7 +1,8 @@
-package com.tradingbot.dotty.utils.ExternalAPi;
+package com.tradingbot.dotty.utils.ExternalApi;
 
 import com.tradingbot.dotty.models.dto.requests.AuthUserTradingAccountAccessToken;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,9 @@ import static org.springframework.web.reactive.function.BodyInserters.fromFormDa
 @Service
 public class SchwabUtil {
 
+    @Autowired
+    private WebClient webClientSchwabAccessToken;
+
     @Value("${spring.security.oauth2.client.registration.trading-account.client-id}")
     private String tradingAccountClientId;
     @Value("${spring.security.oauth2.client.registration.trading-account.client-secret}")
@@ -28,11 +32,8 @@ public class SchwabUtil {
     public AuthUserTradingAccountAccessToken authorizeUserTradingAccountAccessToken(String code, String session) {
         log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Trading Account", "authorize User Trading Account AccessToken");
 
-        System.out.println(code+ " " + tradingAccountRedirectUri);
-
         String encodedCredentials = Base64.getEncoder().encodeToString((tradingAccountClientId + ":" + tradingAccountClientSecret).getBytes());
-        WebClient webClient = WebClient.builder().baseUrl("https://api.schwabapi.com/v1/oauth/token").build();
-        return webClient.post()
+        return webClientSchwabAccessToken.post()
                 .contentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
                 .header("Authorization", "Basic " + encodedCredentials)
                 .body(fromFormData("grant_type", "authorization_code").with("code", code).with("redirect_uri",  tradingAccountRedirectUri))
@@ -45,8 +46,7 @@ public class SchwabUtil {
         log.info(EXTERNAL_GET_REQUEST_WITH_CRITERIA, "Trading Account", "authorize User Trading Account RefreshToken");
 
         String encodedCredentials = Base64.getEncoder().encodeToString((tradingAccountClientId + ":" + tradingAccountClientSecret).getBytes());
-        WebClient webClient = WebClient.builder().baseUrl("https://api.schwabapi.com/v1/oauth/token").build();
-        return webClient.post()
+        return webClientSchwabAccessToken.post()
                 .contentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
                 .header("Authorization", "Basic " + encodedCredentials)
                 .body(fromFormData("grant_type", "refresh_token").with("refresh_token", RefreshToken))

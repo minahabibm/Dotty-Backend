@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 public class UserConfiguration {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_configuration_id_seq")
+    @SequenceGenerator(name = "user_configuration_id_seq", sequenceName = "user_configuration_id_seq", allocationSize = 1)
     private Long userConfigurationId;
 
     @Column(name="activeTrading")
@@ -44,4 +45,5 @@ public class UserConfiguration {
 
     @OneToOne(mappedBy = "userConfiguration")
     private Users users;
+
 }

@@ -3,9 +3,8 @@ package com.tradingbot.dotty;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-// TODO WebSockets
-// TODO Messaging
-// TODO Application restarts
+// TODO add Logs to specific files
+// TODO Application restarts - webSockets
 
 @SpringBootApplication()
 public class DottyApplication {

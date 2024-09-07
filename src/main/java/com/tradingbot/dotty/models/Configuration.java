@@ -2,17 +2,14 @@ package com.tradingbot.dotty.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.sql.Blob;
-import java.time.LocalDateTime;
 
 @Data
 @Entity
 public class Configuration {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "configuration_id_seq")
+    @SequenceGenerator(name = "configuration_id_seq", sequenceName = "configuration_id_seq", allocationSize = 1)
     private Long configurationId;
 //
 //    @Column(name="key")
@@ -29,4 +26,5 @@ public class Configuration {
 //
     @Version
     private int version;
+
 }
