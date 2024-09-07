@@ -19,4 +19,9 @@ public class HoldingController {
         return ResponseEntity.ok(holdingService.compareHoldings());
     }
 
+    @GetMapping("/stats")
+    public ResponseEntity<?> getHoldingsStatistics(){
+        return ResponseEntity.ok(holdingService.getHoldingsStatistics());
+    }
+
 }

@@ -54,6 +54,22 @@ public class HoldingServiceImpl implements HoldingService {
     }
 
     @Override
+    public List<HoldingDTO> getHoldingsStatistics() {
+        log.trace("Holdings Statistics.");
+
+        int total=0;
+        List<HoldingDTO> holdingsDTO = getHoldings();
+        for(HoldingDTO holdingDTO : holdingsDTO) {
+            if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERSOLD.orderType))
+                total += ((holdingDTO.getExitPrice() - holdingDTO.getEntryPrice()) * 10);
+            if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERBOUGHT.orderType))
+                total += ((holdingDTO.getEntryPrice() - holdingDTO.getExitPrice()) * 10);
+        }
+        log.warn("total {}", total);
+        return holdingsDTO;
+    }
+
+    @Override
     public Optional<HoldingDTO> insertHolding(HoldingDTO holdingDTO) {
         log.trace(ENTITY_CREATE_OPERATION, holdingDTO, "Holding");
         Holding holding = holdingRepository.save(modelMapper.map(holdingDTO, Holding.class));

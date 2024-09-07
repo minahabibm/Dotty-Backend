@@ -9,6 +9,7 @@ public interface HoldingService {
 
     List<HoldingDTO> getHoldings();
     List<HoldingDTO> compareHoldings();
+    List<HoldingDTO> getHoldingsStatistics();
     Optional<HoldingDTO> insertHolding(HoldingDTO holdingDTO);
     Optional<HoldingDTO> updateHolding(HoldingDTO holdingDTO);
     void deleteHolding();
