@@ -1,12 +1,5 @@
 package com.tradingbot.dotty.configurations;
 
-import com.nimbusds.jose.JOSEObjectType;
-import com.nimbusds.jose.KeySourceException;
-import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
-import com.nimbusds.jose.proc.JWSAlgorithmFamilyJWSKeySelector;
-import com.nimbusds.jose.proc.JWSKeySelector;
-import com.nimbusds.jose.proc.SecurityContext;
-import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.tradingbot.dotty.service.handler.AuthService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,8 +26,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.ForwardAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
@@ -45,14 +36,13 @@ import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
 // TODO Update Access token when refreshed
 // TODO user redirects to login page
+// TODO add signed out tokens validation
 
 @Slf4j
 @Configuration
@@ -65,20 +55,12 @@ public class SecurityConfiguration {
     @Autowired
     private AuthService authService;
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
-    private String jwkSetUrl;
-
-    @Value("${oauth2-info.token-type}")
-    private String tokenType;
-
     @Value("${oauth2-info.login-url-path}")
     private String loginUrlPath;
 
     @Value("${oauth2-info.logout-url-path}")
     private String logoutUrlPath;
 
-    @Value("${oauth2-info.trading-account.redirect-url-path}")
-    private String tradingAccountRedirectUrlPath;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -100,17 +82,6 @@ public class SecurityConfiguration {
     @Bean
     public HttpSessionSecurityContextRepository securityContextRepository() {
         return new HttpSessionSecurityContextRepository();
-    }
-
-    @Bean
-    public JwtDecoder jwtDecoder() throws MalformedURLException, KeySourceException {
-
-        JWSKeySelector<SecurityContext> jwsKeySelector = JWSAlgorithmFamilyJWSKeySelector.fromJWKSetURL(new URL(jwkSetUrl));
-        DefaultJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
-        jwtProcessor.setJWSKeySelector(jwsKeySelector);
-        jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(new JOSEObjectType(tokenType)));
-
-        return new NimbusJwtDecoder(jwtProcessor);
     }
 
     private RequestFilter tokenValidator() {
@@ -234,6 +205,29 @@ public class SecurityConfiguration {
     }
 
 }
+
+/*
+    RFC 9068 token
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
+    private String jwkSetUrl;
+
+    @Value("${oauth2-info.token-type}")
+    private String tokenType;
+
+
+
+    @Bean
+    public JwtDecoder jwtDecoder() throws MalformedURLException, KeySourceException {
+
+        JWSKeySelector<SecurityContext> jwsKeySelector = JWSAlgorithmFamilyJWSKeySelector.fromJWKSetURL(new URL(jwkSetUrl));
+        DefaultJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
+        jwtProcessor.setJWSKeySelector(jwsKeySelector);
+        jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(new JOSEObjectType(tokenType)));
+
+        return new NimbusJwtDecoder(jwtProcessor);
+    }
+ */
 
 /*
     @Bean
