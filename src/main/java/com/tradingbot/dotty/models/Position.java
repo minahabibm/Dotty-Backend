@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 public class Position {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "position_id_seq")
+    @SequenceGenerator(name = "position_id_seq", sequenceName = "position_id_seq", allocationSize = 1)
     private Long positionId;
 
     @Column(name="symbol")

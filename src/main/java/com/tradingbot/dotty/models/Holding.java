@@ -7,11 +7,15 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+// TODO add order details
+
 @Data
 @Entity
 public class Holding {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "holding_ticker_id_seq")
+    @SequenceGenerator(name = "holding_ticker_id_seq", sequenceName = "holding_ticker_id_seq", allocationSize = 1)
     private Long holdingTickerId;
 
     @Column(name="symbol")
@@ -20,8 +24,12 @@ public class Holding {
     @Column(name="typeOfTrade")
     private String typeOfTrade;
 
+    // Entry Order ID
+
     @Column(name="entryPrice")
     private Float entryPrice;
+
+    // Exit Order ID
 
     @Column(name="ExitPrice")
     private Float ExitPrice;
