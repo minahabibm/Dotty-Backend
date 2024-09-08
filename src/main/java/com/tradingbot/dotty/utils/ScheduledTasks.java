@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 
@@ -31,9 +30,9 @@ public class ScheduledTasks {
         utils.technicalAnalysisPolling();
     }
 
-    int count = 0;
-    @Scheduled(fixedRate = 1000)
-    public void scheduledTasks() throws IOException {
+//    int count = 0;
+//    @Scheduled(fixedRate = 1000)
+//    public void scheduledTasks() throws IOException {
 //        System.out.println("hello");
 //        webSocketService.broadcast("/topic/public", "Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User! Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User!  Hello User! Hello User!  Hello User!Hello User!  Hello User!  Hello User!  Hello User!  Hello User!"+ count++);
 //        webSocketService.broadcast("/queue/private", "user_id", "hello  there!");
@@ -41,6 +40,6 @@ public class ScheduledTasks {
 //        orderProducer.sendExitOrder("Exit order for stock XYZ");
 //        orderProducer.sendEntryOrder("Entry order for stock ABC");
 
-    }
+//    }
 
 }

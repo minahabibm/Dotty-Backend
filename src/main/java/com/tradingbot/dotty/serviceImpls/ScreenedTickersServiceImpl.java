@@ -38,7 +38,7 @@ public class ScreenedTickersServiceImpl implements ScreenedTickersService {
 
     @Override
     public List<ScreenedTickerDTO> getTodayScreenedTickers() {
-        log.trace(ENTITIES_READ_WITH_FILERS_OPERATION, "ScreenedTicker", "Today "+LocalDate.now());
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "ScreenedTicker", "Today "+LocalDate.now());
         Predicate<ScreenedTicker> localDateTimePredicate = (localDateTime) -> (localDateTime.getCreatedAt().isAfter(LocalDateTime.of(LocalDate.now(), LocalTime.ofSecondOfDay(0)))) || (localDateTime.getUpdatedAt().isAfter(LocalDateTime.of(LocalDate.now(), LocalTime.ofSecondOfDay(0))));
         return screenedTickersRepository.findAll().stream()
                 .filter(localDateTimePredicate)
@@ -46,7 +46,7 @@ public class ScreenedTickersServiceImpl implements ScreenedTickersService {
     }
 
     @Override
-    public String insertAndUpdateScreenedTickers(List<ScreenedTickerDTO> ScreenedTickersDTOList) {
+    public List<ScreenedTickerDTO> insertAndUpdateScreenedTickers(List<ScreenedTickerDTO> ScreenedTickersDTOList) {
         log.trace(ENTITIES_CREATE_OPERATION, "ScreenedTicker");
         List<ScreenedTicker> screenedTickerList = ScreenedTickersDTOList.stream()
                 .map(screenedTickerDTO -> modelMapper.map(screenedTickerDTO, ScreenedTicker.class))
@@ -59,31 +59,33 @@ public class ScreenedTickersServiceImpl implements ScreenedTickersService {
                     return screenedTicker;
                 })
                 .collect(Collectors.toList());
-        List<ScreenedTicker> screenedTickersList = screenedTickersRepository.saveAll(screenedTickerList);
 
-        return String.valueOf(screenedTickersList.size());
+            return screenedTickersRepository.saveAll(screenedTickerList).stream()
+                    .map(screenedTicker -> modelMapper.map(screenedTicker, ScreenedTickerDTO.class))
+                    .collect(Collectors.toList());
     }
 
     @Override
-    public String insertScreenedTicker(ScreenedTickerDTO screenedTickerDTO) {
+    public Optional<ScreenedTickerDTO> insertScreenedTicker(ScreenedTickerDTO screenedTickerDTO) {
         log.trace(ENTITY_CREATE_OPERATION, screenedTickerDTO, "ScreenedTicker");
         ScreenedTicker screenedTicker = screenedTickersRepository.save(modelMapper.map(screenedTickerDTO, ScreenedTicker.class));
-        return String.valueOf(screenedTicker);
+        return Optional.of(modelMapper.map(screenedTicker, ScreenedTickerDTO.class));
     }
 
     @Override
-    public String updateScreenedTicker(ScreenedTickerDTO screenedTickerDTO) {
+    public Optional<ScreenedTickerDTO> updateScreenedTicker(ScreenedTickerDTO screenedTickerDTO) {
         log.trace(ENTITY_UPDATE_OPERATION, screenedTickerDTO.getName(), "ScreenedTicker");
-        Optional<ScreenedTicker> ticker = screenedTickersRepository.findBySymbol(screenedTickerDTO.getSymbol());
-        ticker.ifPresent(screenedTicker -> BeanUtils.copyProperties(screenedTickerDTO, screenedTicker, "updatedAt"));
-        ScreenedTicker screenedTickerUpdated = screenedTickersRepository.save(ticker.get());
-        return String.valueOf(screenedTickerUpdated);
+        return screenedTickersRepository.findBySymbol(screenedTickerDTO.getSymbol())
+                .map(existingScreenedTicker -> {
+                    BeanUtils.copyProperties(screenedTickerDTO, existingScreenedTicker, "updatedAt");
+                    ScreenedTicker updatedScreenedTickerUpdated = screenedTickersRepository.save(existingScreenedTicker);
+                    return modelMapper.map(updatedScreenedTickerUpdated, ScreenedTickerDTO.class);
+                });
     }
 
     @Override
-    public String deleteScreenedTickers() {
+    public void deleteScreenedTickers() {
         log.trace(ENTITIES_DELETE_OPERATION, "ScreenedTicker");
         screenedTickersRepository.deleteAll();
-        return "";
     }
 }

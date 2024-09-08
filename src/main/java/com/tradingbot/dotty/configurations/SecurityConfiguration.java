@@ -1,12 +1,5 @@
 package com.tradingbot.dotty.configurations;
 
-import com.nimbusds.jose.JOSEObjectType;
-import com.nimbusds.jose.KeySourceException;
-import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
-import com.nimbusds.jose.proc.JWSAlgorithmFamilyJWSKeySelector;
-import com.nimbusds.jose.proc.JWSKeySelector;
-import com.nimbusds.jose.proc.SecurityContext;
-import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.tradingbot.dotty.service.handler.AuthService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,7 +7,6 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.filters.RequestFilter;
 import org.apache.juli.logging.Log;
@@ -34,9 +26,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.ForwardAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
@@ -47,14 +36,13 @@ import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 
 // TODO Update Access token when refreshed
 // TODO user redirects to login page
+// TODO add signed out tokens validation
 
 @Slf4j
 @Configuration
@@ -67,20 +55,12 @@ public class SecurityConfiguration {
     @Autowired
     private AuthService authService;
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
-    private String jwkSetUrl;
-
-    @Value("${oauth2-info.token-type}")
-    private String tokenType;
-
     @Value("${oauth2-info.login-url-path}")
     private String loginUrlPath;
 
     @Value("${oauth2-info.logout-url-path}")
     private String logoutUrlPath;
 
-    @Value("${oauth2-info.trading-account.redirect-url-path}")
-    private String tradingAccountRedirectUrlPath;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -94,25 +74,14 @@ public class SecurityConfiguration {
             .logout(getLogoutCustomizer())
             .headers(getHeadersConfigurerCustomizer())                                                                  // Allow frames from the same origin
             .cors(getCorsConfigurerCustomizer())                                                                        // provide cors
-            .csrf(AbstractHttpConfigurer::disable)                                                                      // provide a csrf token
-            .addFilterBefore(tokenValidator(), BearerTokenAuthenticationFilter.class);
+            .csrf(AbstractHttpConfigurer::disable);                                                                      // provide a csrf token
+//            .addFilterBefore(tokenValidator(), BearerTokenAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
     public HttpSessionSecurityContextRepository securityContextRepository() {
         return new HttpSessionSecurityContextRepository();
-    }
-
-    @Bean
-    public JwtDecoder jwtDecoder() throws MalformedURLException, KeySourceException {
-
-        JWSKeySelector<SecurityContext> jwsKeySelector = JWSAlgorithmFamilyJWSKeySelector.fromJWKSetURL(new URL(jwkSetUrl));
-        DefaultJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
-        jwtProcessor.setJWSKeySelector(jwsKeySelector);
-        jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(new JOSEObjectType(tokenType)));
-
-        return new NimbusJwtDecoder(jwtProcessor);
     }
 
     private RequestFilter tokenValidator() {
@@ -126,12 +95,12 @@ public class SecurityConfiguration {
                 log.debug(USER_AUTHORIZATION_TOKEN_STATUS, isAuthorizationHeader);
                 if (isAuthorizationHeader) {
                     String token = authorizationHeader.split(" ")[1];
-                    if (!authService.validateToken(token)) {
-                        servletResponse.setContentType("application/json");
-                        ((HttpServletResponse) servletResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        servletResponse.getWriter().write("Invalid or expired token");
-                        return;
-                    }
+//                    if (!authService.validateToken(token)) {
+//                        servletResponse.setContentType("application/json");
+//                        ((HttpServletResponse) servletResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//                        servletResponse.getWriter().write("Invalid or expired token");
+//                        return;
+//                    }
                 }
                 filterChain.doFilter(servletRequest, servletResponse);
             }
@@ -146,10 +115,8 @@ public class SecurityConfiguration {
 
     private Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> getAuthorizationManagerRequestMatcherRegistryCustomizer() {
 //        RequestMatcher userTradingAccountAuth = new AntPathRequestMatcher(tradingAccountRedirectUrlPath);
-        return authorizeRequests -> authorizeRequests
-//                .requestMatchers(userTradingAccountAuth).permitAll()
-                .anyRequest().authenticated();
-                                                                                                                        // .anyRequest().permitAll();
+        return authorizeRequests -> authorizeRequests                                                                   // .requestMatchers(userTradingAccountAuth).permitAll()
+                .anyRequest().authenticated();                                                                          // .anyRequest().permitAll();
     }
 
     private Customizer<OAuth2LoginConfigurer<HttpSecurity>> getoAuth2LoginConfigurerCustomizer() {
@@ -205,8 +172,8 @@ public class SecurityConfiguration {
             log.debug(USER_AUTHENTICATION_LOGOUT_TOKEN);
             if(queryString != null) {
                 String[] queryParams = request.getQueryString().split("=");
-                if(queryParams.length >= 2)
-                    authService.revokeToken(queryParams[1]);
+//                if(queryParams.length >= 2)
+//                    authService.revokeToken(queryParams[1]);
             }
 
             OidcClientInitiatedLogoutSuccessHandler oidcClientInitiatedLogoutSuccessHandler = new OidcClientInitiatedLogoutSuccessHandler(this.clientRegistrationRepository);
@@ -238,6 +205,29 @@ public class SecurityConfiguration {
     }
 
 }
+
+/*
+    RFC 9068 token
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
+    private String jwkSetUrl;
+
+    @Value("${oauth2-info.token-type}")
+    private String tokenType;
+
+
+
+    @Bean
+    public JwtDecoder jwtDecoder() throws MalformedURLException, KeySourceException {
+
+        JWSKeySelector<SecurityContext> jwsKeySelector = JWSAlgorithmFamilyJWSKeySelector.fromJWKSetURL(new URL(jwkSetUrl));
+        DefaultJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
+        jwtProcessor.setJWSKeySelector(jwsKeySelector);
+        jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(new JOSEObjectType(tokenType)));
+
+        return new NimbusJwtDecoder(jwtProcessor);
+    }
+ */
 
 /*
     @Bean

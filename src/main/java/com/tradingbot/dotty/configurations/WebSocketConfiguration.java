@@ -1,6 +1,6 @@
 package com.tradingbot.dotty.configurations;
 
-import com.tradingbot.dotty.utils.WebSocketsHandler;
+import com.tradingbot.dotty.utils.webSockets.WebSocketsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.ServerHttpRequest;

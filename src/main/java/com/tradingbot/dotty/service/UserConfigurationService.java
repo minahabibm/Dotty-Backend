@@ -8,12 +8,14 @@ import java.util.Optional;
 
 public interface UserConfigurationService {
 
-    List<UserConfigurationDTO> getUsersConfiguration();
-    Optional<UserConfigurationDTO> getUserConfiguration(Long id);
-    Long insertUserConfiguration(UserConfigurationDTO userConfigurationDTO);
-    Long updateUserConfiguration(UserConfigurationDTO userConfigurationDTO);
-    String updateUserTradingAccountAlpaca(UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest, String loginUid);
+    List<UserConfigurationDTO> getUsersConfigurations();
+    List<UserConfigurationDTO> getUsersConfigurationsWithActiveTradingAccounts();
+    Optional<UserConfigurationDTO> getUserConfiguration(Long userConfigurationId);
+    Optional<UserConfigurationDTO> getUserConfiguration(String loginUid);
+    Optional<UserConfigurationDTO> insertUserConfiguration(UserConfigurationDTO userConfigurationDTO);
+    Optional<UserConfigurationDTO> updateUserConfiguration(UserConfigurationDTO userConfigurationDTO);
+    Optional<UserConfigurationDTO> updateUserTradingAccountAlpaca(UserTradingAccountAlpacaRequest userTradingAccountAlpacaRequest, String loginUid);
     Boolean isUserTradingAccountActive(String loginUid);
-    String deleteUserConfiguration();
+    void deleteUserConfiguration(Long userConfigurationId);
 
 }

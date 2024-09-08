@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 public class ScreenedTicker {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "screened_ticker_id_seq")
+    @SequenceGenerator(name = "screened_ticker_id_seq", sequenceName = "screened_ticker_id_seq", allocationSize = 1)
     private Long screenedTickerId;
 
     @Column(name="name")
@@ -28,7 +29,7 @@ public class ScreenedTicker {
     private String exchangeShortName;
 
     @Column(name="beta")
-    private float beta;
+    private Float beta;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

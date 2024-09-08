@@ -10,8 +10,10 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 public class Users {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_id_seq")
+    @SequenceGenerator(name = "user_id_seq", sequenceName = "user_id_seq", allocationSize = 1)
     private Long userId;
 
     @Column(name="firstName")
@@ -44,4 +46,5 @@ public class Users {
 
     @Version
     private int version;
+
 }
