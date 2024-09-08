@@ -1,15 +1,11 @@
 package com.tradingbot.dotty.exceptions;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class ErrorResponse {
-    private String message;
+    private String status;
     private String details;
-
-    public ErrorResponse(String message, String details) {
-        this.message = message;
-        this.details = details;
-    }
-
 }

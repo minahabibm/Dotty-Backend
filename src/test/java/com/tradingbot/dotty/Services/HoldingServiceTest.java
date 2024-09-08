@@ -65,19 +65,74 @@ public class HoldingServiceTest {
 
     @Test
     public void testCompareHoldings() {
+        // Mock repository and mapper
         when(holdingRepository.findAll()).thenReturn(holdings);
         when(modelMapper.map(holding, HoldingDTO.class)).thenReturn(holdingDTO);
 
-        // Set up holdingDTO values for testing
-        holdingDTO.setTypeOfTrade(TradeDetails.OVERSOLD.orderType);
-        holdingDTO.setEntryPrice(10.0F);
-        holdingDTO.setExitPrice(15.0F);
-
-        List<HoldingDTO> result = holdingService.compareHoldings();
+        // Call the method
+        Map<String, Integer> result = holdingService.compareHoldings();
 
         // Validate correct, incorrect, and other counts based on the setup
-        // Adjust the assertions based on your actual expectations
-        assertEquals(holdingsDTOs, result);
+        assertNotNull(result);
+        assertEquals(0, result.get("Correct: "));
+        assertEquals(0, result.get("Incorrect: "));
+        assertEquals(0, result.get("Other: "));
+
+        // Verify repository interactions
+        verify(holdingRepository).findAll();
+        verify(modelMapper).map(holding, HoldingDTO.class);
+    }
+
+    @Test
+    public void testCompareHoldingsWithNullData() {
+        // Create a mock Holding entity
+        Holding holdingEntity = new Holding();
+        holdingEntity.setTypeOfTrade(null);
+        holdingEntity.setExitPrice(null);
+        holdingEntity.setEntryPrice(null);
+
+        // Create another mock Holding entity with valid data
+        Holding validHoldingEntity = new Holding();
+        validHoldingEntity.setTypeOfTrade(TradeDetails.OVERSOLD.orderType);
+        validHoldingEntity.setEntryPrice(10.0F);
+        validHoldingEntity.setExitPrice(15.0F);
+
+        // Mock the repository to return these Holding entities
+        when(holdingRepository.findAll()).thenReturn(List.of(holdingEntity, validHoldingEntity));
+
+        // Mock the modelMapper to map Holding entities to HoldingDTOs
+        HoldingDTO holdingWithNullFieldsDTO = new HoldingDTO();
+        holdingWithNullFieldsDTO.setTypeOfTrade(null);
+        holdingWithNullFieldsDTO.setExitPrice(null);
+        holdingWithNullFieldsDTO.setEntryPrice(null);
+
+        HoldingDTO validHoldingDTO = new HoldingDTO();
+        validHoldingDTO.setTypeOfTrade(TradeDetails.OVERSOLD.orderType);
+        validHoldingDTO.setEntryPrice(10.0F);
+        validHoldingDTO.setExitPrice(15.0F);
+
+        // Mock the modelMapper behavior
+        when(modelMapper.map(holdingEntity, HoldingDTO.class)).thenReturn(holdingWithNullFieldsDTO);
+        when(modelMapper.map(validHoldingEntity, HoldingDTO.class)).thenReturn(validHoldingDTO);
+
+        // Call the method
+        Map<String, Integer> result = holdingService.compareHoldings();
+    }
+
+    @Test
+    public void testCompareHoldingsUnexpectedError() {
+        // Mock the repository to throw a RuntimeException when findAll is called
+        when(holdingRepository.findAll()).thenThrow(new RuntimeException("An error"));
+
+        // Call the method and catch the rethrown exception
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            holdingService.compareHoldings();
+        });
+
+        // Verify the exception message and that the correct log was written
+        assertEquals("An error", exception.getMessage());
+
+        // Verify that the repository was called
         verify(holdingRepository).findAll();
     }
 
