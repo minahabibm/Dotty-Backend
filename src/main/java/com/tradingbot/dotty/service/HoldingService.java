@@ -14,5 +14,5 @@ public interface HoldingService {
     void deleteHolding();
 
     Map<String, Integer> compareHoldings();
-    List<HoldingDTO> getHoldingsStatistics();
+    Map<String, Number> getHoldingsStatistics();
 }
