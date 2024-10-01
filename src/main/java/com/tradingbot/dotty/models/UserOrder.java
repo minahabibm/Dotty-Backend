@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 public class UserOrder {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_order_id_seq")
+    @SequenceGenerator(name = "user_order_id_seq", sequenceName = "user_order_id_seq", allocationSize = 1)
     private Long userOrderId;
 
     @Column(name="alpacaOrderId")

@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 public class UserHolding {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_holding_id_seq")
+    @SequenceGenerator(name = "user_holding_id_seq", sequenceName = "user_holding_id_seq", allocationSize = 1)
     private Long userHoldingId;
 
     @ManyToOne(fetch = FetchType.LAZY)

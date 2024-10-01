@@ -25,7 +25,7 @@ public class Constants {
     public static final Integer TA_NUMBER_OF_ENTRY_VALIDATION = 2;
     public static final Integer TA_NUMBER_OF_EXIT_VALIDATION = 2;
 
-    public static final Double MAXIMUM_PRICE_ACTION_EXIT = 2.5;
+    public static final Double MAXIMUM_PRICE_ACTION_EXIT = 1.5;
 
     public static final String WEBSOCKET_SESSION_ATTRIBUTE_USER = "user";
     public static final String WEBSOCKET_SUBSCRIPTION_TYPE = "type";

@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 public class TickersTradeUpdates {
 
     @Id
-    @GeneratedValue(generator = "tickersTradeUpdatesSeq")
-    @SequenceGenerator(name = "tickersTradeUpdates", sequenceName = "tickersTradeUpdatesSeq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ticker_trades_id_seq")
+    @SequenceGenerator(name = "ticker_trades_id_seq", sequenceName = "ticker_trades_id_seq", allocationSize = 1)
     private Long tickerTradesId;
 
     @Column(name="name")
@@ -40,4 +40,5 @@ public class TickersTradeUpdates {
 
     @Version
     private int version;
+
 }

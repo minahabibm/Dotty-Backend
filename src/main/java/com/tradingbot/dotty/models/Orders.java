@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
 public class Orders {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_ticker_id_seq")
+    @SequenceGenerator(name = "order_ticker_id_seq", sequenceName = "order_ticker_id_seq", allocationSize = 1)
     private Long orderTickerId;
 
     @Column(name="symbol")

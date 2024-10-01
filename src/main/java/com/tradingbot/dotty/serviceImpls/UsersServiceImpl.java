@@ -4,6 +4,7 @@ import com.tradingbot.dotty.models.Users;
 import com.tradingbot.dotty.models.dto.UsersDTO;
 import com.tradingbot.dotty.repositories.UsersRepository;
 import com.tradingbot.dotty.service.UsersService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
@@ -36,7 +37,7 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public Optional<UsersDTO> getUser(Long userId) {
         log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, userId, "Users");
-        return usersRepository.findById(userId).map(users -> modelMapper.map(users, UsersDTO.class));
+        return Optional.ofNullable(usersRepository.findById(userId).map(users -> modelMapper.map(users, UsersDTO.class)).orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found.")));
     }
 
     @Override
