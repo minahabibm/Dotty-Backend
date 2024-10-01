@@ -5,15 +5,19 @@ import com.tradingbot.dotty.models.dto.UserConfigurationDTO;
 import com.tradingbot.dotty.models.dto.requests.UserTradingAccountAlpacaRequest;
 import com.tradingbot.dotty.repositories.UserConfigurationRepository;
 import com.tradingbot.dotty.service.UserConfigurationService;
+import com.tradingbot.dotty.service.handler.AuthService;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -22,6 +26,10 @@ import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
 @Slf4j
 @Service
 public class UserConfigurationServiceImpl implements UserConfigurationService {
+
+    @Lazy
+    @Autowired
+    private AuthService authService;
 
     @Autowired
     private UserConfigurationRepository userConfigurationRepository;
@@ -89,18 +97,24 @@ public class UserConfigurationServiceImpl implements UserConfigurationService {
                 }).orElseThrow(() -> new RuntimeException("User configuration not found"));
     }
 
-    @Override
-    public Boolean isUserTradingAccountActive(String loginUid) {
-        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "User Configuration", loginUid);
-        Optional<UserConfiguration> userConfiguration =  userConfigurationRepository.findUserConfigurationByUsers_LoginUid(loginUid);
-        return userConfiguration.filter(configuration -> configuration.getIsActiveTradingAccount() != null ? configuration.getIsActiveTradingAccount() : false).isPresent();
-    }
 
     @Override
     public void deleteUserConfiguration(Long userConfigurationId) {
         log.trace(ENTITY_DELETE_OPERATION, userConfigurationId, "User Configuration");
         UserConfiguration userConfiguration = userConfigurationRepository.findById(userConfigurationId).orElseThrow(() -> new IllegalArgumentException("User Configuration not found"));
         userConfigurationRepository.delete(userConfiguration);
+    }
+
+    @Override
+    public Map<String, Boolean> isUserTradingAccountActive() {
+        log.trace(ENTITIES_READ_WITH_FILTERS_OPERATION, "User Configuration");
+
+        JwtAuthenticationToken authenticatedUserJwtToken = authService.getAuthenticatedUser();
+        Optional<UserConfiguration> userConfiguration =  userConfigurationRepository.findUserConfigurationByUsers_LoginUid(authenticatedUserJwtToken.getName());
+
+        boolean isActive = userConfiguration.filter(configuration -> Boolean.TRUE.equals(configuration.getIsActiveTradingAccount())).isPresent();
+
+        return Map.of("isActive", isActive);
     }
 
 }
