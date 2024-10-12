@@ -13,6 +13,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -95,19 +97,68 @@ public class HoldingServiceImpl implements HoldingService {
     }
 
     @Override
-    public List<HoldingDTO> getHoldingsStatistics() {
+    public Map<String, Number> getHoldingsStatistics() {
         log.trace("Holdings Statistics.");
 
-        int total=0;
-        List<HoldingDTO> holdingsDTO = getHoldings();
-        for(HoldingDTO holdingDTO : holdingsDTO) {
-            if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERSOLD.orderType))
-                total += ((holdingDTO.getExitPrice() - holdingDTO.getEntryPrice()) * 10);
-            if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERBOUGHT.orderType))
-                total += ((holdingDTO.getEntryPrice() - holdingDTO.getExitPrice()) * 10);
+        int numberOfLongPositions = 0, numberOfShortPositions = 0, numberOfIntraPositions = 0, numberOfSwingPositions = 0;
+        double total = 0, totalLongPositions = 0, totalShortPositions = 0;
+        Duration longestDuration = Duration.ZERO, shortestDuration = Duration.of(Long.MAX_VALUE, ChronoUnit.SECONDS);
+        List<HoldingDTO> holdingsDTO = getHoldings(); // Ensure this returns List<HoldingDTO>
+
+        try {
+            for (HoldingDTO holdingDTO : holdingsDTO) {
+
+                if (holdingDTO.getEntryPrice() == null || holdingDTO.getExitPrice() == null || holdingDTO.getStartAt() == null || holdingDTO.getEndAt() == null) {
+                    log.error("Type of trade, start date, exit date, entry price, or exit price is null for holding ID: {}", holdingDTO.getHoldingTickerId());
+                    continue;
+                }
+
+                if (holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERSOLD.orderType)) {
+                    double longProfit = (holdingDTO.getExitPrice() - holdingDTO.getEntryPrice()) * 10;
+                    total += longProfit;
+                    totalLongPositions += longProfit;
+                    numberOfLongPositions++;
+                }
+                if (holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERBOUGHT.orderType)) {
+                    double shortProfit = (holdingDTO.getEntryPrice() - holdingDTO.getExitPrice()) * 10;
+                    total += shortProfit;
+                    totalShortPositions += shortProfit;
+                    numberOfShortPositions++;
+                }
+
+                Duration duration = Duration.between(holdingDTO.getStartAt(), holdingDTO.getEndAt());
+                if (duration.isNegative()) {
+                    log.error("Invalid duration for holding: {}", holdingDTO);
+                    continue;
+                }
+                if (duration.compareTo(longestDuration) > 0)
+                    longestDuration = duration;
+                else if (duration.compareTo(shortestDuration) < 0)
+                    shortestDuration = duration;
+
+                if (duration.toDays() > 0)
+                    numberOfSwingPositions++;
+                else
+                    numberOfIntraPositions++;
+            }
+
+            log.info("total {}", total);
+            return Map.of(
+                    "Positions ", holdingsDTO.size(),
+                    "Total ", total,
+                    "long positions ", numberOfLongPositions,
+                    "Total Long Positions ", totalLongPositions,
+                    "Short positions ", numberOfShortPositions,
+                    "Total short positions ", totalShortPositions,
+                    "Longest period (in days) ", (int) longestDuration.toDays(),
+                    "Shortest period (in minutes) ", (int) shortestDuration.toMinutes(),
+                    "Number of Intra trades", numberOfIntraPositions,
+                    "Number of swing trades", numberOfSwingPositions
+            );
+        } catch (Exception e) {
+            log.error("Unexpected error: {}", e.getMessage());
+            throw e;
         }
-        log.warn("total {}", total);
-        return holdingsDTO;
     }
 
 }
