@@ -1,6 +1,7 @@
 package com.tradingbot.dotty.serviceImpls;
 
 import static com.tradingbot.dotty.utils.constants.LoggingConstants.*;
+
 import com.tradingbot.dotty.models.Holding;
 import com.tradingbot.dotty.models.dto.HoldingDTO;
 import com.tradingbot.dotty.repositories.HoldingRepository;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -26,47 +28,11 @@ public class HoldingServiceImpl implements HoldingService {
     @Autowired
     private ModelMapper modelMapper;
 
+
     @Override
     public List<HoldingDTO> getHoldings() {
         log.trace(ENTITIES_READ_OPERATION, "Holding");
         return holdingRepository.findAll().stream().map(holding -> modelMapper.map(holding, HoldingDTO.class)).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<HoldingDTO> compareHoldings() {
-        log.trace("Comparing Holdings.");
-        int correct=0, other=0, incorrect=0;
-        List<HoldingDTO> holdingsDTO = getHoldings();
-        for(HoldingDTO holdingDTO : holdingsDTO) {
-            if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERSOLD.orderType))
-                if (holdingDTO.getExitPrice() - holdingDTO.getEntryPrice()  > 0)  correct += 1;
-                else if (holdingDTO.getExitPrice() - holdingDTO.getEntryPrice()  == 0) other += 1;
-                else incorrect +=1;
-            if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERBOUGHT.orderType))
-                if (holdingDTO.getEntryPrice() - holdingDTO.getExitPrice() > 0) correct += 1;
-                else if (holdingDTO.getEntryPrice() - holdingDTO.getExitPrice() == 0) other += 1;
-                else incorrect +=1;
-        }
-        log.warn("Correct {} , Incorrect {}, Other {}", correct, incorrect, other);
-//        List<OrdersDTO> activeOrdersDTO = ordersService.getOrders().stream().filter(ordersDTO -> ordersDTO.getActive()).collect(Collectors.toList());
-//        activeOrdersDTO.stream().forEach(System.out::println);
-        return holdingsDTO;
-    }
-
-    @Override
-    public List<HoldingDTO> getHoldingsStatistics() {
-        log.trace("Holdings Statistics.");
-
-        int total=0;
-        List<HoldingDTO> holdingsDTO = getHoldings();
-        for(HoldingDTO holdingDTO : holdingsDTO) {
-            if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERSOLD.orderType))
-                total += ((holdingDTO.getExitPrice() - holdingDTO.getEntryPrice()) * 10);
-            if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERBOUGHT.orderType))
-                total += ((holdingDTO.getEntryPrice() - holdingDTO.getExitPrice()) * 10);
-        }
-        log.warn("total {}", total);
-        return holdingsDTO;
     }
 
     @Override
@@ -92,6 +58,56 @@ public class HoldingServiceImpl implements HoldingService {
     @Override
     public void deleteHolding() {
 
+    }
+
+
+    @Override
+    public Map<String, Integer> compareHoldings() {
+        log.trace("Comparing Holdings.");
+        int correct=0, other=0, incorrect=0;
+
+        try {
+            List<HoldingDTO> holdingsDTO = getHoldings();
+            for(HoldingDTO holdingDTO : holdingsDTO) {
+                if(holdingDTO.getTypeOfTrade() == null || holdingDTO.getEntryPrice() == null || holdingDTO.getExitPrice() == null) {
+                    log.error("Type of trade, exit price, or entry price is null for holding ID: {}", holdingDTO.getHoldingTickerId());
+                    continue;                                                                                           // Skip this iteration and continue with the next one
+                }
+                if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERSOLD.orderType))
+                    if (holdingDTO.getExitPrice() - holdingDTO.getEntryPrice()  > 0)  correct += 1;
+                    else if (holdingDTO.getExitPrice() - holdingDTO.getEntryPrice()  == 0) other += 1;
+                    else incorrect +=1;
+                if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERBOUGHT.orderType))
+                    if (holdingDTO.getEntryPrice() - holdingDTO.getExitPrice() > 0) correct += 1;
+                    else if (holdingDTO.getEntryPrice() - holdingDTO.getExitPrice() == 0) other += 1;
+                    else incorrect +=1;
+            }
+            log.info("Correct {} , Incorrect {}, Other {}", correct, incorrect, other);
+            return Map.of(
+                    "Correct: ", correct,
+                    "Incorrect: ", incorrect,
+                    "Other: ", other
+            );
+        } catch (Exception e) {
+            log.error("Unexpected error during holdings comparison: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public List<HoldingDTO> getHoldingsStatistics() {
+        log.trace("Holdings Statistics.");
+
+        int total=0;
+        List<HoldingDTO> holdingsDTO = getHoldings();
+        for(HoldingDTO holdingDTO : holdingsDTO) {
+            if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERSOLD.orderType))
+                total += ((holdingDTO.getExitPrice() - holdingDTO.getEntryPrice()) * 10);
+            if(holdingDTO.getTypeOfTrade().equals(TradeDetails.OVERBOUGHT.orderType))
+                total += ((holdingDTO.getEntryPrice() - holdingDTO.getExitPrice()) * 10);
+        }
+        log.warn("total {}", total);
+        return holdingsDTO;
     }
 
 }
