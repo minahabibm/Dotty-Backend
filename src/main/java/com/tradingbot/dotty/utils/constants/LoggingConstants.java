@@ -40,7 +40,7 @@ public class LoggingConstants {
 
     public static  final String TICKER_MARKET_DATA_RSI_THRESHOLD = "Verify Ticker Oversold or Overbought.";
     public static  final String TICKER_MARKET_DATA_TICKER_TRACKER = "Verify Ticker {} tracked for Trade.";
-    public static  final String TICKER_MARKET_DATA_TRADE_VALIDITY = "Verify Ticker {} is valid for Trade to  open  position.";
+    public static  final String TICKER_MARKET_DATA_TRADE_VALIDITY = "Verify Ticker {} is valid for Trade to open position.";
     public static  final String TICKER_MARKET_DATA_TRACKING = "Ticker {} position tracker {} for trade.";
     public static  final String TICKER_MARKET_DATA_NOT_TRACKED = "No active position tracker found";
     public static  final String TICKER_MARKET_DATA_TRACKING_POSITION = "Inserting {} Ticker's  position.";
