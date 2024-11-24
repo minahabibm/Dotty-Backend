@@ -18,6 +18,7 @@ public class PositionTrackerDTO {
     private Long positionTrackerId;
     private String symbol;
     private String typeOfTrade;
+    private String indicator;
     private Boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

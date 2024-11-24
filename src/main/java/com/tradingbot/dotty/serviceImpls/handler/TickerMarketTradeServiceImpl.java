@@ -4,6 +4,7 @@ import com.tradingbot.dotty.models.dto.*;
 import com.tradingbot.dotty.models.dto.requests.TechnicalIndicatorResponse;
 import com.tradingbot.dotty.service.*;
 import com.tradingbot.dotty.service.handler.TickerMarketTradeService;
+import com.tradingbot.dotty.utils.constants.Indicators;
 import com.tradingbot.dotty.utils.constants.TradeDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,29 +37,46 @@ public class TickerMarketTradeServiceImpl implements TickerMarketTradeService {
 
 
     @Override
-    public void startOrUpdateTrackingForTrade(String symbol ,
-                                              TechnicalIndicatorResponse.IndicatorDetails tIndicatorDetails,
-                                              TechnicalIndicatorResponse.ValuesDetails tiValuesDetails) {
+    public void startTrackingForTrade(String symbol , String tIndicatorName, TechnicalIndicatorResponse.ValuesDetails tiValuesDetails, Indicators indicator) {
 
-        Optional<PositionTrackerDTO> positionTrackerDTO;
-        if(isTickerTracked(symbol)){
-            log.debug(TICKER_MARKET_DATA_TRACKING, symbol,  "Update");
-            positionTrackerDTO = positionTrackerService.getPositionTracker(symbol);
-        } else {
-            log.debug(TICKER_MARKET_DATA_TRACKING, symbol,  "Start");
-            PositionTrackerDTO newPositionTrackerDTO = PositionTrackerDTO.builder()
-                    .symbol(symbol)
-                    .typeOfTrade(Float.parseFloat(tiValuesDetails.getRsi()) < TradeDetails.OVERSOLD.value ?  TradeDetails.OVERSOLD.orderType : TradeDetails.OVERBOUGHT.orderType)
-                    .active(true)
-                    .build();
-            positionTrackerDTO = positionTrackerService.insertPositionTracker(newPositionTrackerDTO);
-        }
+        log.debug(TICKER_MARKET_DATA_TRACKING, symbol,  "Start");
+        PositionTrackerDTO newPositionTrackerDTO = PositionTrackerDTO.builder()
+                .symbol(symbol)
+                .typeOfTrade(Float.parseFloat(tiValuesDetails.getRsi()) < TradeDetails.OVERSOLD.value ?  TradeDetails.OVERSOLD.orderType : TradeDetails.OVERBOUGHT.orderType)
+                .indicator(indicator.name())
+                .active(true)
+                .build();
+        Optional<PositionTrackerDTO> positionTrackerDTO = positionTrackerService.insertPositionTracker(newPositionTrackerDTO);
 
         if(positionTrackerDTO.isPresent()){
             log.trace(TICKER_MARKET_DATA_TRACKING_POSITION, symbol);
             PositionDTO positionDTO =  new PositionDTO();
             positionDTO.setSymbol(symbol);
-            positionDTO.setTai(tIndicatorDetails.getName());
+            positionDTO.setTai(tIndicatorName);
+            positionDTO.setTaiValue(Float.valueOf(tiValuesDetails.getRsi()));
+            positionDTO.setIntervals(LocalDateTime.parse(tiValuesDetails.getDatetime().replaceFirst(" ", "T")));
+            positionDTO.setOpen(Float.valueOf(tiValuesDetails.getOpen()));
+            positionDTO.setHigh(Float.valueOf(tiValuesDetails.getHigh()));
+            positionDTO.setLow(Float.valueOf(tiValuesDetails.getLow()));
+            positionDTO.setClose(Float.valueOf(tiValuesDetails.getClose()));
+            positionDTO.setVolume(Long.valueOf(tiValuesDetails.getVolume()));
+            positionDTO.setPositionTrackerDTO(positionTrackerDTO.get());
+            positionService.insertPosition(positionDTO);
+        } else {
+            throw new RuntimeException("Failed to retrieve or create PositionTracker");
+        }
+    }
+
+    @Override
+    public void updateTrackingForTrade(String symbol , String tIndicatorName, TechnicalIndicatorResponse.ValuesDetails tiValuesDetails) {
+        log.debug(TICKER_MARKET_DATA_TRACKING, symbol,  "Update");
+        Optional<PositionTrackerDTO> positionTrackerDTO = positionTrackerService.getPositionTracker(symbol);
+
+        if(positionTrackerDTO.isPresent()){
+            log.trace(TICKER_MARKET_DATA_TRACKING_POSITION, symbol);
+            PositionDTO positionDTO =  new PositionDTO();
+            positionDTO.setSymbol(symbol);
+            positionDTO.setTai(tIndicatorName);
             positionDTO.setTaiValue(Float.valueOf(tiValuesDetails.getRsi()));
             positionDTO.setIntervals(LocalDateTime.parse(tiValuesDetails.getDatetime().replaceFirst(" ", "T")));
             positionDTO.setOpen(Float.valueOf(tiValuesDetails.getOpen()));
