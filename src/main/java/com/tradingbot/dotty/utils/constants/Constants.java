@@ -1,5 +1,9 @@
 package com.tradingbot.dotty.utils.constants;
 
+import com.tradingbot.dotty.models.Configuration;
+
+import java.util.List;
+
 public class Constants {
 
     public static final String STOCK_SCREENER_SCHEDULE = "0 30 8 * * MON,TUE,WED,THU,FRI";
@@ -33,5 +37,11 @@ public class Constants {
     public static final String WEBSOCKET_SUBSCRIPTION_MESSAGE = "message";
     public static final String WEBSOCKET_SUBSCRIPTION_SESSION_ID = "sessionId";
     public static final String WEBSOCKET_SUBSCRIPTION_USER_ID = "userId";
+
+    public static final List<Configuration> DATA_INITIALIZATION =  List.of(
+            new Configuration("TestConfig1", "TestKey1", "TestValue1"),
+            new Configuration("TestConfig2", "TestKey2", "TestValue2"),
+            new Configuration("TestConfig3", "TestKey3", "TestValue3")
+    );
 
 }
