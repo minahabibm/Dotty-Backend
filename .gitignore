@@ -34,3 +34,7 @@ build/
 /scripts/*
 /log/*
 /pom.xml.versionsBackup
+
+application-dev.yml
+application-staging.yml
+application-prod.yml

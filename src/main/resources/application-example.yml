@@ -1,0 +1,90 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          auth0-mgm:
+            authorization-grant-type: client_credentials
+            client-id: YOUR_CLIENT_ID
+            client-secret: YOUR_CLIENT_SECRET
+          auth0:
+            client-id: YOUR_CLIENT_ID
+            client-secret: YOUR_CLIENT_SECRET
+            scope: offline_access, openid, profile, email
+          trading-account:
+            authorization-grant-type: authorization_code
+            client-id: YOUR_CLIENT_ID
+            client-secret: YOUR_CLIENT_SECRET
+            redirect-uri: YOUR_REDIRECT_URI
+        provider:
+          auth0-mgm:
+            token-uri: YOUR_TOKEN_URI
+          auth0:
+            authorization-uri: YOUR_AUTHORIZATION_URI
+            issuer-uri: YOUR_ISSUER_URI
+          trading-account:
+            authorization-uri: YOUR_AUTHORIZATION_URI
+            token-uri: YOUR_TOKEN_URI
+      resourceserver:
+        jwt:
+          issuer-uri: YOUR_ISSUER_URI
+          jwk-set-uri: YOUR_JWK_SET_URI
+          audiences: YOUR_AUDIENCE
+  datasource:
+    url: jdbc:h2:mem:testDb
+    username: YOUR_DATABASE_USERNAME
+    password: YOUR_DATABASE_PASSWORD
+    driver-class-name: org.h2.Driver
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+#  kafka:
+#    bootstrap-servers: YOUR_KAFKA_SERVER  # Kafka server(s) address
+#    group-id: YOUR_KAFKA_GROUP_ID
+
+server:
+  error:
+    include-message: always
+
+logging:
+  level:
+    com.tradingbot.dotty: INFO
+
+
+oauth2-info:
+  token-type: at+jwt
+  login-url-path: YOUR_LOGIN_URL_PATH
+  logout-url-path: YOUR_LOGOUT_URL_PATH
+  auth0-mgm:
+    token: YOUR_AUTH0_TOKEN_URI
+    audience: YOUR_AUTH0_AUDIENCE
+  trading-account:
+    redirect-url-path: YOUR_TRADING_ACCOUNT_REDIRECT_URL_PATH
+
+stock-screener-api:
+  base-url: https://financialmodelingprep.com
+  APIkey: YOUR_FINANCIAL_MODELING_PREP_API_KEY
+
+technical-indicators-api:
+  base-url: https://api.twelvedata.com
+  APIkey: YOUR_TWELVEDATA_API_KEY
+
+tickers-trades-api:
+  base-url: https://finnhub.io
+  websocket-base-url: wss://ws.finnhub.io?token=
+  APIkey: YOUR_FINNHUB_API_KEY
+
+alpaca-api:
+  base-url: https://api.alpaca.markets
+  websocket-base-url: wss://api.alpaca.markets/stream
+  paper-base-url: https://paper-api.alpaca.markets
+  websocket-paper-base-url: wss://paper-api.alpaca.markets/stream
+
+encryption:
+  algorithm: AES
+  key: "YOUR_ENCRYPTION_KEY"
