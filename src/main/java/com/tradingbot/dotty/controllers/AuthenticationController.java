@@ -37,7 +37,6 @@ public class AuthenticationController {
     @Autowired
     private SchwabUtil schwabUtil;
 
-
     @Autowired
     private UserConfigurationService userConfigurationService;
 

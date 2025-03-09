@@ -82,7 +82,7 @@ public class TickerMarketDataServiceImpl implements TickerMarketDataService {
                     tickerMarketTradeService.stopTrackingForTrade(symbol);
             }
         } else {
-            if (rsiService.isReadyToTrack(tiValuesDetails))
+            if (rsiService.isReadyToStartTracking(tiValuesDetails))
                 tickerMarketTradeService.startTrackingForTrade(symbol, tIndicatorName, tiValuesDetails, Indicators.RSI);
         }
     }

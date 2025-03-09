@@ -19,6 +19,15 @@ public class WebClientConfiguration {
     @Value("${tickers-trades-api.base-url}")
     private String baseUrlTickersTradesAPI;
 
+    @Value("${oauth2-info.auth0-mgm.token}")
+    private String auth0MGMApiAccessTokenUrl;
+
+    @Value("${oauth2-info.auth0-mgm.audience}")
+    private String auth0MgmUrl;
+
+    @Value("${spring.security.oauth2.client.provider.trading-account.token-uri}")
+    private String chShAccessTokenUrl;
+
     @Value("${alpaca-api.base-url}")
     private String baseUrlAlpacaAPI;
 
@@ -47,17 +56,17 @@ public class WebClientConfiguration {
 
     @Bean
     public WebClient webClientAuth0MGMApiAccessToken(WebClient.Builder builder) {
-        return builder.baseUrl("https://dev-z383db7saml34grv.us.auth0.com/oauth/token").build();
+        return builder.baseUrl(auth0MGMApiAccessTokenUrl).build();
     }
 
     @Bean
     public WebClient webClientAuth0RevokedAccessTokens(WebClient.Builder builder) {
-        return builder.baseUrl("https://dev-z383db7saml34grv.us.auth0.com/api/v2/blacklists/tokens").build();
+        return builder.baseUrl(auth0MgmUrl + "/blacklists/tokens").build();
     }
 
     @Bean
     public WebClient webClientSchwabAccessToken(WebClient.Builder builder) {
-        return builder.baseUrl("https://api.schwabapi.com/v1/oauth/token").build();
+        return builder.baseUrl(chShAccessTokenUrl).build();
     }
 
     @Bean
