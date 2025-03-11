@@ -1,0 +1,15 @@
+spring:
+  profiles:
+    active: "dev"
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+logging:
+  file:
+    name: ./log/dotty.log
+  logback:
+    rollingpolicy:
+      file-name-pattern: ./log/dotty-%d{yyyy-MM-dd}.%i.log
+      max-file-size: 500MB
+#      max-history: 0                                                                                                   # Retain all logs
+#      total-size-cap: 10GB                                                                                             # Optional: Set a total size cap to prevent disk space exhaustion
