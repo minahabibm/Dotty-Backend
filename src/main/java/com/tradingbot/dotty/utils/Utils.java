@@ -139,6 +139,30 @@ public class Utils {
         }
     }
 
+    public void tickersTechnicalAnalysis(LocalDateTime localDateTime) {
+        log.debug(TICKER_TECHNICAL_ANALYSIS, LocalDateTime.now());
+
+        // Get Ticker Trades Updates
+        log.debug(TICKER_TECHNICAL_ANALYSIS_SORTED_TICKERS);
+        List<TickersTradeUpdatesDTO> tickersTradeUpdates = tickersTradeUpdatesService.getSortedTickersTradeUpdates(SCREENED_TICKERS_NUMBER_OF_SYMBOLS);
+
+        // Concurrent distribution for each ticker with a separate thread
+        for(int i=0; i<tickersTradeUpdates.size(); i++){
+            TechnicalIndicatorResponse technicalIndicatorResponse = tickerUtil.technicalIndicatorRetrieve(tickersTradeUpdates.get(i).getSymbol(), localDateTime);
+            if(technicalIndicatorResponse != null && technicalIndicatorResponse.getValues() != null && !technicalIndicatorResponse.getValues().isEmpty())
+                marketDataFunnel.processTickerTechnicalAnalysisUpdates(technicalIndicatorResponse);
+            else
+                log.warn("{}", technicalIndicatorResponse);
+
+            if(i == TA_API_MAX_REQUESTS_PER_MIN)
+                try {
+                    Thread.sleep(TA_API_MAX_REQUESTS_REACHED_WAIT_TIME);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+        }
+    }
+
     public QuoteOrder[] getTickerCurrentQuote(String ticker) {
         return tickerUtil.tickerQuoteRetrieve(ticker);
     }

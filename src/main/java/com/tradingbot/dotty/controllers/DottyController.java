@@ -1,5 +1,6 @@
 package com.tradingbot.dotty.controllers;
 
+import com.tradingbot.dotty.utils.Backtesting;
 import com.tradingbot.dotty.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,9 @@ public class DottyController {
 
     @Autowired
     private Utils utils;
+
+    @Autowired
+    private Backtesting backtesting;
 
     @PostMapping("/stockScreener")
     public ResponseEntity<?> doStockScreening(){
@@ -26,6 +30,12 @@ public class DottyController {
     @GetMapping("/quote/{symbol}")
     public ResponseEntity<?> getTickerQuote(@PathVariable String symbol){
         return ResponseEntity.ok(utils.getTickerCurrentQuote(symbol));
+    }
+
+    @GetMapping("/backtesting/{id}")
+    public ResponseEntity<?> doBacktesting(@PathVariable int id){
+        backtesting.backtest(id);
+        return ResponseEntity.ok().build();
     }
 
 
